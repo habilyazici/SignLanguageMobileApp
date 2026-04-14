@@ -87,8 +87,6 @@
 | **Docker Compose** | PostgreSQL + API birlikte | Tek komutla çalıştır |
 | **Render / Railway** | Backend deploy | Ücretsiz tier, GitHub entegrasyonu, kolay |
 | **Google Drive** | Veri seti + model depolama | Colab ile doğal entegrasyon |
-| **CDN** | İşaret dili videoları | Hızlı video streaming, edge caching |
-
 ### 5. UI Yardımcı Paketler
 
 | Teknoloji | Kullanım | Neden? |

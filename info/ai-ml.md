@@ -9,10 +9,8 @@
 | **Veri Seti** | AUTSL (Ankara Üniversitesi Türk İşaret Dili Veri Seti) |
 | **Sınıf Sayısı** | 226 kelime |
 | **Video Sayısı** | ~36.302 video |
-| **Başarı Hedefi** | %94 ve üzeri doğruluk |
 | **Model Boyutu** | ~587 KB (TFLite Dynamic Range Quantization) |
-| **Eğitim Ortamı** | Google Colab (GPU: A100/L4) |
-| **Deployment** | TensorFlow Lite — cihaz üzerinde (on-device) |
+| **Deployment** | TensorFlow Lite |
 
 ---
 
@@ -57,7 +55,7 @@ Tüm vücut yerine sadece işaret dili için anlamlı noktalar seçildi:
 
 ### 2.3. 🕒 Sliding Window (Kaydıran Pencere) Mekanizması
 
-Sliding Window, sürekli bir veri akışını modelin işleyebileceği **sabit uzunluktaki küçük parçalara (pencerelere)** bölme tekniğidir. İşaret dili tanımada bir işaretin başlangıcı ve bitişi arasındaki "zaman akışını" yakalamak için kullanılır.
+Sliding Window, sürekli bir veri akışını modelin işleyebileceği **sabit uzunluktaki *küçük parçalara (pencerelere)** bölme tekniğidir. İşaret dili tanımada bir işaretin *başlangıcı ve bitişi arasındaki "zaman akışını" yakalamak için kullanılır.
 
 #### Temel Bileşenler
 
@@ -241,17 +239,6 @@ Eğitim verisi **2 katına** çıkarılır: orijinal + gürültülü kopya birle
 | Checkpoint | En iyi `val_accuracy` Drive'a kaydedilir (`best_model.keras`) |
 | Platform | Google Colab Pro (A100/L4 GPU) |
 
-### 4.3. Başarı Metrikleri
-
-| Metrik | Hedef | Açıklama |
-|--------|-------|----------|
-| **Top-1 Accuracy** | ≥ %94 | En yüksek olasılıklı tahmin doğruluğu |
-| **Top-5 Accuracy** | ≥ %99 | İlk 5 tahmin içinde doğru sınıf olma oranı |
-| **F1-Score (Macro)** | ≥ %90 | Tüm sınıflar için dengeli başarı |
-| **Inference Time** | < 50ms | Mobil cihazda tek tahmin süresi |
-| **Model Size** | ~587 KB | Gerçek dosya boyutu: `sign_language_model.tflite` |
-
----
 
 ## 5. TFLite Dönüşümü (Model → Mobil)
 
@@ -419,16 +406,3 @@ if (confidence >= 0.90) ConfidenceLevel.high;   // yeşil
 if (confidence >= 0.80) ConfidenceLevel.medium; // sarı
 else                    ConfidenceLevel.low;    // kırmızı
 ```
-
----
-
-## 10. Bilinen Riskler ve Çözümler
-
-| Risk | Olasılık | Çözüm |
-|------|----------|-------|
-| Düşük ışıkta landmark algılama hatası | Orta | Kullanıcıya "ışık yetersiz" uyarısı + threshold kontrolü |
-| Benzer işaretlerin karışması | Yüksek | Data augmentation + daha fazla eğitim verisi |
-| Tek elle yapılan işaretlerde diğer elin gürültüsü | Düşük | El yoksa 0.0 değeri — model bunu öğrenir |
-| TFLite dönüşümünde doğruluk kaybı | Orta | Float16 quantization tercih et, INT8'de dikkatli test et |
-| Kamera FPS düşüklüğü (eski cihazlar) | Orta | Frame skipping + düşük çözünürlük modu |
-| Model boyutu çok büyük (>30 MB) | Düşük | Pruning + quantization ile küçültme |

@@ -106,7 +106,7 @@ backend/
 │   │
 │   ├── prisma/
 │   │   ├── schema.prisma              # Veritabanı şeması
-│   │   ├── seed.ts                    # Başlangıç verisi (226 kelime)
+│   │   ├── seed.ts                    # Başlangıç verisi
 │   │   └── migrations/               # Prisma migration dosyaları
 │   │
 │   ├── config/
@@ -245,10 +245,7 @@ VIDEOS_BASE_URL="http://localhost:3000/videos"
 
 ### Video Barındırma Stratejisi
 
-| Aşama | Çözüm | Maliyet | Not |
-|-------|-------|---------|-----|
-| **Geliştirme** | `backend/public/videos/` static serve | 0₺ | Express static middleware |
-| **Production** | Cloudflare R2 + CDN | 0₺ | 226 video × ~5 MB ≈ 1.1 GB (ücretsiz sınır içi) |
+| `backend/public/videos/` static serve | 0₺ | Express static middleware |
 
 ```
 backend/
@@ -257,7 +254,7 @@ backend/
 │       ├── agri.mp4
 │       ├── yardim.mp4
 │       ├── hastane.mp4
-│       └── ... (226 video)
+│       └── ...
 ```
 
 > **Not:** `VIDEOS_BASE_URL` env değişkeni sayesinde migration sırasında sadece bu değer değiştirilir, uygulama kodu aynı kalır.

@@ -5,7 +5,6 @@
 | Alan | Bilgi |
 |------|-------|
 | **Proje Adı** | Hear Me Out |
-| **Mimar** | Habil Yazıcı |
 | **Konu** | Sağlık Teknolojileri & Engelli Erişilebilirliği |
 | **Hedef Kitle** | İşitme/Konuşma Engelli Bireyler & Yakınları |
 | **Platform** | Android + iOS (Flutter Cross-Platform) |
@@ -119,42 +118,3 @@ Cümle Modu: Videolar sırayla oynatılır
 ```
 
 ---
-
-## 5. Proje Aşamaları ve Mevcut Durum
-
-| Aşama | Durum | Açıklama |
-|-------|-------|----------|
-| 📊 Veri Seti Hazırlık | ✅ Tamamlandı | AUTSL veri seti seçildi (226 sınıf, ~36K video) |
-| 🔧 Feature Extraction | 🔄 Devam Ediyor | MediaPipe ile koordinat çıkarma işlemi |
-| 🧠 Model Eğitimi | ⏳ Bekliyor | LSTM + Multi-Head Attention (Colab üzerinde) |
-| 📱 Flutter Frontend | ⏳ Bekliyor | Sıfırdan başlanacak |
-| 💻 Node.js Backend | ⏳ Bekliyor | Sıfırdan başlanacak |
-| 🧪 Test & Optimizasyon | ⏳ Bekliyor | TFLite dönüşüm + mobil test |
-| 🚀 Deploy | ⏳ Bekliyor | Play Store / App Store |
-
----
-
-## 6. Test Stratejisi
-
-Projenin güvenilirliğini sağlamak için uygulanacak test yaklaşımı:
-
-| Katman | Araçlar | Test Kapsamı |
-|--------|---------|--------------|
-| **AI Model** | `scikit-learn` | Confusion matrix (karışıklık matrisi), sınıf bazlı F1-score (zor kelimelerin analizi). |
-| **Flutter** | `flutter_test`, `integration_test` | Widget testleri (özellikle acil durum butonu ve navigasyon), MediaPipe ↔ TFLite entegrasyon testleri. |
-| **Backend** | `jest`, `supertest` | Auth endpoint'leri, rate limit sınırları, Token validation testleri. |
-
----
-
-## 7. İlgili Dokümantasyon
-
-| Dosya | İçerik |
-|-------|--------|
-| `ai-ml.md` | Yapay zeka modeli, veri pipeline, eğitim stratejisi |
-| `flutter.md` | Frontend mimarisi, Riverpod, klasör yapısı, paketler |
-| `backend.md` | Node.js API, Express, middleware yapısı |
-| `database.md` | PostgreSQL tabloları, Prisma şeması |
-| `ui-ux.md` | Ekran tasarımları, navigasyon, kullanıcı akışları |
-| `security.md` | KVKK, şifreleme, veri güvenliği |
-| `tech-stack.md` | Tüm teknolojiler ve seçim gerekçeleri |
-| `brand.md` | Marka kimliği, renk paleti, tipografi, Flutter tema kodu |

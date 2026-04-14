@@ -89,7 +89,7 @@ Sonraki Açılışlar:
 │                                         │
 │  ┌─────────────────────────────────┐    │
 │  │  🆘 ACİL DURUM                  │    │  ← Kırmızı pulsing buton
-│  │  Sağlık cümlelerine hızlı erişim│    │
+│  │  Sağlık kelimelerine hızlı erişim│    │
 │  └─────────────────────────────────┘    │
 │                                         │
 │  ── Günün Kelimesi ─────────────────    │
@@ -146,18 +146,18 @@ Kullanıcı art arda işaret yaptığında ekrandaki metin şu mantıkla akar:
 ├─────────────────────────────────────────┤
 │                                         │
 │  ┌─────────────────────────────────┐    │
-│  │  Metin girin veya konuşun...    │    │  ← TextField
-│  │                          🎤     │    │  ← Mikrofon butonu
-│  └─────────────────────────────────┘    │
-│                                         │
-│  Öneriler: [ağrı] [yardım] [hastane]   │  ← Autocomplete chip'leri
-│                                         │
-│  ┌─────────────────────────────────┐    │
 │  │                                 │    │
 │  │       🎬 VIDEO OYNATICI         │    │  ← İşaret dili videosu
 │  │                                 │    │
 │  │    ◀◀  ▶️   ▶▶                   │    │  ← Kontroller
 │  │    0.5x  1x  1.5x  2x          │    │  ← Hız kontrolü
+│  └─────────────────────────────────┘    │
+│                                         │
+│  Öneriler: [ağrı] [yardım] [hastane]   │  ← Autocomplete chip'leri
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │  Metin girin veya konuşun...    │    │  ← TextField
+│  │                          🎤     │    │  ← Mikrofon butonu
 │  └─────────────────────────────────┘    │
 │                                         │
 │  [← KAMERA İÇİN]                      │
@@ -209,7 +209,7 @@ Kullanıcı art arda işaret yaptığında ekrandaki metin şu mantıkla akar:
 │  │ ⭐     │ │        │ │ ⭐     │      │
 │  └────────┘ └────────┘ └────────┘      │
 │                                         │
-│  📊 226 kelime | ⭐ 3 favori           │
+│  📊  kelime | ⭐ 3 favori           │
 └─────────────────────────────────────────┘
 ```
 
@@ -242,6 +242,43 @@ Kullanıcı art arda işaret yaptığında ekrandaki metin şu mantıkla akar:
 │                                         │
 └─────────────────────────────────────────┘
 ```
+
+### ⚙️ Ayarlar Ekranı
+
+> **Erişim:** Ana Sayfa'nın (Hub) sağ üst köşesindeki dişli (⚙️) ikonundan veya Profil ekranından ulaşılır.
+
+```
+┌─────────────────────────────────────────┐
+│  ←                Ayarlar               │
+├─────────────────────────────────────────┤
+│                                         │
+│  ── 🎨 Görünüm & Erişilebilirlik ──     │
+│  [◐] Tema (Açık/Koyu/Sistem)    [>]     │
+│  [A] Metin Boyutu (Normal)      [>]     │
+│  [🌈] Model İskelet Rengi (Yeşil) [>]   │
+│                                         │
+│  ── ⚙️ Çeviri & Kamera Özellikleri ──   │
+│  [📳] Başarılı Tanıma Titreşimi [AÇIK]  │
+│  [🔊] Otomatik Sesli Okuma (TTS)[KAPALI]│
+│  [🎯] Yapay Zeka Hassasiyeti    [>]     │
+│                                         │
+│  ── 💾 Depolama & Çevrimdışı ──         │
+│  [⬇️] Cihaza İndirme Limiti (500MB)     │
+│       Kullanım: 345 MB                  │
+│  [🗑️] Video Önbelleğini Temizle        │
+│                                         │
+│  ── 🔒 Hesap & Gizlilik ──              │
+│  [📄] Verilerimi Dışa Aktar (JSON)[>]   │
+│  [🛑] Hesabı ve Tüm Verileri Sil  [>]   │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+**Özelleştirilmiş Ayar Detayları:**
+- **İskelet (Landmark) Rengi:** Kamera modunda ellerin ve vücudun üzerindeki çizgilerin rengini ayarlama (Uygulamanın kişiselleştirildiği hissiyatını artırır).
+- **Yapay Zeka Hassasiyeti (Tolerans):** AI'ın doğru kabul edeceği (varsayılan %80 olan) güven eşiğini "Katı, Normal, Toleranslı" şeklinde ayarlama. İşaret diline yeni başlayanlar için toleranslı mod eklenebilir.
+- **Depolama / Önbellek Yönetimi:** Çevrimdışı çalışabilme felsefesinin en büyük özelliği videoların cache'e alınmasıdır. Bu menüden cihazda ne kadar GB yer ayrılacağı seçilebilir.
+- **Otomatik Sesli Okuma:** Kamera modunda kelime algılanıp cümle kurulduğunda, ekstra tts butonuna basmadan telefonun doğrudan bunu sesli dile getirmesi. (Acil durumlarda kullanışlı).
 
 ---
 
