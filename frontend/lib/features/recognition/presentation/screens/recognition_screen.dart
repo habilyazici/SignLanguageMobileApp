@@ -1,168 +1,499 @@
-import 'dart:ui';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:camera/camera.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../providers/recognition_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 
 class RecognitionScreen extends ConsumerWidget {
   const RecognitionScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Saniyede bir güncellenen global beyini buraya bağlıyoruz
-    final state = ref.watch(recognitionProvider);
+    final state    = ref.watch(recognitionProvider);
+    final notifier = ref.read(recognitionProvider.notifier);
+    final devMode  = ref.watch(settingsProvider).devMode;
+    final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Colors.black, // Kamera yüklenene kadar siyah arka plan
+      backgroundColor: Colors.black,
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          // 1. Zemin: Şeffaf Kamera Vizörü (Tam Ekran)
-          _buildCameraPreview(state),
+          // ── 1. Tam ekran kamera ──────────────────────────────────────────
+          _CameraLayer(state: state, ref: ref),
 
-          // 2. Üst Kısım: Basit Şeffaf Başlık
-          Positioned(
-            top: 60,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Canlı Çeviri (AI)',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      const Shadow(color: Colors.black54, blurRadius: 10),
-                    ],
-                  ),
-                ),
-              ],
+          // ── 2. Dev mode: landmark overlay (ValueNotifier — per-frame güncellenir)
+          if (devMode && state.isReady && state.cameraController != null)
+            _LandmarkOverlay(
+              notifier: notifier.devNotifier,
+              cameraController: state.cameraController!,
             ),
+
+          // ── 3. Üst gradient + durum göstergesi ──────────────────────────
+          Positioned(
+            top: 0, left: 0, right: 0,
+            child: _TopOverlay(devMode: devMode, onDevToggle: settingsNotifier.toggleDevMode),
           ),
 
-          // 3. Alt Kısım: Glassmorphism (Buzlu Cam) Tahmin Çubuğu
+          // ── 4. Alt gradient + altyazı paneli ────────────────────────────
           Positioned(
-            bottom: 40,
-            left: 20,
-            right: 20,
-            child: _buildGlassmorphismBottomBar(context, state),
+            bottom: 0, left: 0, right: 0,
+            child: _SubtitlePanel(state: state),
+          ),
+
+          // ── 5. Dev mode: istatistik paneli ──────────────────────────────
+          if (devMode)
+            Positioned(
+              top: 0, bottom: 0,
+              right: 12,
+              child: _DevStatsPanel(devNotifier: notifier.devNotifier),
+            ),
+
+          // ── 6. Hata ekranı ───────────────────────────────────────────────
+          if (state.isError)
+            Container(
+              color: Colors.black87,
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.videocam_off, color: Colors.white54, size: 56),
+                    SizedBox(height: 16),
+                    Text(
+                      'Kamera başlatılamadı.\nLütfen izinleri kontrol edin.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tam ekran kamera katmanı
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CameraLayer extends StatelessWidget {
+  const _CameraLayer({required this.state, required this.ref});
+
+  final RecognitionState state;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!state.isReady || state.cameraController == null) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Colors.cyanAccent,
+          strokeWidth: 2,
+        ),
+      );
+    }
+
+    final controller = state.cameraController!;
+    // BoxFit.contain — tam vücudu gösterir, kenar bantları siyah kalır
+    final preview = SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: controller.value.previewSize!.height,
+          height: controller.value.previewSize!.width,
+          child: CameraPreview(controller),
+        ),
+      ),
+    );
+
+    return GestureDetector(
+      onDoubleTap: () => ref.read(recognitionProvider.notifier).switchCamera(),
+      child: preview,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Landmark overlay — ValueNotifier ile rebuild tetiklenir (Riverpod bypass)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LandmarkOverlay extends StatelessWidget {
+  const _LandmarkOverlay({
+    required this.notifier,
+    required this.cameraController,
+  });
+
+  final ValueNotifier<LandmarkDevData> notifier;
+  final CameraController cameraController;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: notifier,
+      builder: (context, _) {
+        final data = notifier.value;
+        final previewSize = cameraController.value.previewSize;
+        if (previewSize == null) return const SizedBox.shrink();
+
+        return CustomPaint(
+          painter: _LandmarkPainter(
+            data: data,
+            // CameraPreview döndürüldüğünde width/height yer değiştirir
+            cameraAspect: previewSize.height / previewSize.width,
+            screenSize: MediaQuery.of(context).size,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LandmarkPainter extends CustomPainter {
+  const _LandmarkPainter({
+    required this.data,
+    required this.cameraAspect,
+    required this.screenSize,
+  });
+
+  final LandmarkDevData data;
+  final double cameraAspect;   // kamera en/boy oranı (previewSize.h / previewSize.w)
+  final Size screenSize;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // BoxFit.contain ile kameranın ekrandaki gerçek boyutunu hesapla
+    final double screenAspect = size.width / size.height;
+    double camW, camH, offsetX, offsetY;
+
+    if (cameraAspect > screenAspect) {
+      // Kamera daha uzun → yatay bantlar
+      camW = size.width;
+      camH = size.width / cameraAspect;
+      offsetX = 0;
+      offsetY = (size.height - camH) / 2;
+    } else {
+      // Kamera daha geniş → dikey bantlar
+      camH = size.height;
+      camW = size.height * cameraAspect;
+      offsetX = (size.width - camW) / 2;
+      offsetY = 0;
+    }
+
+    // Normalize [0,1] → ekran koordinatı
+    Offset toScreen(Offset n) =>
+        Offset(offsetX + n.dx * camW, offsetY + n.dy * camH);
+
+    final posePaint = Paint()
+      ..color = Colors.greenAccent
+      ..strokeWidth = 6
+      ..style = PaintingStyle.fill;
+
+    final rightPaint = Paint()
+      ..color = Colors.cyanAccent
+      ..strokeWidth = 5
+      ..style = PaintingStyle.fill;
+
+    final leftPaint = Paint()
+      ..color = Colors.orangeAccent
+      ..strokeWidth = 5
+      ..style = PaintingStyle.fill;
+
+    for (final p in data.posePoints) {
+      canvas.drawCircle(toScreen(p), 4, posePaint);
+    }
+    for (final p in data.rightHand) {
+      canvas.drawCircle(toScreen(p), 4, rightPaint);
+    }
+    for (final p in data.leftHand) {
+      canvas.drawCircle(toScreen(p), 4, leftPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LandmarkPainter old) => true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Üst overlay — ince gradient + başlık + dev toggle
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TopOverlay extends StatelessWidget {
+  const _TopOverlay({required this.devMode, required this.onDevToggle});
+
+  final bool devMode;
+  final VoidCallback onDevToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, top + 12, 12, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xCC000000), Colors.transparent],
+        ),
+      ),
+      child: Row(
+        children: [
+          // Canlı göstergesi
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: Colors.redAccent,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            'Canlı Çeviri',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const Spacer(),
+          // Çift tık ipucu
+          const Text(
+            'Kamera değiştir: 2×',
+            style: TextStyle(color: Colors.white38, fontSize: 12),
+          ),
+          const SizedBox(width: 8),
+          // Dev mode toggle
+          GestureDetector(
+            onTap: onDevToggle,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: devMode ? Colors.cyanAccent.withValues(alpha: 0.2) : Colors.transparent,
+                border: Border.all(
+                  color: devMode ? Colors.cyanAccent : Colors.white24,
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'DEV',
+                style: TextStyle(
+                  color: devMode ? Colors.cyanAccent : Colors.white38,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  // Kamerayı veya Loading animasyonunu ekrana sığdırır
-  Widget _buildCameraPreview(RecognitionState state) {
-    if (state.isError) {
-      return const Center(
-        child: Text(
-          'Kameraya erişilemedi veya yapay zeka yüklenemedi.',
-          style: TextStyle(color: Colors.white),
-        ),
-      );
-    }
-    if (!state.isReady || state.cameraController == null) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
-      );
-    }
+// ─────────────────────────────────────────────────────────────────────────────
+// Dev mode: sağ kenardaki istatistik paneli
+// ─────────────────────────────────────────────────────────────────────────────
 
-    final cameraController = state.cameraController!;
+class _DevStatsPanel extends StatelessWidget {
+  const _DevStatsPanel({required this.devNotifier});
 
-    // Kamera en-boy oranını hesaplayıp tüm ekrana boşluksuz FittedBox ile sığdırır
-    return SizedBox.expand(
-      child: FittedBox(
-        fit: BoxFit.cover,
-        child: SizedBox(
-          width: cameraController.value.previewSize?.height ?? 1,
-          height: cameraController.value.previewSize?.width ?? 1,
-          child: CameraPreview(cameraController),
-        ),
+  final ValueNotifier<LandmarkDevData> devNotifier;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ListenableBuilder(
+        listenable: devNotifier,
+        builder: (_, _) {
+          final d = devNotifier.value;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _statRow('BUF', '${d.bufferFill}/60', Colors.white70),
+                _statRow('POSE', '${d.poseCount}', Colors.greenAccent),
+                _statRow('HAND', '${d.handCount}', Colors.cyanAccent),
+                _statRow('R', '${d.rightHand.length}pt', Colors.cyanAccent),
+                _statRow('L', '${d.leftHand.length}pt', Colors.orangeAccent),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  // Glassmorphism tasarımlı metin kutusu
-  Widget _buildGlassmorphismBottomBar(
-    BuildContext context,
-    RecognitionState state,
-  ) {
-    // Confidence (Güven Skoru) UI Renk Mantığı (TFLite -> Arayüz Adaptasyonu)
-    Color scoreColor = Colors.grey;
-    if (state.confidenceScore >= 0.90) {
-      scoreColor = const Color(0xFF22C55E); // Success Green
-    } else if (state.confidenceScore >= 0.80) {
-      scoreColor = const Color(0xFFF59E0B); // Warning Yellow
-    } else if (state.confidenceScore >= 0.70) {
-      scoreColor = const Color(0xFFEF4444); // Error Kırmızı
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: 10,
-          sigmaY: 10,
-        ), // Buzlu cam bulanıklık seviyesi
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          decoration: BoxDecoration(
-            color: const Color(0x1AFFFFFF), // %10 saydam beyaz
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1.5,
-            ), // Klasik Apple/Dribbble cam dokusu
-            borderRadius: BorderRadius.circular(24),
+  Widget _statRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label ',
+            style: const TextStyle(
+              color: Colors.white38,
+              fontSize: 10,
+              fontFamily: 'monospace',
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Modelin Tahmin Ettiği Kelime String'i
-              Text(
-                state.predictedWord,
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  color: Colors.white,
-                  shadows: [
-                    const Shadow(color: Colors.black45, blurRadius: 5),
-                  ], // Olası parlak yüzlerde yazının okunabilirliği artar
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-
-              // İndikatör (Progress Bar)
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: state
-                            .confidenceScore, // 0.0 - 1.0 skalasında modelin emin olma oranı
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          scoreColor,
-                        ), // Skor rengi devrede!
-                        minHeight: 8,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Numerik Oran (%85 vs)
-                  Text(
-                    '%${(state.confidenceScore * 100).toInt()}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scoreColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'monospace',
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alt altyazı paneli
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SubtitlePanel extends StatelessWidget {
+  const _SubtitlePanel({required this.state});
+
+  final RecognitionState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).padding.bottom;
+    final hasWords = state.sentence.isNotEmpty;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 60, 20, bottom + 24),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Color(0xE6000000), Color(0x80000000), Colors.transparent],
+          stops: [0.0, 0.55, 1.0],
         ),
       ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ── Biriken cümle ─────────────────────────────────────────────
+          if (hasWords) ...[
+            _SentenceRow(sentence: state.sentence),
+            const SizedBox(height: 14),
+          ],
+
+          // ── Güven çubuğu ──────────────────────────────────────────────
+          _ConfidenceBar(
+            score: state.confidenceScore,
+            active: hasWords,
+          ),
+
+          const SizedBox(height: 10),
+
+          // ── Durum metni ───────────────────────────────────────────────
+          if (!hasWords)
+            const Text(
+              'Kameranın önünde işaret yapın',
+              style: TextStyle(color: Colors.white38, fontSize: 14),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Biriken cümle — kelimeler soldan sağa, son kelime vurgulu
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SentenceRow extends StatelessWidget {
+  const _SentenceRow({required this.sentence});
+
+  final List<String> sentence;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
+      children: sentence.asMap().entries.map((entry) {
+        final isLast = entry.key == sentence.length - 1;
+        return AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 200),
+          style: TextStyle(
+            color: isLast ? Colors.white : Colors.white60,
+            fontSize: isLast ? 30 : 22,
+            fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
+            height: 1.2,
+          ),
+          child: Text(entry.value),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Güven çubuğu
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ConfidenceBar extends StatelessWidget {
+  const _ConfidenceBar({required this.score, required this.active});
+
+  final double score;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    // Spec: ≥90% yeşil · 80-89% sarı · 70-79% kırmızı
+    final color = score >= 0.90
+        ? AppTheme.primaryStatusGreen
+        : (score >= 0.80 ? AppTheme.primaryStatusYellow : AppTheme.primaryStatusRed);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            child: LinearProgressIndicator(
+              value: active ? score : 0.0,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 4,
+            ),
+          ),
+        ),
+        if (active) ...[
+          const SizedBox(height: 4),
+          Text(
+            '%${(score * 100).toStringAsFixed(0)} güven',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

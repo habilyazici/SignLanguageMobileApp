@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
+import '../core/providers/camera_lifecycle_provider.dart';
 
-class ScaffoldWithNav extends StatelessWidget {
+class ScaffoldWithNav extends ConsumerWidget {
   final Widget child;
 
   const ScaffoldWithNav({super.key, required this.child});
@@ -20,7 +22,10 @@ class ScaffoldWithNav extends StatelessWidget {
     return 2;
   }
 
-  void _onTap(BuildContext context, int index) {
+  void _onTap(BuildContext context, WidgetRef ref, int index) {
+    // index 0 = kamera ekranı; diğerleri kamerayı durdurur
+    ref.read(cameraActiveProvider.notifier).setActive(active: index == 0);
+
     switch (index) {
       case 0:
         context.go('/live-translation');
@@ -41,7 +46,7 @@ class ScaffoldWithNav extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -86,11 +91,11 @@ class ScaffoldWithNav extends StatelessWidget {
         ],
       ),
       extendBody: true,
-      bottomNavigationBar: _buildGlassBottomNav(context),
+      bottomNavigationBar: _buildGlassBottomNav(context, ref),
     );
   }
 
-  Widget _buildGlassBottomNav(BuildContext context) {
+  Widget _buildGlassBottomNav(BuildContext context, WidgetRef ref) {
     final currentIndex = _calculateSelectedIndex(context);
 
     return Padding(
@@ -125,32 +130,32 @@ class ScaffoldWithNav extends StatelessWidget {
                   icon: Icons.menu_book_rounded,
                   label: 'Sözlük',
                   isSelected: currentIndex == 1,
-                  onTap: () => _onTap(context, 1),
+                  onTap: () => _onTap(context, ref, 1),
                 ),
                 _NavBarItem(
                   icon: Icons.back_hand_rounded,
                   label: 'Kamera',
                   isSelected: currentIndex == 0,
-                  onTap: () => _onTap(context, 0),
+                  onTap: () => _onTap(context, ref, 0),
                 ),
                 _NavBarItem(
                   icon: Icons.home_rounded,
                   label: 'Ana Sayfa',
                   isSelected: currentIndex == 2,
-                  onTap: () => _onTap(context, 2),
+                  onTap: () => _onTap(context, ref, 2),
                   isHomeButton: true,
                 ),
                 _NavBarItem(
                   icon: Icons.sign_language_rounded,
                   label: 'Avatar',
                   isSelected: currentIndex == 3,
-                  onTap: () => _onTap(context, 3),
+                  onTap: () => _onTap(context, ref, 3),
                 ),
                 _NavBarItem(
                   icon: Icons.person_rounded,
                   label: 'Profil',
                   isSelected: currentIndex == 4,
-                  onTap: () => _onTap(context, 4),
+                  onTap: () => _onTap(context, ref, 4),
                 ),
               ],
             ),

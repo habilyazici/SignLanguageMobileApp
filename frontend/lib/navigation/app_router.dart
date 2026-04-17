@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/recognition/presentation/screens/recognition_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
 import 'scaffold_with_nav.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -49,7 +50,7 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/profile',
-          builder: (context, state) => const PlaceholderScreen(title: 'Profil'),
+          builder: (context, state) => const ProfileScreen(),
         ),
       ],
     ),

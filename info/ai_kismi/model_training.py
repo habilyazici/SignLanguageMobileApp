@@ -121,6 +121,21 @@ X_train_final, y_train_final = augment_landmarks_pro(X_train_norm, y_train)
 
 print(f"✅ Hazır! Yeni Eğitim Seti Boyutu: {X_train_final.shape}")
 
+def augment_pro(X_batch):
+    """
+    Normalizasyonu bozmadan veriyi artırır:
+    Sadece çok küçük gürültü (jittering) ve hafif ölçekleme ekler.
+    """
+    # 1. Hafif Gürültü (Noise)
+    noise = np.random.normal(0, 0.001, X_batch.shape) # Normalizasyon bozulmasın diye düşük tuttuk
+    X_aug = X_batch + noise
+
+    # 2. Rastgele Ölçekleme (Slight Scaling)
+    # İşareti yapan kişinin ellerinin %5 daha büyük/küçük olması durumu
+    scale_factor = np.random.uniform(0.95, 1.05)
+    X_aug *= scale_factor
+
+    return X_aug.astype(np.float32)
 
 def prepare_dataset_pro(X, y, batch_size=64, is_train=False):
     """
@@ -339,23 +354,24 @@ best_model = tf.keras.models.load_model(
     compile=False # Dönüşüm için compile edilmesine gerek yok
 )
 
-# 3. TFLite Dönüşümü (En güvenli ayarlar)
+# 3. TFLite Dönüşümü (SABİT GİRDİ ŞEKLİ İLE - FLUTTER UYUMLU)
 print("📦 TFLite dönüşümü tetikleniyor...")
-converter = tf.lite.TFLiteConverter.from_keras_model(best_model)
 
-# LSTM ve Karmaşık katmanlar için bu ayarlar hayat kurtarır
+# Modelin girdi şeklini (None olan kısmı) tam olarak '1'e ve shape'i (60,106) olarak ayırıyoruz.
+fixed_input = tf.keras.Input(shape=(60, 106), batch_size=1)
+fixed_output = best_model(fixed_input)
+flutter_ready_model = tf.keras.Model(inputs=fixed_input, outputs=fixed_output)
+
+converter = tf.lite.TFLiteConverter.from_keras_model(flutter_ready_model)
+
+# Artık 'SELECT_TF_OPS' veya 'TensorListReserve' baypaslarına ihtiyacımız yok!
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
-converter.target_spec.supported_ops = [
-    tf.lite.OpsSet.TFLITE_BUILTINS,
-    tf.lite.OpsSet.SELECT_TF_OPS # Bazı Cudnn kalıntılarını standart TF operasyonlarına çevirir
-]
-converter._experimental_lower_tensor_list_ops = True
 
 try:
     tflite_model = converter.convert()
     tflite_path = os.path.join(SAVE_PATH, "sign_language_model.tflite")
     with open(tflite_path, 'wb') as f:
         f.write(tflite_model)
-    print(f"✅ ZAFER! Model nihayet hazır: {tflite_path}")
+    print(f"✅ MUHTEŞEM ZAFER! Model Android ve Flutter için tam uyumlu üretildi: {tflite_path}")
 except Exception as e:
     print(f"❌ Dönüşüm başarısız: {e}")

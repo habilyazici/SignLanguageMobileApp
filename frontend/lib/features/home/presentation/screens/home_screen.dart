@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../shared/presentation/widgets/glass_card.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -8,141 +9,74 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor:
-          Colors.transparent, // Background handled by scaffold_with_nav
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/images/logo.png',
-              height: 36,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.hearing),
-            ),
-            const SizedBox(width: 12),
-            const Text('Hear Me Out'),
-          ],
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-      ),
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: GestureDetector(
           onHorizontalDragEnd: (details) {
-            // Hassasiyet eşiği
             if (details.primaryVelocity != null) {
               if (details.primaryVelocity! < -300) {
-                // Sola doğru kaydırma -> Sağdaki menüye git (Metinden İşarete)
-                context.go('/text-to-sign');
-              } else if (details.primaryVelocity! > 300) {
-                // Sağa doğru kaydırma -> Soldaki menüye git (Canlı Çeviri)
                 context.go('/live-translation');
+              } else if (details.primaryVelocity! > 300) {
+                context.go('/text-to-sign');
               }
             }
           },
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Hoş Geldin !',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Bugün ne öğrenmek\nistersin?',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displayLarge?.copyWith(fontSize: 28),
-                ),
-                const SizedBox(height: 40),
-                // Daily Word GlassCard
-                GlassCard(
-                  borderRadius: 24,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.auto_awesome,
-                            color: AppTheme.primaryStatusYellow,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Günün İşareti',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleLarge?.copyWith(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '"Merhaba"',
-                        style: Theme.of(context).textTheme.displayLarge
-                            ?.copyWith(
-                              fontSize: 32,
-                              color: AppTheme.primaryStatusGreen,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'İşaret dilinde temel selamlama.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 20),
+
+                // ── Hero başlık ──────────────────────────────────────────────
+                _HeroHeader(isDark: isDark),
+
                 const SizedBox(height: 32),
 
-                // Grid for tools (Focused Design)
+                // ── Günün İşareti ────────────────────────────────────────────
+                _DailyWordCard(isDark: isDark),
+
+                const SizedBox(height: 24),
+
+                // ── Hızlı erişim butonları ───────────────────────────────────
+                Text(
+                  'Hızlı Erişim',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
                 Row(
                   children: [
                     Expanded(
-                      child: _buildActionGlassCard(
-                        context: context,
-                        title: 'İşareti Metne\nÇevir',
+                      child: _ActionCard(
+                        title: 'İşareti\nMetne Çevir',
                         icon: Icons.back_hand_rounded,
                         color: AppTheme.secondaryBlue,
+                        hint: 'Sola Kaydır',
+                        hintIcon: Icons.swipe_left_rounded,
                         onTap: () => context.go('/live-translation'),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(
-                      child: _buildActionGlassCard(
-                        context: context,
-                        title: 'Metni İşarete\nÇevir',
+                      child: _ActionCard(
+                        title: 'Metni\nİşarete Çevir',
                         icon: Icons.sign_language_rounded,
                         color: AppTheme.primaryBlue,
+                        hint: 'Sağa Kaydır',
+                        hintIcon: Icons.swipe_right_rounded,
                         onTap: () => context.go('/text-to-sign'),
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 24),
-                // Yönlendirme Bilgi Metni
-                Center(
-                  child: Text(
-                    '💡 Hızlı Menü: Çeviri için sağa, Avatar için sola kaydırın',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white54
-                          : Colors.black45,
-                    ),
-                  ),
-                ),
-
-                // Bottom padding to avoid overlap with floating bottom nav bar
                 const SizedBox(height: 120),
               ],
             ),
@@ -151,38 +85,219 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildActionGlassCard({
-    required BuildContext context,
-    required String title,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// Hero başlık — logo büyük, karşılama metni hemen altında
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _HeroHeader extends StatelessWidget {
+  const _HeroHeader({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Logo — önceki 56px'den 80px'e çıkarıldı
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDark
+                ? AppTheme.darkSurface
+                : AppTheme.primaryBlue.withValues(alpha: 0.08),
+            border: Border.all(
+              color: isDark
+                  ? AppTheme.secondaryBlue.withValues(alpha: 0.3)
+                  : AppTheme.primaryBlue.withValues(alpha: 0.15),
+              width: 1.5,
+            ),
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 80,
+              height: 80,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => Icon(
+                Icons.hearing,
+                size: 44,
+                color: isDark ? AppTheme.secondaryBlue : AppTheme.primaryBlue,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hear Me Out',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppTheme.primaryBlue,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Hoş Geldin! 👋',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white60 : AppTheme.midGrey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Bugün ne öğrenmek istersin?',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.white38 : AppTheme.midGrey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Günün İşareti kartı
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DailyWordCard extends StatelessWidget {
+  const _DailyWordCard({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      borderRadius: 20,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: AppTheme.primaryStatusYellow, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Günün İşareti',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '"Merhaba"',
+                  style: GoogleFonts.poppins(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryStatusGreen,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'İşaret dilinde temel selamlama.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.primaryStatusGreen.withValues(alpha: 0.12),
+            ),
+            child: const Icon(
+              Icons.waving_hand_rounded,
+              color: AppTheme.primaryStatusGreen,
+              size: 28,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hızlı erişim kartı
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.hint,
+    required this.hintIcon,
+    required this.onTap,
+  });
+
+  final String title;
+  final IconData icon;
+  final Color color;
+  final String hint;
+  final IconData hintIcon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 36),
-        borderRadius: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 28),
+        borderRadius: 20,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 40),
+              child: Icon(icon, color: color, size: 36),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontSize: 18, height: 1.2),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 15,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(hintIcon, size: 14, color: color.withValues(alpha: 0.7)),
+                const SizedBox(width: 4),
+                Text(
+                  hint,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

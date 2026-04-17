@@ -42,6 +42,8 @@ dependencies:
   tflite_flutter: ^0.12.1
   permission_handler: ^12.0.1
   google_mlkit_pose_detection: ^0.14.1
+  hand_detection: ^2.0.8
+  opencv_dart: ^2.2.1+4  # hand_detection'ın Mat dönüşümü için gerekli
 
 dev_dependencies:
   flutter_test:
