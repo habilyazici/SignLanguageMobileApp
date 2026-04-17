@@ -45,6 +45,17 @@ dependencies:
   hand_detection: ^2.0.8
   opencv_dart: ^2.2.1+4  # hand_detection'ın Mat dönüşümü için gerekli
 
+  # ── Ses & Konuşma ──────────────────────────────────────────────────────────
+  flutter_tts: ^4.2.0          # İşaret → Metin: kelime kelime seslendir (Türkçe)
+  speech_to_text: ^7.0.0       # Metin → İşaret: sesli giriş (STT)
+
+  # ── Paylaşım ───────────────────────────────────────────────────────────────
+  share_plus: ^10.1.4           # Cümleyi sistem paylaşım menüsüne ilet
+
+  # ── Animasyon & UI ─────────────────────────────────────────────────────────
+  shimmer: ^3.0.0              # Yükleme iskelet efektleri
+  flutter_animate: ^4.5.2      # Proje geneli animasyonlar (fade, slide, pulse)
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

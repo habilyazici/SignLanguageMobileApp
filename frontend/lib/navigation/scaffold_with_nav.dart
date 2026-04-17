@@ -71,7 +71,7 @@ class ScaffoldWithNav extends ConsumerWidget {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.secondaryBlue.withOpacity(0.3),
+                color: AppTheme.secondaryBlue.withValues(alpha: 0.3),
               ),
             ),
           ),
@@ -83,7 +83,7 @@ class ScaffoldWithNav extends ConsumerWidget {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryBlue.withOpacity(0.2),
+                color: AppTheme.primaryBlue.withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -108,15 +108,15 @@ class ScaffoldWithNav extends ConsumerWidget {
             height: 70,
             padding: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor.withOpacity(0.15),
+              color: Theme.of(context).cardColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
@@ -186,7 +186,7 @@ class _NavBarItem extends StatelessWidget {
     final activeColor = AppTheme.secondaryBlue;
     final inactiveColor = Theme.of(context).brightness == Brightness.dark
         ? Colors.white70
-        : AppTheme.primaryBlue.withOpacity(0.6);
+        : AppTheme.primaryBlue.withValues(alpha: 0.6);
 
     // Ana sayfa butonu için özel yuvarlak arka plan ve ikon rengi ayarlaması
     final iconColor = isHomeButton
@@ -209,7 +209,7 @@ class _NavBarItem extends StatelessWidget {
           color: isHomeButton
               ? homeBgColor
               : (isSelected
-                    ? activeColor.withOpacity(0.15)
+                    ? activeColor.withValues(alpha: 0.15)
                     : Colors.transparent),
           borderRadius: isHomeButton
               ? BorderRadius.circular(30)
@@ -217,7 +217,7 @@ class _NavBarItem extends StatelessWidget {
           boxShadow: isHomeButton
               ? [
                   BoxShadow(
-                    color: homeBgColor.withOpacity(0.3),
+                    color: homeBgColor.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +11,7 @@ import 'package:opencv_dart/opencv_dart.dart' as cv;
 import 'package:tflite_flutter/tflite_flutter.dart' as tflite;
 
 import '../../../../../core/providers/camera_lifecycle_provider.dart';
+import '../../../../../core/providers/tts_provider.dart';
 import '../../../../../core/utils/landmark_normalizer.dart';
 import '../../../../../core/utils/label_mapper.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
@@ -367,6 +368,9 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       debugPrint('🧠 Inference → idx:$maxIdx  skor:${(maxScore * 100).toStringAsFixed(1)}%  kelime:$topWord');
 
       // ── Spec: < %70 = garbage → gösterme ─────────────────────────────────
+      final smoothingOn =
+          ref.read(settingsProvider).temporalSmoothingEnabled;
+
       if (maxIdx >= 0 && maxScore >= 0.70) {
         if (maxIdx == _lastIdx) {
           _streak++;
@@ -375,7 +379,9 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
           _streak  = 1;
         }
 
-        if (_streak >= _stableFrames) {
+        // Smoothing kapalıysa ilk inference'da anında göster (streak=1 yeterli)
+        final threshold = smoothingOn ? _stableFrames : 1;
+        if (_streak >= threshold) {
           final word = LabelMapper.getTrWord(maxIdx);
 
           if (word != _lastShownWord) {
@@ -390,6 +396,16 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
               confidenceScore: maxScore,
               sentence:        trimmed,
             );
+
+            // TTS: ttsEnabled ise yeni kelimeyi seslendir
+            if (ref.read(settingsProvider).ttsEnabled) {
+              ref.read(ttsProvider.notifier).speak(word);
+            }
+
+            // Haptic: ≥90% güven → orta titreşim (spec)
+            if (maxScore >= 0.90) {
+              HapticFeedback.mediumImpact();
+            }
 
             _clearTimer?.cancel();
             _clearTimer = Timer(const Duration(seconds: 4), () {

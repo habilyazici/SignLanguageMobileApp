@@ -1,3 +1,12 @@
+<!--
+  UYGULAMA DURUMU (2026-04-17)
+  ✅ Renk paleti — frontend/lib/core/theme/app_theme.dart (AppTheme static constants)
+  ✅ Dark/Light theme — MaterialApp.router themeMode, settingsProvider ile toggle
+  ✅ Tipografi — Google Fonts Poppins (başlık) + varsayılan M3 (body)
+  ⚠️ Brand.md Montserrat yazar, gerçek kod Poppins kullanıyor — tutarsızlık var
+  ✅ Glassmorphism — GlassCard widget (shared/presentation/widgets/glass_card.dart)
+-->
+
 # 🏷️ HEAR ME OUT — Marka ve UI Spesifikasyonu
 
 ## 1. Renk Paleti

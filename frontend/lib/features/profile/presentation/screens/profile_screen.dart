@@ -50,8 +50,8 @@ class ProfileScreen extends ConsumerWidget {
                   iconColor: Colors.purpleAccent,
                   title: 'Temporal Düzleme',
                   subtitle: '8 ardışık kare = 1 kelime',
-                  value: true,
-                  onChanged: null, // ileride ayarlanabilir
+                  value: settings.temporalSmoothingEnabled,
+                  onChanged: (_) => settingsNotifier.toggleTemporalSmoothing(),
                 ),
                 _Divider(isDark: isDark),
                 _InfoRow(
@@ -67,7 +67,36 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.speed_rounded,
                   iconColor: Colors.greenAccent,
                   title: 'İşlem hızı',
-                  value: 'Her 3. kare',
+                  value: 'Her 5. kare',
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // ── Ses ───────────────────────────────────────────────────────
+            _SectionTitle('Ses'),
+            _SettingsCard(
+              isDark: isDark,
+              children: [
+                _SwitchRow(
+                  isDark: isDark,
+                  icon: Icons.volume_up_rounded,
+                  iconColor: Colors.deepOrangeAccent,
+                  title: 'Sesli Okuma (TTS)',
+                  subtitle: 'Tanınan kelimeyi Türkçe seslendir',
+                  value: settings.ttsEnabled,
+                  onChanged: (_) => settingsNotifier.toggleTts(),
+                ),
+                _Divider(isDark: isDark),
+                _SwitchRow(
+                  isDark: isDark,
+                  icon: Icons.mic_rounded,
+                  iconColor: Colors.pinkAccent,
+                  title: 'Sesli Giriş (STT)',
+                  subtitle: 'Metin→İşaret ekranında mikrofon',
+                  value: settings.sttEnabled,
+                  onChanged: (_) => settingsNotifier.toggleStt(),
                 ),
               ],
             ),

@@ -1,6 +1,11 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../../../core/providers/tts_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../providers/recognition_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
@@ -39,7 +44,32 @@ class RecognitionScreen extends ConsumerWidget {
           // ── 4. Alt gradient + altyazı paneli ────────────────────────────
           Positioned(
             bottom: 0, left: 0, right: 0,
-            child: _SubtitlePanel(state: state),
+            child: _SubtitlePanel(
+              state: state,
+              onTtsReplay: state.sentence.isNotEmpty &&
+                      ref.watch(settingsProvider).ttsEnabled
+                  ? () => ref
+                      .read(ttsProvider.notifier)
+                      .speak(state.sentence.join(' '))
+                  : null,
+              onCopy: state.sentence.isNotEmpty
+                  ? () {
+                      Clipboard.setData(
+                        ClipboardData(text: state.sentence.join(' ')),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Cümle panoya kopyalandı'),
+                          duration: Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  : null,
+              onShare: state.sentence.isNotEmpty
+                  ? () => Share.share(state.sentence.join(' '))
+                  : null,
+            ),
           ),
 
           // ── 5. Dev mode: istatistik paneli ──────────────────────────────
@@ -88,11 +118,10 @@ class _CameraLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!state.isReady || state.cameraController == null) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Colors.cyanAccent,
-          strokeWidth: 2,
-        ),
+      return Shimmer.fromColors(
+        baseColor: const Color(0xFF1A1A1A),
+        highlightColor: const Color(0xFF2E2E2E),
+        child: Container(color: const Color(0xFF1A1A1A)),
       );
     }
 
@@ -369,9 +398,17 @@ class _DevStatsPanel extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SubtitlePanel extends StatelessWidget {
-  const _SubtitlePanel({required this.state});
+  const _SubtitlePanel({
+    required this.state,
+    this.onTtsReplay,
+    this.onCopy,
+    this.onShare,
+  });
 
   final RecognitionState state;
+  final VoidCallback? onTtsReplay;
+  final VoidCallback? onCopy;
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -406,12 +443,118 @@ class _SubtitlePanel extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          // ── Durum metni ───────────────────────────────────────────────
-          if (!hasWords)
+          // ── Aksiyon butonları (kelime varken görünür) ─────────────────
+          if (hasWords)
+            _ActionBar(
+              onTtsReplay: onTtsReplay,
+              onCopy: onCopy,
+              onShare: onShare,
+            )
+          else
             const Text(
               'Kameranın önünde işaret yapın',
               style: TextStyle(color: Colors.white38, fontSize: 14),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Aksiyon buton çubuğu — TTS / Kopyala / Paylaş
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ActionBar extends StatelessWidget {
+  const _ActionBar({
+    this.onTtsReplay,
+    this.onCopy,
+    this.onShare,
+  });
+
+  final VoidCallback? onTtsReplay;
+  final VoidCallback? onCopy;
+  final VoidCallback? onShare;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _ActionBtn(
+          icon: Icons.volume_up_rounded,
+          label: 'Seslendir',
+          color: Colors.cyanAccent,
+          onTap: onTtsReplay,
+        ),
+        const SizedBox(width: 12),
+        _ActionBtn(
+          icon: Icons.copy_rounded,
+          label: 'Kopyala',
+          color: Colors.white70,
+          onTap: onCopy,
+        ),
+        const SizedBox(width: 12),
+        _ActionBtn(
+          icon: Icons.share_rounded,
+          label: 'Paylaş',
+          color: AppTheme.secondaryBlue,
+          onTap: onShare,
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionBtn extends StatelessWidget {
+  const _ActionBtn({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onTap != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: enabled
+                  ? color.withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.05),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: enabled ? color.withValues(alpha: 0.4) : Colors.white12,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: enabled ? color : Colors.white24,
+              size: 20,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: enabled ? color.withValues(alpha: 0.8) : Colors.white24,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -444,7 +587,15 @@ class _SentenceRow extends StatelessWidget {
             height: 1.2,
           ),
           child: Text(entry.value),
-        );
+        )
+            .animate(key: ValueKey(entry.key))
+            .fadeIn(duration: 250.ms)
+            .scale(
+              begin: const Offset(0.75, 0.75),
+              end: const Offset(1, 1),
+              duration: 300.ms,
+              curve: Curves.easeOutBack,
+            );
       }).toList(),
     );
   }

@@ -1,3 +1,15 @@
+<!--
+  UYGULAMA DURUMU (2026-04-17)
+  ✅ Model deploy edildi — frontend/assets/models/sign_language_model.tflite (INT8, ~637KB)
+  ✅ 226 sınıf etiketi — frontend/assets/models/labels.csv (main.dart'ta yükleniyor)
+  ✅ Inference pipeline — recognition_provider.dart (stride=5, window=60, _runInference)
+  ✅ Confidence eşikleri — ≥90% yeşil, 80-89% sarı, 70-79% kırmızı, <70% reject
+  ✅ Normalizasyon — landmark_normalizer.dart (Python'la birebir eşleştiği doğrulandı)
+  ✅ Temporal smoothing — 8 ardışık inference = 1 kelime onayla
+  ✅ TTS — yeni kelime onaylandığında otomatik seslendir (ttsEnabled toggle)
+  ✅ Haptic feedback — confidence ≥90% + yeni kelime → HapticFeedback.mediumImpact()
+-->
+
 # 🧠 HEAR ME OUT — Yapay Zeka (AI/ML) Spesifikasyonu
 
 ## 1. Veri ve Model Yapısı

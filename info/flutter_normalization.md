@@ -1,3 +1,11 @@
+<!--
+  UYGULAMA DURUMU: ✅ TAMAMLANDI (2026-04-17)
+  Bu dosya yalnızca referans belgesidir — canlı kod değildir.
+  Gerçek implementasyon: frontend/lib/core/utils/landmark_normalizer.dart
+  Kullanım yeri: recognition_provider.dart → _runInference() → LandmarkNormalizer.normalizeWindow()
+  Python karşılığı (model_training.py normalize_landmarks_pro) ile birebir eşleştiği doğrulandı.
+-->
+
 /// HEAR ME OUT - Flutter AI Preprocessing (Normalization)
 /// 
 /// Python'daki `normalize_landmarks_pro` fonksiyonunun Dart dilindeki birebir karşılığıdır.

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/habil/OneDrive/Belgeler/GitHub/SignLanguageMobileApp/frontend/lib/features -name \"*.dart\" -type f -exec wc -l {} +)",
+      "Bash(find /c/Users/habil/OneDrive/Belgeler/GitHub/SignLanguageMobileApp/frontend/lib/features -name '*.dart' -type f -exec sh -c 'lines=$\\(wc -l < \"$1\"\\); [ \"$lines\" -eq 0 ] && echo \"$1\"' _ '{}' ';')"
+    ]
+  }
+}

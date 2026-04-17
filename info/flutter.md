@@ -1,3 +1,22 @@
+<!--
+  UYGULAMA DURUMU (2026-04-17)
+  ✅ Paketler:
+      flutter_riverpod, go_router, google_fonts, dio, camera, tflite_flutter,
+      permission_handler, google_mlkit_pose_detection, hand_detection, opencv_dart,
+      flutter_tts, speech_to_text, shimmer, flutter_animate, share_plus
+  ⬜ Paketler (spec'te var, henüz eklenmedi):
+      hive_flutter (local storage), flutter_cache_manager (video cache)
+  ✅ Feature-first mimari — recognition, home, profile, settings features mevcut
+  ⬜ Eksik features: translator, dictionary, emergency (sadece PlaceholderScreen var)
+  ✅ GoRouter ShellRoute — 5 tab, /home başlangıç noktası
+  ⬜ Eksik rotalar: /splash, /onboarding, /settings, /emergency, /word/:id
+  ✅ Normalization utility — core/utils/landmark_normalizer.dart
+  ✅ Label mapper — core/utils/label_mapper.dart (CSV, 226 sınıf)
+  ✅ TTS service + provider — core/services/tts_service.dart + core/providers/tts_provider.dart
+  ✅ Camera lifecycle provider — core/providers/camera_lifecycle_provider.dart
+  ✅ Settings provider — features/settings/presentation/providers/settings_provider.dart
+-->
+
 # 📱 HEAR ME OUT — Flutter Mimari Notları
 
 ## 1. Temel Stack

@@ -1,3 +1,30 @@
+<!--
+  UYGULAMA DURUMU (2026-04-17)
+  ✅ Bottom nav (5 tab ShellRoute) — navigation/scaffold_with_nav.dart + app_router.dart
+  ✅ Kamera ↔ Çevirici yatay swipe — home_screen.dart GestureDetector
+  ─── EKRANLAR ──────────────────────────────────────────────────────────────────
+  ✅ Ana Sayfa (Hub) — home_screen.dart (logo, günün işareti, hızlı erişim kartları + flutter_animate)
+  ✖ Ana Sayfa acil durum butonları — KAPSAM DIŞI BIRAKILDI
+  ✅ İşaret→Metin (Kamera) — recognition_screen.dart
+      ✅ Tam ekran vizör, confidence bar, cümle paneli
+      ✅ TTS / Kopyala / Paylaş butonları
+      ✅ Shimmer loading, kelime giriş animasyonu
+      ✅ Dev mode (landmark overlay + istatistik paneli)
+  ⬜ Metin→İşaret (Çevirici) — STUB (PlaceholderScreen)
+  ⬜ Sözlük — STUB (PlaceholderScreen)
+  ⚠️ Ayarlar — profile_screen.dart'ta (Görünüm, Ses, Tanıma, Geliştirici, Hakkında)
+      Spec'teki tam ayarlar menüsünden çok daha sınırlı — ayrı settings ekranı yok
+  ✅ Profil — profile_screen.dart (dev mode, TTS/STT toggle, tema, uygulama bilgisi)
+  ⬜ Sağlık Kartı — profile ekranına eklenmedi
+  ✅ Splash — splash_screen.dart (2.8s animasyonlu logo → /home)
+  ✅ Onboarding — onboarding_screen.dart (3 slayt PageView, Atla + Devam/Başlayalım)
+  ✅ Emergency ekranı — emergency_screen.dart (4 hızlı mesaj + sağlık kartı alanı)
+  ─── ROTALAR ───────────────────────────────────────────────────────────────────
+  ✅ /splash (initialLocation)  ✅ /onboarding  ✅ /home
+  ✅ /live-translation  ✅ /dictionary  ✅ /text-to-sign  ✅ /profile  ✅ /emergency
+  ⬜ /settings (ayrı ekran)  ⬜ /word/:id
+-->
+
 # 🎨 HEAR ME OUT — UI/UX Kodlama Kılavuzu
 
 ## 1. Navigasyon

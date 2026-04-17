@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class LabelMapper {
@@ -29,14 +30,14 @@ class LabelMapper {
       }
       _isLoaded = true;
     } catch (e) {
-      print('Label CSV yüklenirken hata oluştu: $e');
+      debugPrint('Label CSV yüklenirken hata oluştu: $e');
     }
   }
 
   /// TFLite'dan çıkan index numarasını vererek Türkçe kelime karşılığını alır.
   static String getTrWord(int index) {
     if (!_isLoaded) {
-      print('Uyarı: loadLabels() henüz çağrılmadı!');
+      debugPrint('Uyarı: loadLabels() henüz çağrılmadı!');
     }
     return _trLabels[index] ?? 'Bilinmiyor';
   }
@@ -44,7 +45,7 @@ class LabelMapper {
   /// TFLite'dan çıkan index numarasını vererek İngilizce kelime karşılığını alır.
   static String getEnWord(int index) {
     if (!_isLoaded) {
-      print('Uyarı: loadLabels() henüz çağrılmadı!');
+      debugPrint('Uyarı: loadLabels() henüz çağrılmadı!');
     }
     return _enLabels[index] ?? 'Unknown';
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../shared/presentation/widgets/glass_card.dart';
@@ -32,12 +33,18 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // ── Hero başlık ──────────────────────────────────────────────
-                _HeroHeader(isDark: isDark),
+                _HeroHeader(isDark: isDark)
+                    .animate()
+                    .fadeIn(duration: 400.ms)
+                    .slideY(begin: -0.12, end: 0, curve: Curves.easeOut),
 
                 const SizedBox(height: 32),
 
                 // ── Günün İşareti ────────────────────────────────────────────
-                _DailyWordCard(isDark: isDark),
+                _DailyWordCard(isDark: isDark)
+                    .animate()
+                    .fadeIn(delay: 120.ms, duration: 400.ms)
+                    .slideY(begin: 0.12, end: 0, curve: Curves.easeOut),
 
                 const SizedBox(height: 24),
 
@@ -48,7 +55,9 @@ class HomeScreen extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
+                )
+                    .animate()
+                    .fadeIn(delay: 220.ms, duration: 300.ms),
                 const SizedBox(height: 14),
 
                 Row(
@@ -61,7 +70,14 @@ class HomeScreen extends StatelessWidget {
                         hint: 'Sola Kaydır',
                         hintIcon: Icons.swipe_left_rounded,
                         onTap: () => context.go('/live-translation'),
-                      ),
+                      )
+                          .animate()
+                          .fadeIn(delay: 300.ms, duration: 400.ms)
+                          .scale(
+                            begin: const Offset(0.92, 0.92),
+                            end: const Offset(1, 1),
+                            curve: Curves.easeOutBack,
+                          ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -72,7 +88,14 @@ class HomeScreen extends StatelessWidget {
                         hint: 'Sağa Kaydır',
                         hintIcon: Icons.swipe_right_rounded,
                         onTap: () => context.go('/text-to-sign'),
-                      ),
+                      )
+                          .animate()
+                          .fadeIn(delay: 400.ms, duration: 400.ms)
+                          .scale(
+                            begin: const Offset(0.92, 0.92),
+                            end: const Offset(1, 1),
+                            curve: Curves.easeOutBack,
+                          ),
                     ),
                   ],
                 ),

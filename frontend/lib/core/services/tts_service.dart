@@ -1,0 +1,61 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TTS Servisi — Türkçe kelime seslendirme
+//
+// Kullanım: Her yeni onaylanan işaret kelimesi anında okunur (kelime kelime).
+// Ayarlar ekranından ttsEnabled toggle edilebilir.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class TtsService {
+  final FlutterTts _tts = FlutterTts();
+  bool _ready = false;
+
+  Future<void> initialize() async {
+    try {
+      // Android için sistem TTS motoru ayarları
+      if (Platform.isAndroid) {
+        await _tts.setQueueMode(1); // FLUSH — yeni kelime eskiyi keser
+      }
+
+      await _tts.setLanguage('tr-TR');
+      await _tts.setSpeechRate(0.45);  // Biraz yavaş — net anlaşılsın
+      await _tts.setVolume(1.0);
+      await _tts.setPitch(1.0);
+
+      // Türkçe ses motoru yoksa İngilizce geri dön
+      final languages = await _tts.getLanguages as List?;
+      if (languages != null && !languages.contains('tr-TR')) {
+        await _tts.setLanguage('tr');
+      }
+
+      _ready = true;
+      debugPrint('✅ TTS hazır (tr-TR)');
+    } catch (e) {
+      debugPrint('❌ TTS başlatma hatası: $e');
+    }
+  }
+
+  /// Yeni kelime geldiğinde çağrılır — önceki konuşmayı keserek başlar
+  Future<void> speak(String word) async {
+    if (!_ready || word.isEmpty) return;
+    try {
+      await _tts.stop();
+      await _tts.speak(word);
+    } catch (e) {
+      debugPrint('❌ TTS speak hatası: $e');
+    }
+  }
+
+  Future<void> stop() async {
+    try {
+      await _tts.stop();
+    } catch (_) {}
+  }
+
+  void dispose() {
+    _tts.stop();
+  }
+}

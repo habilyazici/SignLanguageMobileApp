@@ -1,3 +1,10 @@
+<!--
+  UYGULAMA DURUMU (2026-04-17)
+  ⬜ PostgreSQL + Prisma henüz kurulmadı — sadece schema tasarımı mevcut
+  ⬜ Flutter local storage (Hive) da henüz eklenmedi
+  ⬜ User, HealthCard, Sign, Translation, Favorite, Category modelleri tanımlı ama boşta
+-->
+
 # 🗄️ HEAR ME OUT — Database Schema Referansı
 
 ## PostgreSQL 16 + Prisma ORM

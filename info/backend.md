@@ -1,3 +1,12 @@
+<!--
+  UYGULAMA DURUMU (2026-04-17)
+  ⬜ Backend henüz implement edilmedi — sadece klasör iskelet + spec mevcut
+  ⬜ Tüm endpoint'ler (auth, profil, signs, favorites) stub/boş
+  ⬜ PostgreSQL/Prisma kurulmadı
+  ⬜ Flutter tarafında Dio instance var ama herhangi bir API çağrısı yapılmıyor
+  Not: Mobil uygulama şu an tamamen offline-first çalışıyor (model + csv local)
+-->
+
 # 💻 HEAR ME OUT — Backend Servisleri
 
 ## 1. Stack Özeti
