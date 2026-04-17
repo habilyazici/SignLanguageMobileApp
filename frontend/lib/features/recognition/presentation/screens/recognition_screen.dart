@@ -216,17 +216,17 @@ class _LandmarkPainter extends CustomPainter {
         Offset(offsetX + n.dx * camW, offsetY + n.dy * camH);
 
     final posePaint = Paint()
-      ..color = Colors.greenAccent
+      ..color = Colors.yellowAccent
       ..strokeWidth = 6
       ..style = PaintingStyle.fill;
 
     final rightPaint = Paint()
-      ..color = Colors.cyanAccent
+      ..color = Colors.redAccent
       ..strokeWidth = 5
       ..style = PaintingStyle.fill;
 
     final leftPaint = Paint()
-      ..color = Colors.orangeAccent
+      ..color = Colors.blueAccent
       ..strokeWidth = 5
       ..style = PaintingStyle.fill;
 
@@ -352,10 +352,10 @@ class _DevStatsPanel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _statRow('BUF', '${d.bufferFill}/60', Colors.white70),
-                _statRow('POSE', '${d.poseCount}', Colors.greenAccent),
-                _statRow('HAND', '${d.handCount}', Colors.cyanAccent),
-                _statRow('R', '${d.rightHand.length}pt', Colors.cyanAccent),
-                _statRow('L', '${d.leftHand.length}pt', Colors.orangeAccent),
+                _statRow('POSE', '${d.poseCount}', Colors.yellowAccent),
+                _statRow('HAND', '${d.handCount}', Colors.white70),
+                _statRow('R', '${d.rightHand.length}pt', Colors.redAccent),
+                _statRow('L', '${d.leftHand.length}pt', Colors.blueAccent),
               ],
             ),
           );

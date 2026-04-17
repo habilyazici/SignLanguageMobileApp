@@ -13,6 +13,8 @@ class AppTheme {
   static const Color midGrey = Color(0xFF8A94A6);
   static const Color darkBg = Color(0xFF0F172A);
   static const Color darkSurface = Color(0xFF1E293B);
+  // Gradient partner rengi (splash, scaffold, profil arka planlarında kullanılır)
+  static const Color gradientDeep = Color(0xFF162544);
 
   // Light Theme Definition
   static ThemeData get lightTheme {

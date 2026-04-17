@@ -14,6 +14,16 @@ class TranslatorScreen extends ConsumerStatefulWidget {
 class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   final _controller = TextEditingController();
 
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Video çevirisi yakında kullanıma girecek'),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -138,19 +148,24 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                   ),
                   const SizedBox(width: 10),
                   // STT mikrofon butonu
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: sttEnabled
-                          ? AppTheme.primaryBlue.withValues(alpha: 0.12)
-                          : Colors.grey.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.mic_rounded,
-                      color: sttEnabled ? AppTheme.primaryBlue : Colors.grey,
-                      size: 24,
+                  GestureDetector(
+                    onTap: sttEnabled
+                        ? () => _showComingSoon(context)
+                        : null,
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: sttEnabled
+                            ? AppTheme.primaryBlue.withValues(alpha: 0.12)
+                            : Colors.grey.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.mic_rounded,
+                        color: sttEnabled ? AppTheme.primaryBlue : Colors.grey,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -166,7 +181,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                 width: double.infinity,
                 height: 52,
                 child: FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () => _showComingSoon(context),
                   icon: const Icon(Icons.translate_rounded),
                   label: const Text('Çevir'),
                   style: FilledButton.styleFrom(

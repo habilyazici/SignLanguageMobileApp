@@ -9,6 +9,7 @@ import '../features/dictionary/presentation/screens/dictionary_screen.dart';
 import '../features/translator/presentation/screens/translator_screen.dart';
 import '../features/emergency/presentation/screens/emergency_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
+import '../features/settings/presentation/screens/settings_screen.dart';
 import 'scaffold_with_nav.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -63,6 +64,11 @@ final router = GoRouter(
       path: '/emergency',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const EmergencyScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
 );

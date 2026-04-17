@@ -10,37 +10,30 @@ class ScaffoldWithNav extends ConsumerWidget {
 
   const ScaffoldWithNav({super.key, required this.child});
 
+  // Görsel soldan-sağa sırayla eşleşen index → rota tablosu:
+  // 0=Sözlük  1=Kamera  2=Home(orta)  3=Avatar  4=Profil
+  static const _tabRoutes = [
+    '/dictionary',
+    '/live-translation',
+    '/home',
+    '/text-to-sign',
+    '/profile',
+  ];
+
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/live-translation')) { return 0; } // İşaretten Metne (Sol 1)
-    if (location.startsWith('/dictionary')) { return 1; } // Sözlük (Sol 2)
-    if (location.startsWith('/home')) { return 2; } // Ana Sayfa (Orta)
-    if (location.startsWith('/text-to-sign')) { return 3; } // Metinden İşarete (Sağ 1)
-    if (location.startsWith('/profile')) { return 4; } // Profilim (Sağ 2)
+    if (location.startsWith('/dictionary'))       { return 0; }
+    if (location.startsWith('/live-translation')) { return 1; }
+    if (location.startsWith('/home'))             { return 2; }
+    if (location.startsWith('/text-to-sign'))     { return 3; }
+    if (location.startsWith('/profile'))          { return 4; }
     return 2;
   }
 
   void _onTap(BuildContext context, WidgetRef ref, int index) {
-    // index 0 = kamera ekranı; diğerleri kamerayı durdurur
-    ref.read(cameraActiveProvider.notifier).setActive(active: index == 0);
-
-    switch (index) {
-      case 0:
-        context.go('/live-translation');
-        break;
-      case 1:
-        context.go('/dictionary');
-        break;
-      case 2:
-        context.go('/home');
-        break;
-      case 3:
-        context.go('/text-to-sign');
-        break;
-      case 4:
-        context.go('/profile');
-        break;
-    }
+    // index 1 = kamera ekranı; diğerleri kamerayı durdurur
+    ref.read(cameraActiveProvider.notifier).setActive(active: index == 1);
+    context.go(_tabRoutes[index]);
   }
 
   @override
@@ -56,7 +49,7 @@ class ScaffoldWithNav extends ConsumerWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isDark
-                    ? [AppTheme.darkBg, const Color(0xFF162544)]
+                    ? [AppTheme.darkBg, AppTheme.gradientDeep]
                     : [AppTheme.softGrey, const Color(0xFFD6E2F0)],
               ),
             ),
@@ -134,14 +127,14 @@ class ScaffoldWithNav extends ConsumerWidget {
                 _NavBarItem(
                   icon: Icons.menu_book_rounded,
                   label: 'Sözlük',
-                  isSelected: currentIndex == 1,
-                  onTap: () => _onTap(context, ref, 1),
+                  isSelected: currentIndex == 0,
+                  onTap: () => _onTap(context, ref, 0),
                 ),
                 _NavBarItem(
                   icon: Icons.back_hand_rounded,
                   label: 'Kamera',
-                  isSelected: currentIndex == 0,
-                  onTap: () => _onTap(context, ref, 0),
+                  isSelected: currentIndex == 1,
+                  onTap: () => _onTap(context, ref, 1),
                 ),
                 _NavBarItem(
                   icon: Icons.home_rounded,

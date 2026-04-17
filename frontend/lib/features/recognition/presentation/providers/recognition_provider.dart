@@ -353,7 +353,9 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
           : detectedRight;
       final offset  = isRight ? 0 : 42;
       final target  = isRight ? right : left;
-      final landmarks = hand.landmarks as List;
+      final landmarksRaw = hand.landmarks;
+      if (landmarksRaw == null) continue;
+      final landmarks = landmarksRaw as List;
       for (int i = 0; i < landmarks.length && i < 21; i++) {
         final lm = landmarks[i];
         final nx = _maybeFlipX((lm.x as num).toDouble() / image.width);
@@ -405,11 +407,12 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       final topWord = maxIdx >= 0 ? LabelMapper.getTrWord(maxIdx) : '?';
       debugPrint('🧠 Inference → idx:$maxIdx  skor:${(maxScore * 100).toStringAsFixed(1)}%  kelime:$topWord');
 
-      // ── < %80 = garbage → gösterme (0.70'ten yükseltildi: daha az yanlış pozitif) ──
-      final smoothingOn =
-          ref.read(settingsProvider).temporalSmoothingEnabled;
+      // ── Threshold settings'ten okunur (Düşük=%70 / Orta=%80 / Yüksek=%90) ──
+      final currentSettings   = ref.read(settingsProvider);
+      final smoothingOn       = currentSettings.temporalSmoothingEnabled;
+      final scoreThreshold    = currentSettings.confidenceThreshold;
 
-      if (maxIdx >= 0 && maxScore >= 0.80) {
+      if (maxIdx >= 0 && maxScore >= scoreThreshold) {
         if (maxIdx == _lastIdx) {
           _streak++;
         } else {
@@ -580,14 +583,14 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
   // ── Temizlik ───────────────────────────────────────────────────────────────
 
   void _cleanup() {
-    _clearTimer?.cancel();
-    _noDetectionTimer?.cancel();
-    _poseDetector?.close();
-    _handDetector?.dispose();
-    _interpreter?.close();
-    _camera?.stopImageStream();
-    _camera?.dispose();
-    devNotifier.dispose();
+    try { _clearTimer?.cancel(); } catch (_) {}
+    try { _noDetectionTimer?.cancel(); } catch (_) {}
+    try { _poseDetector?.close(); } catch (_) {}
+    try { _handDetector?.dispose(); } catch (_) {}
+    try { _interpreter?.close(); } catch (_) {}
+    try { _camera?.stopImageStream(); } catch (_) {}
+    try { _camera?.dispose(); } catch (_) {}
+    try { devNotifier.dispose(); } catch (_) {}
   }
 
   // ── Kamera kontrolü ───────────────────────────────────────────────────────
