@@ -15,17 +15,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity != null) {
-              if (details.primaryVelocity! < -300) {
-                context.go('/live-translation');
-              } else if (details.primaryVelocity! > 300) {
-                context.go('/text-to-sign');
-              }
-            }
-          },
-          child: SingleChildScrollView(
+        child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +95,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }
@@ -145,7 +134,7 @@ class _HeroHeader extends StatelessWidget {
               width: 80,
               height: 80,
               fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => Icon(
+              errorBuilder: (ctx, err, st) => Icon(
                 Icons.hearing,
                 size: 44,
                 color: isDark ? AppTheme.secondaryBlue : AppTheme.primaryBlue,

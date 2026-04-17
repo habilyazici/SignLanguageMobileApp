@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(find /c/Users/habil/OneDrive/Belgeler/GitHub/SignLanguageMobileApp/frontend/lib/features -name \"*.dart\" -type f -exec wc -l {} +)",
-      "Bash(find /c/Users/habil/OneDrive/Belgeler/GitHub/SignLanguageMobileApp/frontend/lib/features -name '*.dart' -type f -exec sh -c 'lines=$\\(wc -l < \"$1\"\\); [ \"$lines\" -eq 0 ] && echo \"$1\"' _ '{}' ';')"
+      "Bash(find /c/Users/habil/OneDrive/Belgeler/GitHub/SignLanguageMobileApp/frontend/lib/features -name '*.dart' -type f -exec sh -c 'lines=$\\(wc -l < \"$1\"\\); [ \"$lines\" -eq 0 ] && echo \"$1\"' _ '{}' ';')",
+      "Read(//c/Users/habil/AppData/Local/Pub/Cache/hosted/pub.dev/**)",
+      "Read(//c/Users/habil/.claude/projects/c--Users-habil-OneDrive-Belgeler-GitHub-SignLanguageMobileApp/memory/**)",
+      "Bash(dart analyze *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(wc -l lib/features/*/presentation/screens/*.dart)"
     ]
   }
 }

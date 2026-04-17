@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     child: Image.asset(
                       'assets/images/logo.png',
                       fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Icon(
+                      errorBuilder: (ctx, err, st) => const Icon(
                         Icons.hearing,
                         size: 56,
                         color: Colors.white,

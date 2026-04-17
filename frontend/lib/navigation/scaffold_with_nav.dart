@@ -12,13 +12,11 @@ class ScaffoldWithNav extends ConsumerWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/live-translation'))
-      return 0; // İşaretten Metne (Sol 1)
-    if (location.startsWith('/dictionary')) return 1; // Sözlük (Sol 2)
-    if (location.startsWith('/home')) return 2; // Ana Sayfa (Orta)
-    if (location.startsWith('/text-to-sign'))
-      return 3; // Metinden İşarete (Sağ 1)
-    if (location.startsWith('/profile')) return 4; // Profilim (Sağ 2)
+    if (location.startsWith('/live-translation')) { return 0; } // İşaretten Metne (Sol 1)
+    if (location.startsWith('/dictionary')) { return 1; } // Sözlük (Sol 2)
+    if (location.startsWith('/home')) { return 2; } // Ana Sayfa (Orta)
+    if (location.startsWith('/text-to-sign')) { return 3; } // Metinden İşarete (Sağ 1)
+    if (location.startsWith('/profile')) { return 4; } // Profilim (Sağ 2)
     return 2;
   }
 
@@ -87,7 +85,14 @@ class ScaffoldWithNav extends ConsumerWidget {
               ),
             ),
           ),
-          SafeArea(bottom: false, child: child),
+          SafeArea(
+            bottom: false,
+            child: _SwipeNavWrapper(
+              currentIndex: _calculateSelectedIndex(context),
+              onNavigate: (index) => _onTap(context, ref, index),
+              child: child,
+            ),
+          ),
         ],
       ),
       extendBody: true,
@@ -162,6 +167,44 @@ class ScaffoldWithNav extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Global swipe navigation wrapper (Instagram-style)
+// Swipe right (velocity > 0) → previous tab, swipe left (velocity < 0) → next tab
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _SwipeNavWrapper extends StatelessWidget {
+  const _SwipeNavWrapper({
+    required this.currentIndex,
+    required this.onNavigate,
+    required this.child,
+  });
+
+  final int currentIndex;
+  final void Function(int index) onNavigate;
+  final Widget child;
+
+  static const _threshold = 300.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: (details) {
+        final v = details.primaryVelocity;
+        if (v == null) return;
+        if (v > _threshold && currentIndex > 0) {
+          // Finger moved right → go to left tab
+          onNavigate(currentIndex - 1);
+        } else if (v < -_threshold && currentIndex < 4) {
+          // Finger moved left → go to right tab
+          onNavigate(currentIndex + 1);
+        }
+      },
+      child: child,
     );
   }
 }

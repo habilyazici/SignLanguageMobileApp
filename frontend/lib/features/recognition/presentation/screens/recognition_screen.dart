@@ -339,7 +339,7 @@ class _DevStatsPanel extends StatelessWidget {
     return Center(
       child: ListenableBuilder(
         listenable: devNotifier,
-        builder: (_, _) {
+        builder: (ctx, child) {
           final d = devNotifier.value;
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),

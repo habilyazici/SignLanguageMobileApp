@@ -123,6 +123,11 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
   String _lastShownWord = '';
   Timer? _clearTimer;
 
+  // ── Buffer temizleme grace period ─────────────────────────────────────────
+  // El bir kare kaybolunca buffer hemen silinmez; 1 sn boyunca hiç tespit
+  // yoksa silinir. Bu sayede kısa okluzyonlarda tanıma sıfırlanmaz.
+  Timer? _noDetectionTimer;
+
   // ── Developer modu — per-frame Riverpod rebuild tetiklememek için ─────────
   final devNotifier = ValueNotifier<LandmarkDevData>(const LandmarkDevData());
 
@@ -285,12 +290,25 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       }
 
       if (anyDetected) {
+        // Tespit geldi → grace period timer'ı iptal et, buffer'a ekle
+        _noDetectionTimer?.cancel();
+        _noDetectionTimer = null;
         _buffer.add(frame);
         if (_buffer.length > _windowSize) _buffer.removeAt(0);
-        if (_buffer.length == _windowSize) _runInference();
+        // Buffer dolunca VEYA yarısından fazlası dolunca inference çalıştır.
+        // Yarı-dolu buffer son kareyle padding'lenerek 60'a tamamlanır;
+        // bu sayede ilk kelime ~1 sn daha erken görünür.
+        if (_buffer.length == _windowSize ||
+            (_buffer.length >= _windowSize ~/ 2 && _buffer.length % 5 == 0)) {
+          _runInference();
+        }
       } else {
-        if (_buffer.isNotEmpty) _buffer.clear();
-        state = state.copyWith(predictedWord: '', confidenceScore: 0.0);
+        // Tespit yok → hemen silme, 1 saniyelik grace period başlat
+        _noDetectionTimer ??= Timer(const Duration(seconds: 1), () {
+          _buffer.clear();
+          _noDetectionTimer = null;
+          state = state.copyWith(predictedWord: '', confidenceScore: 0.0);
+        });
       }
     } catch (e, st) {
       debugPrint('❌ Frame hatası: $e\n$st');
@@ -301,13 +319,19 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
 
   // ── Landmark doldurma ──────────────────────────────────────────────────────
 
+  // Ön kamera (selfie) kullanırken ham CameraImage X ekseni mirror'lıdır.
+  // Model AUTSL verisiyle (kamera karşısındaki kişi, mirror'sız) eğitildiği için
+  // ön kamerada X koordinatları 1.0 - nx şeklinde çevrilmelidir.
+  double _maybeFlipX(double nx) =>
+      _currentLens == CameraLensDirection.front ? 1.0 - nx : nx;
+
   List<Offset> _fillPose(
       mlkit.Pose pose, CameraImage image, List<double> frame) {
     final raw = <Offset>[];
     for (int i = 0; i < _poseIndices.length; i++) {
       final lm = pose.landmarks[mlkit.PoseLandmarkType.values[_poseIndices[i]]];
       if (lm == null) continue;
-      final nx = lm.x / image.width;
+      final nx = _maybeFlipX(lm.x / image.width);
       final ny = lm.y / image.height;
       frame[84 + i * 2]     = nx;
       frame[84 + i * 2 + 1] = ny;
@@ -321,13 +345,18 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
     final right = <Offset>[];
     final left  = <Offset>[];
     for (final hand in hands) {
-      final isRight  = hand.handedness == Handedness.right;
-      final offset   = isRight ? 0 : 42;
-      final target   = isRight ? right : left;
+      final detectedRight = hand.handedness == Handedness.right;
+      // Ön kamerada ham görüntü mirror'lı → hand detector sağ/solu ters görür.
+      // Fiziksel sağ eli doğru buffer'a koymak için handedness da terslenmelidir.
+      final isRight = _currentLens == CameraLensDirection.front
+          ? !detectedRight
+          : detectedRight;
+      final offset  = isRight ? 0 : 42;
+      final target  = isRight ? right : left;
       final landmarks = hand.landmarks as List;
       for (int i = 0; i < landmarks.length && i < 21; i++) {
         final lm = landmarks[i];
-        final nx = (lm.x as num).toDouble() / image.width;
+        final nx = _maybeFlipX((lm.x as num).toDouble() / image.width);
         final ny = (lm.y as num).toDouble() / image.height;
         frame[offset + i * 2]     = nx;
         frame[offset + i * 2 + 1] = ny;
@@ -340,10 +369,19 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
   // ── TFLite çıkarımı ────────────────────────────────────────────────────────
 
   void _runInference() {
-    if (_interpreter == null) return;
+    if (_interpreter == null || _buffer.isEmpty) return;
 
     try {
-      final normalized = LandmarkNormalizer.normalizeWindow(_buffer);
+      // Buffer 60 kareden azsa son kareyle padding yap (eğitim padding mantığıyla aynı)
+      List<List<double>> window = _buffer;
+      if (_buffer.length < _windowSize) {
+        final last = _buffer.last;
+        window = [
+          ..._buffer,
+          ...List.generate(_windowSize - _buffer.length, (_) => last),
+        ];
+      }
+      final normalized = LandmarkNormalizer.normalizeWindow(window);
 
       final input = [
         List.generate(_windowSize, (j) => List<double>.from(normalized[j])),
@@ -367,14 +405,16 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       final topWord = maxIdx >= 0 ? LabelMapper.getTrWord(maxIdx) : '?';
       debugPrint('🧠 Inference → idx:$maxIdx  skor:${(maxScore * 100).toStringAsFixed(1)}%  kelime:$topWord');
 
-      // ── Spec: < %70 = garbage → gösterme ─────────────────────────────────
+      // ── < %80 = garbage → gösterme (0.70'ten yükseltildi: daha az yanlış pozitif) ──
       final smoothingOn =
           ref.read(settingsProvider).temporalSmoothingEnabled;
 
-      if (maxIdx >= 0 && maxScore >= 0.70) {
+      if (maxIdx >= 0 && maxScore >= 0.80) {
         if (maxIdx == _lastIdx) {
           _streak++;
         } else {
+          // Yeni sınıf → streak'i sıfırla AMA sadece belirgin fark varsa
+          // (önceki sınıftan çok düşük skorla ayrılıyorsa geçiş sayılmaz)
           _lastIdx = maxIdx;
           _streak  = 1;
         }
@@ -541,6 +581,7 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
 
   void _cleanup() {
     _clearTimer?.cancel();
+    _noDetectionTimer?.cancel();
     _poseDetector?.close();
     _handDetector?.dispose();
     _interpreter?.close();
