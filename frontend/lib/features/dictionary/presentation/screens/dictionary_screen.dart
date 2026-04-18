@@ -5,16 +5,40 @@ import '../../../../core/theme/app_theme.dart';
 
 // Türkçe alfabe — harf chip'leri için
 const _kTurkishAlphabet = [
-  'A', 'B', 'C', 'Ç', 'D', 'E', 'F', 'G', 'Ğ', 'H',
-  'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P',
-  'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'Y', 'Z',
+  'A',
+  'B',
+  'C',
+  'Ç',
+  'D',
+  'E',
+  'F',
+  'G',
+  'Ğ',
+  'H',
+  'I',
+  'İ',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'Ö',
+  'P',
+  'R',
+  'S',
+  'Ş',
+  'T',
+  'U',
+  'Ü',
+  'V',
+  'Y',
+  'Z',
 ];
 
 // Türkçe büyük/küçük harf dönüşümü (I/İ ayrımı)
-String _trLower(String s) => s
-    .replaceAll('İ', 'i')
-    .replaceAll('I', 'ı')
-    .toLowerCase();
+String _trLower(String s) =>
+    s.replaceAll('İ', 'i').replaceAll('I', 'ı').toLowerCase();
 
 class DictionaryScreen extends StatefulWidget {
   const DictionaryScreen({super.key});
@@ -50,13 +74,20 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   Future<void> _loadLabels() async {
     try {
-      final String csvData = await rootBundle.loadString('assets/models/labels.csv');
-      final lines = csvData.split('\n');
+      final String csvData = await rootBundle.loadString(
+        'assets/models/labels.csv',
+      );
+      // Hem \r\n hem \n destekli bölme
+      final lines = csvData.split(RegExp(r'\r?\n'));
       final loaded = <Map<String, String>>[];
 
+      debugPrint('📖 Sözlük: ${lines.length} satır okundu (başlık dahil)');
+
       for (int i = 1; i < lines.length; i++) {
-        if (lines[i].trim().isEmpty) continue;
-        final parts = lines[i].split(',');
+        final line = lines[i].trim();
+        if (line.isEmpty) continue;
+
+        final parts = line.split(',');
         if (parts.length >= 3) {
           loaded.add({
             'id': parts[0].trim(),
@@ -66,9 +97,10 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         }
       }
 
+      debugPrint('✅ Sözlük: ${loaded.length} kelime başarıyla yüklendi');
+
       // Türkçe alfabetik sırala
-      loaded.sort((a, b) =>
-          _trLower(a['tr']!).compareTo(_trLower(b['tr']!)));
+      loaded.sort((a, b) => _trLower(a['tr']!).compareTo(_trLower(b['tr']!)));
 
       setState(() {
         _allSigns = loaded;
@@ -76,8 +108,13 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('❌ CSV Yükleme Hatası: $e');
-      setState(() => _isLoading = false);
+      debugPrint('❌ Sözlük Yükleme Hatası: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Sözlük yüklenemedi: $e')));
+      }
     }
   }
 
@@ -145,8 +182,8 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _filteredSigns.isEmpty
-                      ? _EmptyState(isDark: isDark)
-                      : _SignList(signs: _filteredSigns, isDark: isDark),
+                  ? _EmptyState(isDark: isDark)
+                  : _SignList(signs: _filteredSigns, isDark: isDark),
             ),
           ],
         ),
@@ -202,7 +239,9 @@ class _Header extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isFiltered ? AppTheme.secondaryBlue : AppTheme.primaryBlue,
+                  color: isFiltered
+                      ? AppTheme.secondaryBlue
+                      : AppTheme.primaryBlue,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -234,17 +273,17 @@ class _SearchBar extends StatelessWidget {
         style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: 'Kelime ara (TR / EN)...',
-          hintStyle: TextStyle(
-            color: isDark ? Colors.white38 : Colors.black38,
-          ),
+          hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           prefixIcon: Icon(Icons.search_rounded, color: AppTheme.primaryBlue),
           suffixIcon: ListenableBuilder(
             listenable: controller,
             builder: (_, _) => controller.text.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.clear_rounded,
-                        color: isDark ? Colors.white38 : Colors.black38,
-                        size: 18),
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                      size: 18,
+                    ),
                     onPressed: controller.clear,
                   )
                 : const SizedBox.shrink(),
@@ -336,17 +375,14 @@ class _LetterChip extends StatelessWidget {
     final bg = isSelected
         ? activeColor
         : (isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.black.withValues(alpha: 0.05));
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05));
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        padding: EdgeInsets.symmetric(
-          horizontal: isAll ? 14 : 10,
-          vertical: 4,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: isAll ? 14 : 10, vertical: 4),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(10),

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutter pub *)"
+      "Bash(flutter pub *)",
+      "Read(//c/Users/habil/AppData/Local/Pub/Cache/**)"
     ]
   }
 }

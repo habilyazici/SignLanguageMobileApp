@@ -15,9 +15,9 @@ class RecognitionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state    = ref.watch(recognitionProvider);
+    final state = ref.watch(recognitionProvider);
     final notifier = ref.read(recognitionProvider.notifier);
-    final devMode  = ref.watch(settingsProvider).devMode;
+    final devMode = ref.watch(settingsProvider).devMode;
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
@@ -25,35 +25,37 @@ class RecognitionScreen extends ConsumerWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── 1. Tam ekran kamera ──────────────────────────────────────────
           _CameraLayer(
             state: state,
-            onDoubleTap: () => ref.read(recognitionProvider.notifier).switchCamera(),
+            onDoubleTap: () =>
+                ref.read(recognitionProvider.notifier).switchCamera(),
           ),
-
-          // ── 2. Dev mode: landmark overlay (ValueNotifier — per-frame güncellenir)
           if (devMode && state.isReady && state.cameraController != null)
             _LandmarkOverlay(
               notifier: notifier.devNotifier,
               cameraController: state.cameraController!,
             ),
-
-          // ── 3. Üst gradient + durum göstergesi ──────────────────────────
           Positioned(
-            top: 0, left: 0, right: 0,
-            child: _TopOverlay(devMode: devMode, onDevToggle: settingsNotifier.toggleDevMode),
+            top: 0,
+            left: 0,
+            right: 0,
+            child: _TopOverlay(
+              devMode: devMode,
+              onDevToggle: settingsNotifier.toggleDevMode,
+            ),
           ),
-
-          // ── 4. Alt gradient + altyazı paneli ────────────────────────────
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: _SubtitlePanel(
               state: state,
-              onTtsReplay: state.sentence.isNotEmpty &&
+              onTtsReplay:
+                  state.sentence.isNotEmpty &&
                       ref.watch(settingsProvider).ttsEnabled
                   ? () => ref
-                      .read(ttsProvider.notifier)
-                      .speak(state.sentence.join(' '))
+                        .read(ttsProvider.notifier)
+                        .speak(state.sentence.join(' '))
                   : null,
               onCopy: state.sentence.isNotEmpty
                   ? () {
@@ -74,16 +76,13 @@ class RecognitionScreen extends ConsumerWidget {
                   : null,
             ),
           ),
-
-          // ── 5. Dev mode: istatistik paneli ──────────────────────────────
           if (devMode)
             Positioned(
-              top: 0, bottom: 0,
+              top: 0,
+              bottom: 0,
               right: 12,
               child: _DevStatsPanel(devNotifier: notifier.devNotifier),
             ),
-
-          // ── 6. Hata ekranı ───────────────────────────────────────────────
           if (state.isError)
             Container(
               color: Colors.black87,
@@ -108,13 +107,8 @@ class RecognitionScreen extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tam ekran kamera katmanı
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _CameraLayer extends StatelessWidget {
   const _CameraLayer({required this.state, required this.onDoubleTap});
-
   final RecognitionState state;
   final VoidCallback onDoubleTap;
 
@@ -127,37 +121,28 @@ class _CameraLayer extends StatelessWidget {
         child: Container(color: const Color(0xFF1A1A1A)),
       );
     }
-
     final controller = state.cameraController!;
-    // BoxFit.contain — tam vücudu gösterir, kenar bantları siyah kalır
-    final preview = SizedBox.expand(
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: SizedBox(
-          width: controller.value.previewSize!.height,
-          height: controller.value.previewSize!.width,
-          child: CameraPreview(controller),
+    return GestureDetector(
+      onDoubleTap: onDoubleTap,
+      child: SizedBox.expand(
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: controller.value.previewSize!.height,
+            height: controller.value.previewSize!.width,
+            child: CameraPreview(controller),
+          ),
         ),
       ),
     );
-
-    return GestureDetector(
-      onDoubleTap: onDoubleTap,
-      child: preview,
-    );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Landmark overlay — ValueNotifier ile rebuild tetiklenir (Riverpod bypass)
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _LandmarkOverlay extends StatelessWidget {
   const _LandmarkOverlay({
     required this.notifier,
     required this.cameraController,
   });
-
   final ValueNotifier<LandmarkDevData> notifier;
   final CameraController cameraController;
 
@@ -169,11 +154,9 @@ class _LandmarkOverlay extends StatelessWidget {
         final data = notifier.value;
         final previewSize = cameraController.value.previewSize;
         if (previewSize == null) return const SizedBox.shrink();
-
         return CustomPaint(
           painter: _LandmarkPainter(
             data: data,
-            // CameraPreview döndürüldüğünde width/height yer değiştirir
             cameraAspect: previewSize.height / previewSize.width,
             screenSize: MediaQuery.of(context).size,
           ),
@@ -189,72 +172,53 @@ class _LandmarkPainter extends CustomPainter {
     required this.cameraAspect,
     required this.screenSize,
   });
-
   final LandmarkDevData data;
-  final double cameraAspect;   // kamera en/boy oranı (previewSize.h / previewSize.w)
+  final double cameraAspect;
   final Size screenSize;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // BoxFit.contain ile kameranın ekrandaki gerçek boyutunu hesapla
     final double screenAspect = size.width / size.height;
     double camW, camH, offsetX, offsetY;
 
     if (cameraAspect > screenAspect) {
-      // Kamera daha uzun → yatay bantlar
       camW = size.width;
       camH = size.width / cameraAspect;
       offsetX = 0;
       offsetY = (size.height - camH) / 2;
     } else {
-      // Kamera daha geniş → dikey bantlar
       camH = size.height;
       camW = size.height * cameraAspect;
       offsetX = (size.width - camW) / 2;
       offsetY = 0;
     }
 
-    // Normalize [0,1] → ekran koordinatı
     Offset toScreen(Offset n) =>
         Offset(offsetX + n.dx * camW, offsetY + n.dy * camH);
 
     final posePaint = Paint()
       ..color = Colors.yellowAccent
-      ..strokeWidth = 6
       ..style = PaintingStyle.fill;
-
     final rightPaint = Paint()
       ..color = Colors.redAccent
-      ..strokeWidth = 5
       ..style = PaintingStyle.fill;
-
     final leftPaint = Paint()
       ..color = Colors.blueAccent
-      ..strokeWidth = 5
       ..style = PaintingStyle.fill;
 
-    for (final p in data.posePoints) {
+    for (final p in data.posePoints)
       canvas.drawCircle(toScreen(p), 4, posePaint);
-    }
-    for (final p in data.rightHand) {
+    for (final p in data.rightHand)
       canvas.drawCircle(toScreen(p), 4, rightPaint);
-    }
-    for (final p in data.leftHand) {
-      canvas.drawCircle(toScreen(p), 4, leftPaint);
-    }
+    for (final p in data.leftHand) canvas.drawCircle(toScreen(p), 4, leftPaint);
   }
 
   @override
-  bool shouldRepaint(_LandmarkPainter old) => true;
+  bool shouldRepaint(_LandmarkPainter oldDelegate) => true;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Üst overlay — ince gradient + başlık + dev toggle
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _TopOverlay extends StatelessWidget {
   const _TopOverlay({required this.devMode, required this.onDevToggle});
-
   final bool devMode;
   final VoidCallback onDevToggle;
 
@@ -272,7 +236,6 @@ class _TopOverlay extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Canlı göstergesi
           Container(
             width: 8,
             height: 8,
@@ -292,19 +255,19 @@ class _TopOverlay extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          // Çift tık ipucu
           const Text(
             'Kamera değiştir: 2×',
             style: TextStyle(color: Colors.white38, fontSize: 12),
           ),
           const SizedBox(width: 8),
-          // Dev mode toggle
           GestureDetector(
             onTap: onDevToggle,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: devMode ? Colors.cyanAccent.withValues(alpha: 0.2) : Colors.transparent,
+                color: devMode
+                    ? Colors.cyanAccent.withValues(alpha: 0.2)
+                    : Colors.transparent,
                 border: Border.all(
                   color: devMode ? Colors.cyanAccent : Colors.white24,
                   width: 1,
@@ -328,13 +291,8 @@ class _TopOverlay extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dev mode: sağ kenardaki istatistik paneli
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _DevStatsPanel extends StatelessWidget {
   const _DevStatsPanel({required this.devNotifier});
-
   final ValueNotifier<LandmarkDevData> devNotifier;
 
   @override
@@ -396,10 +354,6 @@ class _DevStatsPanel extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Alt altyazı paneli
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _SubtitlePanel extends StatelessWidget {
   const _SubtitlePanel({
     required this.state,
@@ -407,7 +361,6 @@ class _SubtitlePanel extends StatelessWidget {
     this.onCopy,
     this.onShare,
   });
-
   final RecognitionState state;
   final VoidCallback? onTtsReplay;
   final VoidCallback? onCopy;
@@ -417,7 +370,6 @@ class _SubtitlePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
     final hasWords = state.sentence.isNotEmpty;
-
     return Container(
       padding: EdgeInsets.fromLTRB(20, 60, 20, bottom + 24),
       decoration: const BoxDecoration(
@@ -432,21 +384,12 @@ class _SubtitlePanel extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Biriken cümle ─────────────────────────────────────────────
           if (hasWords) ...[
             _SentenceRow(sentence: state.sentence),
             const SizedBox(height: 14),
           ],
-
-          // ── Güven çubuğu ──────────────────────────────────────────────
-          _ConfidenceBar(
-            score: state.confidenceScore,
-            active: hasWords,
-          ),
-
+          _ConfidenceBar(score: state.confidenceScore, active: hasWords),
           const SizedBox(height: 10),
-
-          // ── Aksiyon butonları (kelime varken görünür) ─────────────────
           if (hasWords)
             _ActionBar(
               onTtsReplay: onTtsReplay,
@@ -464,17 +407,8 @@ class _SubtitlePanel extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Aksiyon buton çubuğu — TTS / Kopyala / Paylaş
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _ActionBar extends StatelessWidget {
-  const _ActionBar({
-    this.onTtsReplay,
-    this.onCopy,
-    this.onShare,
-  });
-
+  const _ActionBar({this.onTtsReplay, this.onCopy, this.onShare});
   final VoidCallback? onTtsReplay;
   final VoidCallback? onCopy;
   final VoidCallback? onShare;
@@ -516,7 +450,6 @@ class _ActionBtn extends StatelessWidget {
     required this.color,
     required this.onTap,
   });
-
   final IconData icon;
   final String label;
   final Color color;
@@ -564,13 +497,8 @@ class _ActionBtn extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Biriken cümle — kelimeler soldan sağa, son kelime vurgulu
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _SentenceRow extends StatelessWidget {
   const _SentenceRow({required this.sentence});
-
   final List<String> sentence;
 
   @override
@@ -582,15 +510,15 @@ class _SentenceRow extends StatelessWidget {
       children: sentence.asMap().entries.map((entry) {
         final isLast = entry.key == sentence.length - 1;
         return AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 200),
-          style: TextStyle(
-            color: isLast ? Colors.white : Colors.white60,
-            fontSize: isLast ? 30 : 22,
-            fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
-            height: 1.2,
-          ),
-          child: Text(entry.value),
-        )
+              duration: const Duration(milliseconds: 200),
+              style: TextStyle(
+                color: isLast ? Colors.white : Colors.white60,
+                fontSize: isLast ? 30 : 22,
+                fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
+                height: 1.2,
+              ),
+              child: Text(entry.value),
+            )
             .animate(key: ValueKey(entry.key))
             .fadeIn(duration: 250.ms)
             .scale(
@@ -604,23 +532,18 @@ class _SentenceRow extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Güven çubuğu
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _ConfidenceBar extends StatelessWidget {
   const _ConfidenceBar({required this.score, required this.active});
-
   final double score;
   final bool active;
 
   @override
   Widget build(BuildContext context) {
-    // Spec: ≥90% yeşil · 80-89% sarı · 70-79% kırmızı
     final color = score >= 0.90
         ? AppTheme.primaryStatusGreen
-        : (score >= 0.80 ? AppTheme.primaryStatusYellow : AppTheme.primaryStatusRed);
-
+        : (score >= 0.80
+              ? AppTheme.primaryStatusYellow
+              : AppTheme.primaryStatusRed);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
