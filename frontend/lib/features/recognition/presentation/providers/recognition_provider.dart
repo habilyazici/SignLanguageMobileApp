@@ -89,9 +89,10 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       devNotifier.value = data;
     });
 
-    // Sol el modu değişince repository'ye bildir
+    // Ayarlar değişince repository'ye bildir
     ref.listen<AppSettings>(settingsProvider, (_, next) {
       _repo.updateLeftHandMode(next.leftHandMode);
+      _repo.updateDebugMode(next.devMode);
     });
 
     // Kamera aktif sinyali (navigasyon katmanından)
@@ -112,9 +113,16 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       devNotifier.dispose();
     });
 
-    _repo.initialize().catchError((e) {
-      state = state.copyWith(isError: true);
-    });
+    _repo
+        .initialize()
+        .then((_) {
+          final s = ref.read(settingsProvider);
+          _repo.updateLeftHandMode(s.leftHandMode);
+          _repo.updateDebugMode(s.devMode);
+        })
+        .catchError((e) {
+          state = state.copyWith(isError: true);
+        });
 
     return const RecognitionState();
   }

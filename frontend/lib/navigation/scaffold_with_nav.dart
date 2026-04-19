@@ -99,7 +99,28 @@ class ScaffoldWithNav extends ConsumerWidget {
         ],
       ),
       extendBody: true,
-      bottomNavigationBar: _buildGlassBottomNav(context, ref, isDark),
+      bottomNavigationBar: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          // Menünün daha iyi oturması için alt kısma hafif bir gölge gradyanı
+          IgnorePointer(
+            child: Container(
+              height: 140,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          _buildGlassBottomNav(context, ref, isDark),
+        ],
+      ),
     );
   }
 
@@ -113,20 +134,20 @@ class ScaffoldWithNav extends ConsumerWidget {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
+        left: 12,
+        right: 12,
         bottom: bottomPadding > 0 ? bottomPadding : 24,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(35),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
           child: Container(
             height: 84,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(
               color: (isDark ? AppTheme.darkSurface : Colors.white).withValues(
-                alpha: isDark ? 0.65 : 0.85,
+                alpha: isDark ? 0.35 : 0.45,
               ),
               borderRadius: BorderRadius.circular(35),
               border: Border.all(

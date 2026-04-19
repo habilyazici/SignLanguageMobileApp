@@ -82,6 +82,7 @@ class CameraDataSource {
     try {
       await _camera?.dispose();
     } catch (_) {}
-    _controllerCtrl.close();
+    _camera = null;
+    _controllerCtrl.add(null);
   }
 }

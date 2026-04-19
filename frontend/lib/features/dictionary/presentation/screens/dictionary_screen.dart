@@ -7,9 +7,35 @@ import '../providers/dictionary_provider.dart';
 
 // Türkçe alfabe — harf chip'leri için
 const _kTurkishAlphabet = [
-  'A', 'B', 'C', 'Ç', 'D', 'E', 'F', 'G', 'Ğ', 'H',
-  'I', 'İ', 'J', 'K', 'L', 'M', 'N', 'O', 'Ö', 'P',
-  'R', 'S', 'Ş', 'T', 'U', 'Ü', 'V', 'Y', 'Z',
+  'A',
+  'B',
+  'C',
+  'Ç',
+  'D',
+  'E',
+  'F',
+  'G',
+  'Ğ',
+  'H',
+  'I',
+  'İ',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'Ö',
+  'P',
+  'R',
+  'S',
+  'Ş',
+  'T',
+  'U',
+  'Ü',
+  'V',
+  'Y',
+  'Z',
 ];
 
 class DictionaryScreen extends ConsumerStatefulWidget {
@@ -27,9 +53,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      ref
-          .read(dictionaryProvider.notifier)
-          .setQuery(_searchController.text);
+      ref.read(dictionaryProvider.notifier).setQuery(_searchController.text);
     });
   }
 
@@ -66,11 +90,15 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
               isFiltered: _isFiltered,
             ).animate().fadeIn(duration: 350.ms).slideY(begin: -0.1),
 
+            const SizedBox(height: 12),
+
             // ── Arama çubuğu ─────────────────────────────────────────────
             _SearchBar(
               controller: _searchController,
               isDark: isDark,
             ).animate().fadeIn(delay: 80.ms, duration: 300.ms),
+
+            const SizedBox(height: 12),
 
             // ── Harf filtre şeridi ────────────────────────────────────────
             _LetterStrip(
@@ -79,6 +107,8 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
               onSelect: _selectLetter,
               isDark: isDark,
             ).animate().fadeIn(delay: 140.ms, duration: 300.ms),
+
+            const SizedBox(height: 8),
 
             // ── Sonuç listesi ─────────────────────────────────────────────
             Expanded(
@@ -110,7 +140,9 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = isFiltered ? '$filteredCount / $totalCount' : '$totalCount Kelime';
+    final label = isFiltered
+        ? '$filteredCount / $totalCount'
+        : '$totalCount Kelime';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -138,7 +170,9 @@ class _Header extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isFiltered ? AppTheme.secondaryBlue : AppTheme.primaryBlue,
+                  color: isFiltered
+                      ? AppTheme.secondaryBlue
+                      : AppTheme.primaryBlue,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -164,7 +198,7 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextField(
         controller: controller,
         style: TextStyle(color: isDark ? Colors.white : Colors.black87),

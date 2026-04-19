@@ -18,9 +18,11 @@ abstract interface class RecognitionRepository {
   Future<void> resumeCamera();
   Future<void> switchCamera();
 
-
   /// Ayarlar değiştiğinde çağrılır — sol el modu frame işlemede kullanılır.
   void updateLeftHandMode(bool leftHand);
+
+  /// Geliştirici modu değiştiğinde terminal loglarını açar/kapatır.
+  void updateDebugMode(bool debugLog);
 
   Future<void> dispose();
 }

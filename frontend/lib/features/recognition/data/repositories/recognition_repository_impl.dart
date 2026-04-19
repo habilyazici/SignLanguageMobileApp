@@ -53,6 +53,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   List<double>? _prevFrame;
   int _lastMotionMs = 0;
   bool _leftHandMode = false;
+  bool _debugLog = false;
   bool _isStreaming = false;
   Timer? _noDetectionTimer;
   StreamSubscription<CameraController?>? _cameraSub;
@@ -61,14 +62,17 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
 
   @override
   Future<void> initialize() async {
-    await _ml.initialize();
+    // ML ve Inference servislerini sadece bir kez başlat
+    if (!_ml.isReady) await _ml.initialize();
     await _inference.initialize();
 
-    // Kamera controller değişince stream'e ilet; buffer'ı sıfırla.
-    _cameraSub = _camera.controllerStream.listen((ctrl) {
-      _cameraCtrl.add(ctrl);
-      if (ctrl != null) _resetBuffer();
-    });
+    // Kamera controller stream'ini dinle
+    if (_cameraSub == null) {
+      _cameraSub = _camera.controllerStream.listen((ctrl) {
+        _cameraCtrl.add(ctrl);
+        if (ctrl != null) _resetBuffer();
+      });
+    }
 
     await _camera.initialize();
     _isStreaming = true;
@@ -79,13 +83,25 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
 
   @override
   Future<void> pauseCamera() async {
+    if (!_isStreaming) return;
     _isStreaming = false;
     _camera.stopStream();
+
+    // UI'a hemen haber ver ki buildPreview() yaparken hata almasın
+    _cameraCtrl.add(null);
+
+    // Donanımı tamamen serbest bırak (Yeşil nokta söner)
+    await _camera.dispose();
   }
 
   @override
   Future<void> resumeCamera() async {
-    if (!_isStreaming && _camera.currentCamera != null) {
+    if (_isStreaming) return;
+
+    if (_camera.currentCamera == null) {
+      // Kamera tamamen kapatılmışsa (pause sonrası), yeniden başlat
+      await initialize();
+    } else {
       _isStreaming = true;
       _camera.startStream(_onFrame);
     }
@@ -106,6 +122,9 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   @override
   void updateLeftHandMode(bool leftHand) => _leftHandMode = leftHand;
 
+  @override
+  void updateDebugMode(bool debugLog) => _debugLog = debugLog;
+
   // ── Frame işleme ──────────────────────────────────────────────────────────
 
   void _onFrame(CameraImage image) async {
@@ -113,7 +132,8 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     if (_isProcessing || !_ml.isReady) return;
     _isProcessing = true;
 
-    final bool doLog = kDebugMode && (_frameCounter % 300 == 0);
+    // Kare logu: Her 150 karede bir (yaklaşık 5 saniyede bir) durum bas.
+    final bool doLog = (_frameCounter % 150 == 0);
     bool shouldInfer = false;
 
     try {
@@ -126,8 +146,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
 
       if (doLog) {
         debugPrint(
-          '📷 Kare=$_frameCounter buf=${_timedBuffer.length} '
-          '(~${RecognitionConstants.windowMs}ms pencere)',
+          '📊 [Durum] Kare=$_frameCounter | Buf=${_timedBuffer.length}',
         );
       }
 
@@ -212,10 +231,10 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
       final frames = _timedBuffer.map((e) => e.$2).toList();
       final result = await _inference.run(frames);
       if (result != null) {
-        if (kDebugMode) {
+        // Logları seyrelt: Yaklaşık her 2-3 saniyede bir veya çok yüksek skorlarda bas
+        if (_frameCounter % 50 == 0 || result.confidence > 0.95) {
           debugPrint(
-            '🧠 Inference → idx:${result.classIndex} '
-            'skor:${(result.confidence * 100).toStringAsFixed(1)}%',
+            '🧠 Zeka → [${result.classIndex}] %${(result.confidence * 100).toStringAsFixed(0)}',
           );
         }
         _inferenceCtrl.add(result);
