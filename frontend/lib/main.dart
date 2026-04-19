@@ -19,9 +19,7 @@ void main() async {
   // build() içinde senkron erişmesini sağla — settings flicker ortadan kalkar.
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       child: const HearMeOutApp(),
     ),
   );
@@ -32,14 +30,32 @@ class HearMeOutApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(settingsProvider).themeMode;
+    final settings = ref.watch(settingsProvider);
+    final themeMode = settings.themeMode;
+    final textSize = settings.textSize;
+
     return MaterialApp.router(
       title: 'Hear Me Out',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode, // Profil sayfasındaki tema seçimini yansıtır
+      themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) {
+        // Metin boyutu ayarını tüm uygulamaya uygula
+        final double scaleFactor = switch (textSize) {
+          AppTextSize.standard => 1.0,
+          AppTextSize.large => 1.15,
+          AppTextSize.extraLarge => 1.3,
+        };
+
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(scaleFactor)),
+          child: child!,
+        );
+      },
     );
   }
 }

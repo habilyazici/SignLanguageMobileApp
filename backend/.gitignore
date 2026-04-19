@@ -1,5 +1,29 @@
-node_modules
-# Keep environment variables out of version control
-.env
+# Dependencies
+node_modules/
 
+# Environment variables — ASLA commit edilmemeli
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Prisma generated client
 /generated/prisma
+
+# TypeScript cache
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

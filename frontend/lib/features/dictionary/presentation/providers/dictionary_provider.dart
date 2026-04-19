@@ -38,15 +38,14 @@ class DictionaryState {
     List<SignEntry>? filteredSigns,
     String? query,
     Object? selectedLetter = _sentinel,
-  }) =>
-      DictionaryState(
-        allSigns: allSigns ?? this.allSigns,
-        filteredSigns: filteredSigns ?? this.filteredSigns,
-        query: query ?? this.query,
-        selectedLetter: selectedLetter == _sentinel
-            ? this.selectedLetter
-            : selectedLetter as String?,
-      );
+  }) => DictionaryState(
+    allSigns: allSigns ?? this.allSigns,
+    filteredSigns: filteredSigns ?? this.filteredSigns,
+    query: query ?? this.query,
+    selectedLetter: selectedLetter == _sentinel
+        ? this.selectedLetter
+        : selectedLetter as String?,
+  );
 }
 
 // null ile "değer verilmedi" ayrımı için sentinel nesne
@@ -58,8 +57,8 @@ const _sentinel = Object();
 
 final dictionaryProvider =
     NotifierProvider<DictionaryNotifier, DictionaryState>(
-  DictionaryNotifier.new,
-);
+      DictionaryNotifier.new,
+    );
 
 class DictionaryNotifier extends Notifier<DictionaryState> {
   @override
@@ -74,9 +73,7 @@ class DictionaryNotifier extends Notifier<DictionaryState> {
     final q = raw.trim().toLowerCase();
     final filtered = q.isEmpty
         ? state.allSigns
-        : state.allSigns
-            .where((s) => _trLower(s.label).contains(q))
-            .toList();
+        : state.allSigns.where((s) => _trLower(s.label).contains(q)).toList();
     state = state.copyWith(
       query: q,
       filteredSigns: filtered,
@@ -88,12 +85,12 @@ class DictionaryNotifier extends Notifier<DictionaryState> {
     final filtered = letter == null
         ? state.allSigns
         : state.allSigns
-            .where(
-              (s) =>
-                  s.label.isNotEmpty &&
-                  _trLower(s.label[0]) == _trLower(letter),
-            )
-            .toList();
+              .where(
+                (s) =>
+                    s.label.isNotEmpty &&
+                    _trLower(s.label[0]) == _trLower(letter),
+              )
+              .toList();
     state = state.copyWith(
       selectedLetter: letter,
       filteredSigns: filtered,
@@ -104,12 +101,12 @@ class DictionaryNotifier extends Notifier<DictionaryState> {
   // ── Türkçe küçük harf normalizer ─────────────────────────────────────────
 
   static String _trLower(String s) => s
-      .toLowerCase()
       .replaceAll('İ', 'i')
       .replaceAll('I', 'ı')
       .replaceAll('Ğ', 'ğ')
       .replaceAll('Ü', 'ü')
       .replaceAll('Ş', 'ş')
       .replaceAll('Ö', 'ö')
-      .replaceAll('Ç', 'ç');
+      .replaceAll('Ç', 'ç')
+      .toLowerCase();
 }

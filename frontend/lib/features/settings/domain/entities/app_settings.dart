@@ -16,6 +16,13 @@ enum ConfidenceLevel {
   high, // %85 — daha katı, daha az tanıma
 }
 
+enum FpsPreference {
+  powerSaver, // 15 FPS
+  balanced, // 20 FPS
+  performance, // 30 FPS
+  unlimited, // Maksimum (Throttling kapalı)
+}
+
 enum VideoQuality {
   high, // 720p
   dataSaver, // 360p
@@ -33,7 +40,7 @@ class AppSettings {
 
   // ── Kamera & Yapay Zeka ───────────────────────────────────────────────────
   final ConfidenceLevel confidenceLevel;
-  final bool fpsLimitEnabled;
+  final FpsPreference fpsPreference;
   final bool hapticEnabled;
   final bool temporalSmoothingEnabled;
 
@@ -57,7 +64,7 @@ class AppSettings {
     this.textSize = AppTextSize.standard,
     this.leftHandMode = false,
     this.confidenceLevel = ConfidenceLevel.medium,
-    this.fpsLimitEnabled = false,
+    this.fpsPreference = FpsPreference.performance,
     this.hapticEnabled = true,
     this.temporalSmoothingEnabled = true,
     this.cellularVideoDisabled = false,
@@ -77,14 +84,20 @@ class AppSettings {
   };
 
   /// Hedef FPS değeri.
-  int get targetFps => fpsLimitEnabled ? 15 : 30;
+  /// 0 değeri sınırsız (throttle yok) anlamına gelir.
+  int get targetFps => switch (fpsPreference) {
+    FpsPreference.powerSaver => 15,
+    FpsPreference.balanced => 20,
+    FpsPreference.performance => 30,
+    FpsPreference.unlimited => 0,
+  };
 
   AppSettings copyWith({
     ThemeMode? themeMode,
     AppTextSize? textSize,
     bool? leftHandMode,
     ConfidenceLevel? confidenceLevel,
-    bool? fpsLimitEnabled,
+    FpsPreference? fpsPreference,
     bool? hapticEnabled,
     bool? temporalSmoothingEnabled,
     bool? cellularVideoDisabled,
@@ -99,7 +112,7 @@ class AppSettings {
     textSize: textSize ?? this.textSize,
     leftHandMode: leftHandMode ?? this.leftHandMode,
     confidenceLevel: confidenceLevel ?? this.confidenceLevel,
-    fpsLimitEnabled: fpsLimitEnabled ?? this.fpsLimitEnabled,
+    fpsPreference: fpsPreference ?? this.fpsPreference,
     hapticEnabled: hapticEnabled ?? this.hapticEnabled,
     temporalSmoothingEnabled:
         temporalSmoothingEnabled ?? this.temporalSmoothingEnabled,

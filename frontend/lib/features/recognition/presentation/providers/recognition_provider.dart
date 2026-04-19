@@ -93,6 +93,7 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
     ref.listen<AppSettings>(settingsProvider, (_, next) {
       _repo.updateLeftHandMode(next.leftHandMode);
       _repo.updateDebugMode(next.devMode);
+      _repo.updateFpsLimit(next.targetFps);
     });
 
     // Kamera aktif sinyali (navigasyon katmanından)
@@ -119,6 +120,7 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
           final s = ref.read(settingsProvider);
           _repo.updateLeftHandMode(s.leftHandMode);
           _repo.updateDebugMode(s.devMode);
+          _repo.updateFpsLimit(s.targetFps);
         })
         .catchError((e) {
           state = state.copyWith(isError: true);

@@ -7,7 +7,7 @@ abstract final class RecognitionConstants {
   static const int windowSize = 60;
 
   /// Her kare için feature vektörü boyutu
-  /// [0..41] sol el · [42..83] sağ el · [84..105] pose (11 nokta × 2)
+  /// [0..41] sağ el · [42..83] sol el · [84..105] pose (11 nokta × 2)
   static const int featureSize = 106;
 
   /// Toplam sınıf sayısı (labels.csv ile eşleşmeli)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/sign_entry.dart';
 import '../providers/dictionary_provider.dart';
@@ -411,7 +412,7 @@ class _SignCard extends StatelessWidget {
           color: AppTheme.midGrey.withValues(alpha: 0.4),
         ),
         onTap: () {
-          // Gelecekte: video detay sayfası
+          context.push('/dictionary/${sign.id}');
         },
       ),
     );

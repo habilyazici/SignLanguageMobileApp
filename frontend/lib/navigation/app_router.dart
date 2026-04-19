@@ -6,6 +6,7 @@ import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/recognition/presentation/screens/recognition_screen.dart';
 import '../features/dictionary/presentation/screens/dictionary_screen.dart';
+import '../features/dictionary/presentation/screens/dictionary_detail_screen.dart';
 import '../features/text_to_sign/presentation/screens/translator_screen.dart';
 import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
@@ -63,6 +64,14 @@ final router = GoRouter(
       path: '/settings',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/dictionary/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+        return DictionaryDetailScreen(wordId: id);
+      },
     ),
 
     // ── Auth rotaları (bottom nav yok) ───────────────────────────────

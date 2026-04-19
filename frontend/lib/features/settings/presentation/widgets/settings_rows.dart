@@ -186,7 +186,7 @@ class VideoQualityRow extends StatelessWidget {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'İşaret video oynatma kalitesi',
+                  'Öğrenme videoları için çözünürlük',
                   style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
                 ),
               ],
@@ -198,6 +198,59 @@ class VideoQualityRow extends StatelessWidget {
             items: const [
               (VideoQuality.high, '720p'),
               (VideoQuality.dataSaver, '360p'),
+            ],
+            current: current,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── FPS Tercihi Satırı ───────────────────────────────────────────────────────
+class FpsRow extends StatelessWidget {
+  const FpsRow({
+    super.key,
+    required this.current,
+    required this.onChanged,
+    required this.isDark,
+  });
+  final FpsPreference current;
+  final ValueChanged<FpsPreference> onChanged;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: [
+          _iconBox(Icons.speed_rounded, Colors.orangeAccent),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Kamera Kare Hızı (FPS)',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Pil ve akıcılık dengesi',
+                  style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
+                ),
+              ],
+            ),
+          ),
+          SettingsSegmentButtons<FpsPreference>(
+            isDark: isDark,
+            items: const [
+              (FpsPreference.powerSaver, 'Pil'),
+              (FpsPreference.balanced, 'Den'),
+              (FpsPreference.performance, 'Perf'),
+              (FpsPreference.unlimited, 'Max'),
             ],
             current: current,
             onChanged: onChanged,

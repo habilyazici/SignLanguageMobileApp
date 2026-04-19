@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 
 class StatusSummary extends StatelessWidget {
@@ -19,8 +18,12 @@ class StatusSummary extends StatelessWidget {
         (Icons.volume_up_rounded, 'TTS Açık', Colors.deepOrangeAccent),
       if (settings.devMode)
         (Icons.developer_mode_rounded, 'Dev Modu', Colors.cyanAccent),
-      if (settings.fpsLimitEnabled)
-        (Icons.speed_rounded, '15 FPS', Colors.orangeAccent),
+      if (settings.fpsPreference == FpsPreference.powerSaver)
+        (Icons.battery_saver_rounded, 'Pil Tasarrufu', Colors.orangeAccent),
+      if (settings.fpsPreference == FpsPreference.balanced)
+        (Icons.balance_rounded, 'Dengeli FPS', Colors.blueGrey),
+      if (settings.fpsPreference == FpsPreference.unlimited)
+        (Icons.bolt_rounded, 'Maksimum FPS', Colors.purpleAccent),
       if (settings.zeroDataMode)
         (Icons.visibility_off_rounded, 'Sıfır-Veri', Colors.grey),
       if (!settings.hapticEnabled)

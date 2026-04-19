@@ -166,36 +166,46 @@ class ScaffoldWithNav extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _NavBarItem(
-                  icon: Icons.menu_book_rounded,
-                  label: 'Sözlük',
-                  isSelected: currentIndex == 0,
-                  onTap: () => _onTap(context, ref, 0),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.menu_book_rounded,
+                    label: 'Sözlük',
+                    isSelected: currentIndex == 0,
+                    onTap: () => _onTap(context, ref, 0),
+                  ),
                 ),
-                _NavBarItem(
-                  icon: Icons.visibility_rounded,
-                  label: 'İşaret Oku',
-                  isSelected: currentIndex == 1,
-                  onTap: () => _onTap(context, ref, 1),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.visibility_rounded,
+                    label: 'İşaretten Metne',
+                    isSelected: currentIndex == 1,
+                    onTap: () => _onTap(context, ref, 1),
+                  ),
                 ),
-                _NavBarItem(
-                  icon: Icons.home_rounded,
-                  label: 'Keşfet',
-                  isSelected: currentIndex == 2,
-                  onTap: () => _onTap(context, ref, 2),
-                  isHomeButton: true,
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.home_rounded,
+                    label: 'Keşfet',
+                    isSelected: currentIndex == 2,
+                    onTap: () => _onTap(context, ref, 2),
+                    isHomeButton: true,
+                  ),
                 ),
-                _NavBarItem(
-                  icon: Icons.sign_language_rounded,
-                  label: 'İşaret Anlat',
-                  isSelected: currentIndex == 3,
-                  onTap: () => _onTap(context, ref, 3),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.sign_language_rounded,
+                    label: 'İşaret Anlat',
+                    isSelected: currentIndex == 3,
+                    onTap: () => _onTap(context, ref, 3),
+                  ),
                 ),
-                _NavBarItem(
-                  icon: Icons.person_rounded,
-                  label: 'Profil',
-                  isSelected: currentIndex == 4,
-                  onTap: () => _onTap(context, ref, 4),
+                Expanded(
+                  child: _NavBarItem(
+                    icon: Icons.person_rounded,
+                    label: 'Profil',
+                    isSelected: currentIndex == 4,
+                    onTap: () => _onTap(context, ref, 4),
+                  ),
                 ),
               ],
             ),

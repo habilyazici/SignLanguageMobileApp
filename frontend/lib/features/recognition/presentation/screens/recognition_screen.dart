@@ -19,89 +19,286 @@ class RecognitionScreen extends ConsumerWidget {
     final notifier = ref.read(recognitionProvider.notifier);
     final devMode = ref.watch(settingsProvider).devMode;
     final settingsNotifier = ref.read(settingsProvider.notifier);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          _CameraLayer(
-            state: state,
-            onDoubleTap: () =>
-                ref.read(recognitionProvider.notifier).switchCamera(),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [AppTheme.darkBg, AppTheme.gradientDeep]
+                : [AppTheme.softGrey, const Color(0xFFD6E2F0)],
           ),
-          if (devMode && state.isReady && state.cameraController != null)
-            _LandmarkOverlay(
-              notifier: notifier.devNotifier,
-              cameraController: state.cameraController!,
-            ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _TopOverlay(
-              devMode: devMode,
-              onDevToggle: settingsNotifier.toggleDevMode,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _SubtitlePanel(
-              state: state,
-              onTtsReplay:
-                  state.sentence.isNotEmpty &&
-                      ref.watch(settingsProvider).ttsEnabled
-                  ? () => ref
-                        .read(ttsProvider.notifier)
-                        .speak(state.sentence.join(' '))
-                  : null,
-              onCopy: state.sentence.isNotEmpty
-                  ? () {
-                      Clipboard.setData(
-                        ClipboardData(text: state.sentence.join(' ')),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Cümle panoya kopyalandı'),
-                          duration: Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Başlık ───────────────────────────────────────────────────
+              _TopHeader(
+                devMode: devMode,
+                onDevToggle: settingsNotifier.toggleDevMode,
+                isDark: isDark,
+              ),
+
+              const SizedBox(height: 12),
+
+              // ── Kamera Kartı ─────────────────────────────────────────────
+              Expanded(
+                flex: 5,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                      );
-                    }
-                  : null,
-              onShare: state.sentence.isNotEmpty
-                  ? () => Share.share(state.sentence.join(' '))
-                  : null,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(28),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              _CameraLayer(
+                                state: state,
+                                onDoubleTap: () => notifier.switchCamera(),
+                              ),
+                              if (devMode &&
+                                  state.isReady &&
+                                  state.cameraController != null)
+                                _LandmarkOverlay(
+                                  notifier: notifier.devNotifier,
+                                  cameraController: state.cameraController!,
+                                ),
+                              if (devMode)
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: _DevStatsPanel(
+                                    devNotifier: notifier.devNotifier,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (state.isError) _ErrorOverlay(),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Sonuç Paneli ─────────────────────────────────────────────
+              Expanded(
+                flex: 3,
+                child: _ResultPanel(
+                  state: state,
+                  isDark: isDark,
+                  onTtsReplay:
+                      state.sentence.isNotEmpty &&
+                          ref.watch(settingsProvider).ttsEnabled
+                      ? () => ref
+                            .read(ttsProvider.notifier)
+                            .speak(state.sentence.join(' '))
+                      : null,
+                  onCopy: state.sentence.isNotEmpty
+                      ? () {
+                          Clipboard.setData(
+                            ClipboardData(text: state.sentence.join(' ')),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Cümle panoya kopyalandı'),
+                              duration: Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      : null,
+                  onShare: state.sentence.isNotEmpty
+                      ? () => Share.share(state.sentence.join(' '))
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TopHeader extends StatelessWidget {
+  const _TopHeader({
+    required this.devMode,
+    required this.onDevToggle,
+    required this.isDark,
+  });
+  final bool devMode;
+  final VoidCallback onDevToggle;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryBlue.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.visibility_rounded,
+              color: AppTheme.primaryBlue,
+              size: 22,
             ),
           ),
-          if (devMode)
-            Positioned(
-              top: 0,
-              bottom: 0,
-              right: 12,
-              child: _DevStatsPanel(devNotifier: notifier.devNotifier),
-            ),
-          if (state.isError)
-            Container(
-              color: Colors.black87,
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.videocam_off, color: Colors.white54, size: 56),
-                    SizedBox(height: 16),
-                    Text(
-                      'Kamera başlatılamadı.\nLütfen izinleri kontrol edin.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
-                    ),
-                  ],
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'İşaretten Metne',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppTheme.primaryBlue,
+                ),
+              ),
+              Text(
+                'Ellerinizi göstererek konuşun',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.white38 : AppTheme.midGrey,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: onDevToggle,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: devMode
+                    ? Colors.cyanAccent.withValues(alpha: 0.1)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: devMode
+                      ? Colors.cyanAccent
+                      : (isDark ? Colors.white10 : Colors.black12),
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                'DEV',
+                style: TextStyle(
+                  color: devMode
+                      ? Colors.cyanAccent
+                      : (isDark ? Colors.white24 : Colors.black26),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
               ),
             ),
+          ),
         ],
+      ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.1),
+    );
+  }
+}
+
+class _ResultPanel extends StatelessWidget {
+  const _ResultPanel({
+    required this.state,
+    required this.isDark,
+    this.onTtsReplay,
+    this.onCopy,
+    this.onShare,
+  });
+  final RecognitionState state;
+  final bool isDark;
+  final VoidCallback? onTtsReplay;
+  final VoidCallback? onCopy;
+  final VoidCallback? onShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasWords = state.sentence.isNotEmpty;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white70,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: hasWords
+                  ? _SentenceRow(sentence: state.sentence)
+                  : Text(
+                      'Kameraya ellerinizi gösterin',
+                      style: TextStyle(
+                        color: isDark ? Colors.white24 : Colors.black26,
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ConfidenceBar(score: state.confidenceScore, active: hasWords),
+          const SizedBox(height: 16),
+          _ActionBar(
+            onTtsReplay: onTtsReplay,
+            onCopy: onCopy,
+            onShare: onShare,
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 200.ms, duration: 400.ms);
+  }
+}
+
+class _ErrorOverlay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black87,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.videocam_off, color: Colors.white54, size: 48),
+            SizedBox(height: 12),
+            Text('Kamera açılamadı', style: TextStyle(color: Colors.white70)),
+          ],
+        ),
       ),
     );
   }
@@ -224,80 +421,6 @@ class _LandmarkPainter extends CustomPainter {
       screenSize != old.screenSize;
 }
 
-class _TopOverlay extends StatelessWidget {
-  const _TopOverlay({required this.devMode, required this.onDevToggle});
-  final bool devMode;
-  final VoidCallback onDevToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final top = MediaQuery.of(context).padding.top;
-    return Container(
-      padding: EdgeInsets.fromLTRB(20, top + 12, 12, 20),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xCC000000), Colors.transparent],
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Colors.redAccent,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Text(
-            'Canlı Çeviri',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const Spacer(),
-          const Text(
-            'Kamera değiştir: 2×',
-            style: TextStyle(color: Colors.white38, fontSize: 12),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onDevToggle,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: devMode
-                    ? Colors.cyanAccent.withValues(alpha: 0.2)
-                    : Colors.transparent,
-                border: Border.all(
-                  color: devMode ? Colors.cyanAccent : Colors.white24,
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'DEV',
-                style: TextStyle(
-                  color: devMode ? Colors.cyanAccent : Colors.white38,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _DevStatsPanel extends StatelessWidget {
   const _DevStatsPanel({required this.devNotifier});
   final ValueNotifier<LandmarkDevData> devNotifier;
@@ -355,59 +478,6 @@ class _DevStatsPanel extends StatelessWidget {
               fontFamily: 'monospace',
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SubtitlePanel extends StatelessWidget {
-  const _SubtitlePanel({
-    required this.state,
-    this.onTtsReplay,
-    this.onCopy,
-    this.onShare,
-  });
-  final RecognitionState state;
-  final VoidCallback? onTtsReplay;
-  final VoidCallback? onCopy;
-  final VoidCallback? onShare;
-
-  @override
-  Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).padding.bottom;
-    final hasWords = state.sentence.isNotEmpty;
-    return Container(
-      padding: EdgeInsets.fromLTRB(20, 60, 20, bottom + 24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [Color(0xE6000000), Color(0x80000000), Colors.transparent],
-          stops: [0.0, 0.55, 1.0],
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (hasWords) ...[
-            _SentenceRow(sentence: state.sentence),
-            const SizedBox(height: 14),
-          ],
-          _ConfidenceBar(score: state.confidenceScore, active: hasWords),
-          const SizedBox(height: 10),
-          if (hasWords)
-            _ActionBar(
-              onTtsReplay: onTtsReplay,
-              onCopy: onCopy,
-              onShare: onShare,
-            )
-          else
-            const Text(
-              'Kameranın önünde işaret yapın',
-              style: TextStyle(color: Colors.white38, fontSize: 14),
-            ),
         ],
       ),
     );

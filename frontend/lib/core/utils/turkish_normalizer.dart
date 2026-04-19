@@ -91,12 +91,12 @@ abstract final class TurkishNormalizer {
   }
 
   static String _trLower(String s) => s
-      .toLowerCase()
       .replaceAll('İ', 'i')
       .replaceAll('I', 'ı')
       .replaceAll('Ğ', 'ğ')
       .replaceAll('Ü', 'ü')
       .replaceAll('Ş', 'ş')
       .replaceAll('Ö', 'ö')
-      .replaceAll('Ç', 'ç');
+      .replaceAll('Ç', 'ç')
+      .toLowerCase();
 }

@@ -96,15 +96,10 @@ class SettingsScreen extends ConsumerWidget {
                     onChanged: (_) => n.toggleTemporalSmoothing(),
                   ),
                   SettingsDivider(isDark: isDark),
-                  SettingsSwitchRow(
+                  FpsRow(
                     isDark: isDark,
-                    icon: Icons.speed_rounded,
-                    iconColor: Colors.orangeAccent,
-                    title: 'Düşük Güç Modu (15 FPS)',
-                    subtitle:
-                        'Pil tasarrufu — kamera kare hızını 15\'e indirir',
-                    value: settings.fpsLimitEnabled,
-                    onChanged: (_) => n.toggleFpsLimit(),
+                    current: settings.fpsPreference,
+                    onChanged: n.setFpsPreference,
                   ),
                   SettingsDivider(isDark: isDark),
                   SettingsSwitchRow(
@@ -159,10 +154,10 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   SettingsSwitchRow(
                     isDark: isDark,
-                    icon: Icons.signal_cellular_off_rounded,
-                    iconColor: Colors.redAccent,
-                    title: 'Mobil Veri\'de Video Kapalı',
-                    subtitle: 'Wi-Fi yokken işaret videoları oynatılmaz',
+                    icon: Icons.data_usage_rounded,
+                    iconColor: Colors.blueAccent,
+                    title: 'Mobil Veride Videoyu Kapat',
+                    subtitle: 'Eğitim videolarını sadece Wi-Fi ile yükle',
                     value: settings.cellularVideoDisabled,
                     onChanged: (_) => n.toggleCellularVideo(),
                   ),
@@ -197,22 +192,20 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   SettingsSwitchRow(
                     isDark: isDark,
-                    icon: Icons.visibility_off_rounded,
-                    iconColor: Colors.grey,
-                    title: 'Sıfır-Veri Modu',
-                    subtitle: 'Çeviri geçmişini hiç kaydetme',
+                    icon: Icons.security_rounded,
+                    iconColor: Colors.tealAccent,
+                    title: 'Sıfır Veri Modu (Yerel)',
+                    subtitle: 'Geçmiş kaydedilmez, her şey cihazda kalır',
                     value: settings.zeroDataMode,
                     onChanged: (_) => n.toggleZeroDataMode(),
                   ),
                   SettingsDivider(isDark: isDark),
                   SettingsSwitchRow(
                     isDark: isDark,
-                    icon: Icons.cloud_sync_rounded,
-                    iconColor: AppTheme.secondaryBlue,
-                    title: 'Bulut Eşzamanlaması',
-                    subtitle: isGuest
-                        ? 'Giriş yaparak etkinleştir'
-                        : 'Ayarları ve Sağlık Kartını senkronize et',
+                    icon: Icons.cloud_off_rounded,
+                    iconColor: Colors.blueGrey,
+                    title: 'Bulut Senkronizasyonu',
+                    subtitle: 'Şu an devre dışı (Hiçbir veri sunucuya gitmez)',
                     value: settings.cloudSyncEnabled,
                     onChanged: isGuest
                         ? (_) => context.push('/login')

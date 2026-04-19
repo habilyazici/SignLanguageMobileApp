@@ -24,7 +24,10 @@ class LandmarkNormalizer {
   ///
   /// Eğer bir segment tamamen sıfırsa (o an tespit edilmedi) atlanır.
   static List<double> normalizeFrame(List<double> frame) {
-    assert(frame.length == 106, 'Frame uzunluğu 106 olmalıdır, gelen: ${frame.length}');
+    assert(
+      frame.length == 106,
+      'Frame uzunluğu 106 olmalıdır, gelen: ${frame.length}',
+    );
 
     final f = List<double>.from(frame);
 
@@ -79,7 +82,10 @@ class LandmarkNormalizer {
   /// Giriş:  60 adet `List<double>` (her biri 106 koordinat)
   /// Çıkış:  Normalize edilmiş kopyası — orijinal liste değişmez
   static List<List<double>> normalizeWindow(List<List<double>> window) {
-    assert(window.length == 60, 'Window boyutu 60 olmalıdır, gelen: ${window.length}');
+    assert(
+      window.length == 60,
+      'Window boyutu 60 olmalıdır, gelen: ${window.length}',
+    );
     return window.map(normalizeFrame).toList();
   }
 

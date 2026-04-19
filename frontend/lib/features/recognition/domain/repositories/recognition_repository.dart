@@ -24,5 +24,8 @@ abstract interface class RecognitionRepository {
   /// Geliştirici modu değiştiğinde terminal loglarını açar/kapatır.
   void updateDebugMode(bool debugLog);
 
+  /// FPS limitini günceller (ör. 15 veya 30).
+  void updateFpsLimit(int targetFps);
+
   Future<void> dispose();
 }

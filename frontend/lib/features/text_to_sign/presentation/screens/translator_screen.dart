@@ -104,11 +104,11 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Metin → İşaret',
+                        'Metinden İşarete',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       Text(
                         'Yazı veya ses ile işaret videosu',
@@ -205,18 +205,22 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                         color: _listening
                             ? AppTheme.primaryBlue.withValues(alpha: 0.2)
                             : (sttEnabled && _sttReady)
-                                ? AppTheme.primaryBlue.withValues(alpha: 0.12)
-                                : Colors.grey.withValues(alpha: 0.1),
+                            ? AppTheme.primaryBlue.withValues(alpha: 0.12)
+                            : Colors.grey.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                         border: _listening
                             ? Border.all(color: AppTheme.primaryBlue, width: 2)
                             : null,
                       ),
                       child: Icon(
-                        _listening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                        _listening
+                            ? Icons.mic_rounded
+                            : (sttEnabled
+                                  ? Icons.mic_none_rounded
+                                  : Icons.mic_off_rounded),
                         color: (sttEnabled && _sttReady)
                             ? AppTheme.primaryBlue
-                            : Colors.grey,
+                            : Colors.grey.withValues(alpha: 0.5),
                         size: 24,
                       ),
                     ),
@@ -292,10 +296,10 @@ class _TokenGrid extends StatelessWidget {
             onTap: () => onTap(i),
             child: switch (token) {
               SignFound() => SignFoundCard(
-                  token: token,
-                  isActive: isActive && isPlaying,
-                  onVideoEnd: onVideoEnd,
-                ),
+                token: token,
+                isActive: isActive && isPlaying,
+                onVideoEnd: onVideoEnd,
+              ),
               SignNotFound() => SignNotFoundCard(token: token),
             },
           );
@@ -380,9 +384,7 @@ class _EmptyArea extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? Colors.white10
-              : Colors.black.withValues(alpha: 0.08),
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Center(

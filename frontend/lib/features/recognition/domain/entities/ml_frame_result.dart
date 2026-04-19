@@ -1,7 +1,7 @@
 import 'dart:ui' show Offset;
 
 /// ML pipeline'ının tek bir kare için ürettiği ham sonuç.
-/// [0..41] sol el · [42..83] sağ el · [84..105] pose (11 nokta × 2)
+/// [0..41] sağ el · [42..83] sol el · [84..105] pose (11 nokta × 2)
 class MlFrameResult {
   final List<double> features;
   final List<Offset> posePoints;

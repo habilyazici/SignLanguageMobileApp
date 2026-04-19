@@ -35,7 +35,7 @@ const _pages = [
   _OnboardingPage(
     icon: Icons.visibility_rounded,
     iconColor: AppTheme.secondaryBlue,
-    title: 'İşaret Oku',
+    title: 'İşaretten Metne',
     subtitle: 'Kamera ile anlık tanıma',
     body:
         'Kamerayı açıp işaret yapmanız yeterli. Gerçek zamanlı olarak tanır ve metne dönüştürür.',
@@ -51,12 +51,12 @@ const _pages = [
     title: 'İşaret Anlat',
     subtitle: 'Yaz ya da sesli söyle',
     body:
-        'Uygulama yazdıklarınıza veya söylediklerinize karşılık gelen videoları oynatır.',
+        'Uygulama yazdıklarınıza veya söylediklerinize karşılık gelen işaretleri oynatır.',
     detailsTitle: 'Giriş Yöntemleri',
     detailsBody:
         '• Metin kutusuna kelime yazarak arama yapın.\n'
         '• Mikrofon butonuna basarak sesli komut verin.\n'
-        '• Videoları yavaşlatabilir veya tekrar oynatabilirsiniz.',
+        '• İşaretleri yavaşlatabilir veya tekrar oynatabilirsiniz.',
   ),
   _OnboardingPage(
     icon: Icons.menu_book_rounded,

@@ -10,7 +10,7 @@ import '../../data/repositories/settings_repository_impl.dart';
 // Mevcut import'lar settings_provider.dart üzerinden geldiğinden
 // uyumluluk için domain entity'lerini yeniden dışa aktarıyoruz.
 export '../../domain/entities/app_settings.dart'
-    show AppSettings, AppTextSize, ConfidenceLevel, VideoQuality;
+    show AppSettings, AppTextSize, ConfidenceLevel, VideoQuality, FpsPreference;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SharedPreferences erken yükleme provider'ı
@@ -68,8 +68,8 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void setConfidenceLevel(ConfidenceLevel level) =>
       _persist(state.copyWith(confidenceLevel: level));
 
-  void toggleFpsLimit() =>
-      _persist(state.copyWith(fpsLimitEnabled: !state.fpsLimitEnabled));
+  void setFpsPreference(FpsPreference pref) =>
+      _persist(state.copyWith(fpsPreference: pref));
 
   void toggleHaptic() =>
       _persist(state.copyWith(hapticEnabled: !state.hapticEnabled));

@@ -76,7 +76,7 @@ class HomeScreen extends ConsumerWidget {
                   Expanded(
                     child:
                         _ActionCard(
-                              title: 'İşaret Oku',
+                              title: 'İşaretten Metne',
                               icon: Icons.visibility_rounded,
                               color: AppTheme.secondaryBlue,
                               hint: 'Sağa Kaydır',

@@ -18,12 +18,20 @@ class SettingsLocalDatasource {
       'confidenceLevel',
       ConfidenceLevel.medium,
     ),
-    fpsLimitEnabled: _prefs.getBool('fpsLimitEnabled') ?? false,
+    fpsPreference: _enumVal(
+      FpsPreference.values,
+      'fpsPreference',
+      FpsPreference.performance,
+    ),
     hapticEnabled: _prefs.getBool('hapticEnabled') ?? true,
     temporalSmoothingEnabled:
         _prefs.getBool('temporalSmoothingEnabled') ?? true,
     cellularVideoDisabled: _prefs.getBool('cellularVideoDisabled') ?? false,
-    videoQuality: _enumVal(VideoQuality.values, 'videoQuality', VideoQuality.high),
+    videoQuality: _enumVal(
+      VideoQuality.values,
+      'videoQuality',
+      VideoQuality.high,
+    ),
     zeroDataMode: _prefs.getBool('zeroDataMode') ?? false,
     cloudSyncEnabled: _prefs.getBool('cloudSyncEnabled') ?? false,
     ttsEnabled: _prefs.getBool('ttsEnabled') ?? true,
@@ -36,9 +44,12 @@ class SettingsLocalDatasource {
     await _prefs.setInt('textSize', s.textSize.index);
     await _prefs.setBool('leftHandMode', s.leftHandMode);
     await _prefs.setInt('confidenceLevel', s.confidenceLevel.index);
-    await _prefs.setBool('fpsLimitEnabled', s.fpsLimitEnabled);
+    await _prefs.setInt('fpsPreference', s.fpsPreference.index);
     await _prefs.setBool('hapticEnabled', s.hapticEnabled);
-    await _prefs.setBool('temporalSmoothingEnabled', s.temporalSmoothingEnabled);
+    await _prefs.setBool(
+      'temporalSmoothingEnabled',
+      s.temporalSmoothingEnabled,
+    );
     await _prefs.setBool('cellularVideoDisabled', s.cellularVideoDisabled);
     await _prefs.setInt('videoQuality', s.videoQuality.index);
     await _prefs.setBool('zeroDataMode', s.zeroDataMode);

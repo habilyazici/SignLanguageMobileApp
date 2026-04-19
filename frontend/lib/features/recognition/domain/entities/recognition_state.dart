@@ -48,13 +48,16 @@ class RecognitionState {
     bool? isReady,
     bool? isError,
     CameraController? cameraController,
+    bool clearCameraController = false,
     String? predictedWord,
     double? confidenceScore,
     List<String>? sentence,
   }) => RecognitionState(
     isReady: isReady ?? this.isReady,
     isError: isError ?? this.isError,
-    cameraController: cameraController ?? this.cameraController,
+    cameraController: clearCameraController
+        ? null
+        : (cameraController ?? this.cameraController),
     predictedWord: predictedWord ?? this.predictedWord,
     confidenceScore: confidenceScore ?? this.confidenceScore,
     sentence: sentence ?? this.sentence,

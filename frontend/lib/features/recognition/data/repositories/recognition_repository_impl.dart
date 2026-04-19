@@ -55,6 +55,8 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   bool _leftHandMode = false;
   bool _debugLog = false;
   bool _isStreaming = false;
+  int _targetFps = 30;
+  int _lastFrameTimeMs = 0;
   Timer? _noDetectionTimer;
   StreamSubscription<CameraController?>? _cameraSub;
 
@@ -67,12 +69,10 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     await _inference.initialize();
 
     // Kamera controller stream'ini dinle
-    if (_cameraSub == null) {
-      _cameraSub = _camera.controllerStream.listen((ctrl) {
-        _cameraCtrl.add(ctrl);
-        if (ctrl != null) _resetBuffer();
-      });
-    }
+    _cameraSub ??= _camera.controllerStream.listen((ctrl) {
+      _cameraCtrl.add(ctrl);
+      if (ctrl != null) _resetBuffer();
+    });
 
     await _camera.initialize();
     _isStreaming = true;
@@ -125,11 +125,24 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   @override
   void updateDebugMode(bool debugLog) => _debugLog = debugLog;
 
+  @override
+  void updateFpsLimit(int targetFps) => _targetFps = targetFps;
+
   // ── Frame işleme ──────────────────────────────────────────────────────────
 
   void _onFrame(CameraImage image) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    // FPS Limitleme (Throttling)
+    if (_targetFps > 0) {
+      final int frameIntervalMs = 1000 ~/ _targetFps;
+      if (now - _lastFrameTimeMs < frameIntervalMs) return;
+    }
+
     _frameCounter++;
     if (_isProcessing || !_ml.isReady) return;
+
+    _lastFrameTimeMs = now;
     _isProcessing = true;
 
     // Kare logu: Her 150 karede bir (yaklaşık 5 saniyede bir) durum bas.
