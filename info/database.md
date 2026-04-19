@@ -34,8 +34,6 @@ model HealthCard {
   allergies        String[] 
   chronicDiseases  String[] 
   medications      String[] 
-  emergencyContact String?  
-  emergencyPhone   String?  
   notes            String?  
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
