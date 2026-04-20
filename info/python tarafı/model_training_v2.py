@@ -1,0 +1,159 @@
+# -*- coding: utf-8 -*-
+"""model_training_v2.ipynb
+Colab'da çalıştırılmak üzere tasarlanmıştır.
+
+v1'den TEK fark: processed_data_v2 klasöründen yükler.
+Model mimarisi, normalizasyon, augmentation HEPSİ aynı.
+"""
+
+import os
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import (
+    LSTM, Dense, Input, Dropout, Bidirectional,
+    Layer, BatchNormalization, LayerNormalization
+)
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+
+print(f"TensorFlow: {tf.__version__}")
+
+from google.colab import drive
+drive.mount('/content/drive')
+
+# ─── Yollar — SADECE BU SATIRLAR DEĞİŞTİ ────────────────────────────────────
+SAVE_PATH = "/content/drive/MyDrive/Projects/Mobil Uygulama/largeData/processed_data_v2"
+# ─────────────────────────────────────────────────────────────────────────────
+
+print("📂 Veriler yükleniyor…")
+X_train = np.load(os.path.join(SAVE_PATH, "X_train.npy"))
+y_train = np.load(os.path.join(SAVE_PATH, "y_train.npy"))
+X_val   = np.load(os.path.join(SAVE_PATH, "X_val.npy"))
+y_val   = np.load(os.path.join(SAVE_PATH, "y_val.npy"))
+X_test  = np.load(os.path.join(SAVE_PATH, "X_test.npy"))
+y_test  = np.load(os.path.join(SAVE_PATH, "y_test.npy"))
+
+print(f"✅ Train: {X_train.shape}  Val: {X_val.shape}  Test: {X_test.shape}")
+
+# Sınıf sayısını veriden oku — hardcode değil
+num_classes = int(np.max([y_train.max(), y_val.max(), y_test.max()])) + 1
+print(f"✅ Sınıf sayısı: {num_classes}")
+
+# ─── Normalizasyon (v1 ile birebir aynı) ─────────────────────────────────────
+def normalize_landmarks_pro(X):
+    X_norm = X.copy()
+    for i in range(X_norm.shape[0]):
+        for j in range(X_norm.shape[1]):
+            rh   = X_norm[i, j, 0:42]
+            lh   = X_norm[i, j, 42:84]
+            pose = X_norm[i, j, 84:106]
+
+            if not np.all(rh == 0):
+                rh[0::2] -= rh[0]; rh[1::2] -= rh[1]
+                rh /= (np.max(np.abs(rh)) + 1e-6)
+
+            if not np.all(lh == 0):
+                lh[0::2] -= lh[0]; lh[1::2] -= lh[1]
+                lh /= (np.max(np.abs(lh)) + 1e-6)
+
+            if not np.all(pose == 0):
+                pose[0::2] -= pose[0]; pose[1::2] -= pose[1]
+                pose /= (np.max(np.abs(pose)) + 1e-6)
+
+            X_norm[i, j, :] = np.concatenate([rh, lh, pose])
+    return X_norm
+
+def augment_landmarks_pro(X, y):
+    noise = np.random.normal(0, 0.002, X.shape)
+    return np.concatenate([X, X + noise], axis=0), np.concatenate([y, y], axis=0)
+
+print("🔄 Normalizasyon uygulanıyor…")
+X_train_norm = normalize_landmarks_pro(X_train)
+X_val_norm   = normalize_landmarks_pro(X_val)
+X_test_norm  = normalize_landmarks_pro(X_test)
+
+print("➕ Augmentation uygulanıyor…")
+X_train_final, y_train_final = augment_landmarks_pro(X_train_norm, y_train)
+print(f"✅ Eğitim seti: {X_train_final.shape}")
+
+# ─── Dataset pipeline ────────────────────────────────────────────────────────
+def prepare_dataset(X, y, batch_size=64, shuffle=False):
+    ds = tf.data.Dataset.from_tensor_slices((X.astype(np.float32), y))
+    if shuffle:
+        ds = ds.shuffle(buffer_size=len(X))
+    return ds.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+
+train_ds = prepare_dataset(X_train_final, y_train_final, shuffle=True)
+val_ds   = prepare_dataset(X_val_norm,   y_val)
+test_ds  = prepare_dataset(X_test_norm,  y_test)
+
+# ─── Model (v1 ile birebir aynı) ─────────────────────────────────────────────
+class SelfAttention(Layer):
+    def build(self, input_shape):
+        self.W = self.add_weight("att_weight", shape=(input_shape[-1], 1), initializer="normal")
+        self.b = self.add_weight("att_bias",   shape=(input_shape[1],  1), initializer="zeros")
+        super().build(input_shape)
+
+    def call(self, x):
+        et = tf.squeeze(tf.tanh(tf.matmul(x, self.W) + self.b), axis=-1)
+        at = tf.expand_dims(tf.nn.softmax(et), axis=-1)
+        return tf.reduce_sum(x * at, axis=1)
+
+def build_model(input_shape=(60, 106), num_classes=226):
+    inp = Input(shape=input_shape)
+    x = LayerNormalization()(inp)
+    x = Bidirectional(LSTM(128, return_sequences=True))(x)
+    x = BatchNormalization()(x); x = Dropout(0.4)(x)
+    x = Bidirectional(LSTM(64, return_sequences=True))(x)
+    x = BatchNormalization()(x); x = Dropout(0.4)(x)
+    x = SelfAttention()(x)
+    x = Dense(256, activation='relu')(x)
+    x = BatchNormalization()(x); x = Dropout(0.3)(x)
+    x = Dense(128, activation='relu')(x)
+    x = BatchNormalization()(x)
+    out = Dense(num_classes, activation='softmax')(x)
+    return Model(inp, out)
+
+model = build_model(num_classes=num_classes)
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(1e-3),
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+    metrics=['accuracy']
+)
+model.summary()
+
+# ─── Eğitim ──────────────────────────────────────────────────────────────────
+ckpt_path = os.path.join(SAVE_PATH, "best_model_v2.keras")
+
+history = model.fit(
+    train_ds,
+    epochs=100,
+    validation_data=val_ds,
+    callbacks=[
+        ModelCheckpoint(ckpt_path, monitor='val_accuracy', save_best_only=True, mode='max', verbose=1),
+        EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True, verbose=1),
+        ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=1e-5, verbose=1),
+    ],
+    verbose=1,
+)
+
+# ─── Test ─────────────────────────────────────────────────────────────────────
+best = tf.keras.models.load_model(ckpt_path, custom_objects={'SelfAttention': SelfAttention})
+loss, acc = best.evaluate(test_ds, verbose=0)
+print(f"\n🏆 TEST ACCURACY: %{acc*100:.2f}  |  LOSS: {loss:.4f}")
+
+# ─── TFLite dönüşümü ─────────────────────────────────────────────────────────
+fixed_in  = tf.keras.Input(shape=(60, 106), batch_size=1)
+fixed_out = best(fixed_in)
+export_model = tf.keras.Model(inputs=fixed_in, outputs=fixed_out)
+
+converter = tf.lite.TFLiteConverter.from_keras_model(export_model)
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+
+tflite_model = converter.convert()
+tflite_path  = os.path.join(SAVE_PATH, "sign_language_model_v2.tflite")
+with open(tflite_path, 'wb') as f:
+    f.write(tflite_model)
+
+print(f"✅ TFLite kaydedildi: {tflite_path}")
+print("📱 Bu dosyayı Flutter assets/models/sign_language_model.tflite ile değiştir.")
