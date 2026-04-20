@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -30,66 +31,94 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 120),
           children: [
             // ── Minimal Modern Header ─────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : AppTheme.primaryBlue.withValues(alpha: 0.1),
-                    child: Text(
-                      userInitials,
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : AppTheme.primaryBlue,
+            GestureDetector(
+              onTap: auth.isAuthenticated ? null : () => context.push('/login'),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : AppTheme.primaryBlue.withValues(alpha: 0.1),
+                      child: Text(
+                        userInitials,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : AppTheme.primaryBlue,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          userName,
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.5,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          auth.isAuthenticated
-                              ? 'Aktif Hesap'
-                              : 'Geçici Oturum',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? Colors.white54 : AppTheme.midGrey,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            userName,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.5,
+                                ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          if (auth.isAuthenticated)
+                            Text(
+                              'Aktif Hesap',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark
+                                    ? Colors.white54
+                                    : AppTheme.midGrey,
+                              ),
+                            )
+                          else
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Giriş Yap / Üye Ol',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.secondaryBlue,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 16,
+                                  color: AppTheme.secondaryBlue,
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : Colors.grey.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.settings_rounded),
+                        color: isDark ? Colors.white : AppTheme.primaryBlue,
+                        onPressed: () => context.push('/settings'),
+                        tooltip: 'Ayarlar',
+                      ),
                     ),
-                    child: IconButton(
-                      icon: const Icon(Icons.settings_rounded),
-                      color: isDark ? Colors.white : AppTheme.primaryBlue,
-                      onPressed: () => context.push('/settings'),
-                      tooltip: 'Ayarlar',
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05),
 
@@ -121,7 +150,22 @@ class ProfileScreen extends ConsumerWidget {
                     iconColor: AppTheme.primaryStatusYellow,
                     title: 'Bize Ulaşın',
                     subtitle: 'Öneri veya sorun bildirin',
-                    onTap: () => _contactUs(context),
+                    onTap: () async {
+                      final url = Uri.parse(
+                        'mailto:habilyazici00@gmail.com?subject=Hear%20Me%20Out%20-%20Geri%20Bildirim',
+                      );
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url);
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Mail uygulaması bulunamadı.'),
+                            ),
+                          );
+                        }
+                      }
+                    },
                   ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
 
                   const SizedBox(height: 12),

@@ -97,113 +97,69 @@ class ScaffoldWithNav extends ConsumerWidget {
         ],
       ),
       extendBody: true,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewPaddingOf(context).bottom > 0 ? 0 : 20,
-        ),
-        child: Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color:
-                    (Theme.of(context).brightness == Brightness.dark
-                            ? AppTheme.secondaryBlue
-                            : AppTheme.primaryBlue)
-                        .withValues(alpha: 0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: FloatingActionButton(
-            heroTag: 'main_translate_fab', // Hero çakışmasını engelle
-            elevation: 0,
-            focusElevation: 0,
-            hoverElevation: 0,
-            highlightElevation: 0,
-            backgroundColor: _calculateSelectedIndex(context) == 2
-                ? AppTheme.primaryBlue
-                : AppTheme.secondaryBlue,
-            shape: const CircleBorder(),
-            onPressed: () => _onTap(context, ref, 2),
-            child: const Icon(
-              Icons.translate_rounded,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-        ),
-      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 12, right: 12, bottom: 24),
+          padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(35),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-              child: SizedBox(
+              child: Container(
                 height: 84,
-                child: BottomAppBar(
-                  padding: EdgeInsets.zero,
+                decoration: BoxDecoration(
                   color: (isDark ? AppTheme.darkSurface : Colors.white)
                       .withValues(alpha: isDark ? 0.35 : 0.45),
-                  elevation: 0,
-                  shape: const CircularNotchedRectangle(),
-                  notchMargin: 12, // Kavis marjı genişletildi
-                  clipBehavior: Clip.antiAlias,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppTheme.primaryBlue.withValues(alpha: 0.15),
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(35),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: _NavBarItem(
-                            icon: Icons.home_rounded,
-                            label: 'Ana Sayfa',
-                            isSelected: _calculateSelectedIndex(context) == 0,
-                            onTap: () => _onTap(context, ref, 0),
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavBarItem(
-                            icon: Icons.menu_book_rounded,
-                            label: 'Sözlük',
-                            isSelected: _calculateSelectedIndex(context) == 1,
-                            onTap: () => _onTap(context, ref, 1),
-                          ),
-                        ),
-                        const SizedBox(width: 80), // FAB Oyuk (Notch) boşluğu
-                        Expanded(
-                          child: _NavBarItem(
-                            icon: Icons.bookmark_rounded,
-                            label: 'Favoriler',
-                            isSelected: _calculateSelectedIndex(context) == 3,
-                            onTap: () => _onTap(context, ref, 3),
-                          ),
-                        ),
-                        Expanded(
-                          child: _NavBarItem(
-                            icon: Icons.person_rounded,
-                            label: 'Profil',
-                            isSelected: _calculateSelectedIndex(context) == 4,
-                            onTap: () => _onTap(context, ref, 4),
-                          ),
-                        ),
-                      ],
-                    ),
+                  border: Border.all(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                    width: 1.5,
                   ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: _NavBarItem(
+                        icon: Icons.home_rounded,
+                        label: 'Ana Sayfa',
+                        isSelected: _calculateSelectedIndex(context) == 0,
+                        onTap: () => _onTap(context, ref, 0),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavBarItem(
+                        icon: Icons.menu_book_rounded,
+                        label: 'Sözlük',
+                        isSelected: _calculateSelectedIndex(context) == 1,
+                        onTap: () => _onTap(context, ref, 1),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavBarItem(
+                        icon: Icons.translate_rounded,
+                        label: 'Çeviri',
+                        isSelected: _calculateSelectedIndex(context) == 2,
+                        onTap: () => _onTap(context, ref, 2),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavBarItem(
+                        icon: Icons.bookmark_rounded,
+                        label: 'Favoriler',
+                        isSelected: _calculateSelectedIndex(context) == 3,
+                        onTap: () => _onTap(context, ref, 3),
+                      ),
+                    ),
+                    Expanded(
+                      child: _NavBarItem(
+                        icon: Icons.person_rounded,
+                        label: 'Profil',
+                        isSelected: _calculateSelectedIndex(context) == 4,
+                        onTap: () => _onTap(context, ref, 4),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -273,7 +229,6 @@ class _NavBarItem extends StatelessWidget {
         ? Colors.white.withValues(alpha: 0.45)
         : AppTheme.primaryBlue.withValues(alpha: 0.45);
 
-    // Normal butonlar menü tasarımı
     return Tooltip(
       message: label,
       preferBelow: false,
@@ -307,7 +262,6 @@ class _NavBarItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
-              // Seçim göstergesi nokta
               AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 width: isSelected ? 16 : 0,

@@ -77,10 +77,10 @@ class HomeScreen extends ConsumerWidget {
                     child:
                         _ActionCard(
                               title: 'İşaretten Metne',
-                              icon: Icons.visibility_rounded,
+                              icon: Icons.videocam_rounded,
                               color: AppTheme.secondaryBlue,
-                              hint: 'Sağa Kaydır',
-                              hintIcon: Icons.swipe_right_rounded,
+                              hint: 'Topluma Karış',
+                              hintIcon: Icons.touch_app_rounded,
                               onTap: () => context.go('/translation'),
                             )
                             .animate(
@@ -105,11 +105,11 @@ class HomeScreen extends ConsumerWidget {
                   Expanded(
                     child:
                         _ActionCard(
-                              title: 'İşaret Anlat',
+                              title: 'Metinden İşarete',
                               icon: Icons.sign_language_rounded,
                               color: AppTheme.primaryBlue,
-                              hint: 'Sola Kaydır',
-                              hintIcon: Icons.swipe_left_rounded,
+                              hint: 'Hemen Öğren',
+                              hintIcon: Icons.touch_app_rounded,
                               onTap: () => context.go('/translation'),
                             )
                             .animate(
