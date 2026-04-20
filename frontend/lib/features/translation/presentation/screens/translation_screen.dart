@@ -153,6 +153,8 @@ class _TabItem extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           margin: EdgeInsets.zero,
+          height: double
+              .infinity, // Ebeveyni uçtan uca kapla (Resimdeki boşluğu çözer)
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark ? AppTheme.secondaryBlue : AppTheme.primaryBlue)

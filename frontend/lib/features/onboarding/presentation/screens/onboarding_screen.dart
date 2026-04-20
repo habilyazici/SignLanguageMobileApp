@@ -32,7 +32,7 @@ class _OnboardingPage {
 
 const _pages = [
   _OnboardingPage(
-    icon: Icons.visibility_rounded,
+    icon: Icons.videocam_rounded,
     iconColor: AppTheme.secondaryBlue,
     title: 'İşaretten Metne',
     subtitle: 'Kamera ile anlık tanıma',
