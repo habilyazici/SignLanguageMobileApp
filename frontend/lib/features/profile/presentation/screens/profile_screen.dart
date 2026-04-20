@@ -2,16 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
-import '../widgets/guest_banner.dart';
-import '../widgets/info_card.dart';
 import '../widgets/nav_tile.dart';
-import '../widgets/profile_header.dart';
-import '../widgets/section_title.dart';
-import '../widgets/status_summary.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -19,8 +14,14 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
-    final settings = ref.watch(settingsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final userName = auth.isAuthenticated
+        ? (auth.email ?? 'Kullanıcı')
+        : 'Misafir Kullanıcı';
+    final userInitials = auth.isAuthenticated
+        ? userName.substring(0, 1).toUpperCase()
+        : 'M';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -28,99 +29,154 @@ class ProfileScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.only(bottom: 120),
           children: [
-            // ── Profil başlığı ────────────────────────────────────────────
-            ProfileHeader(auth: auth, isDark: isDark)
-                .animate()
-                .fadeIn(duration: 400.ms)
-                .slideY(begin: -0.08, curve: Curves.easeOut),
-
-            const SizedBox(height: 24),
-
-            // ── Misafir ise giriş CTA'sı ─────────────────────────────────
-            if (auth.isGuest)
-              GuestBanner(isDark: isDark)
-                  .animate()
-                  .fadeIn(delay: 80.ms, duration: 350.ms)
-                  .slideY(begin: 0.06),
-
-            // ── Aktif ayar özeti (giriş yapmış kullanıcılarda) ────────────
-            if (auth.isAuthenticated)
-              StatusSummary(settings: settings, isDark: isDark)
-                  .animate()
-                  .fadeIn(delay: 100.ms, duration: 350.ms)
-                  .slideY(begin: 0.06),
-
-            const SizedBox(height: 16),
-
-            // ── Ayarlar ───────────────────────────────────────────────────
+            // ── Minimal Modern Header ─────────────────────────────────────
             Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: NavTile(
-                    isDark: isDark,
-                    icon: Icons.settings_rounded,
-                    iconColor: AppTheme.secondaryBlue,
-                    title: 'Ayarlar',
-                    subtitle: 'Tema, kamera, ses, gizlilik',
-                    onTap: () => context.push('/settings'),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : AppTheme.primaryBlue.withValues(alpha: 0.1),
+                    child: Text(
+                      userInitials,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppTheme.primaryBlue,
+                      ),
+                    ),
                   ),
-                )
-                .animate()
-                .fadeIn(delay: 200.ms, duration: 400.ms)
-                .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack)
-                .slideY(begin: 0.1, curve: Curves.easeOut),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.5,
+                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          auth.isAuthenticated
+                              ? 'Aktif Hesap'
+                              : 'Geçici Oturum',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? Colors.white54 : AppTheme.midGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.grey.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_rounded),
+                      color: isDark ? Colors.white : AppTheme.primaryBlue,
+                      onPressed: () => context.push('/settings'),
+                      tooltip: 'Ayarlar',
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 32),
 
-            // ── Turu Tekrarla ──────────────────────────────────────────────
+            // ── Menü Listesi ──────────────────────────────────────────────
             Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: NavTile(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  NavTile(
+                    isDark: isDark,
+                    icon: Icons.share_rounded,
+                    iconColor: AppTheme.secondaryBlue,
+                    title: 'Uygulamayı Paylaş',
+                    subtitle: 'Hear Me Out\'u arkadaşlarınıza önerin',
+                    onTap: () {
+                      Share.share(
+                        'Hear Me Out - İşaret Dili Uygulamasını keşfet! Harika özellikleriyle engelleri kaldırıyor. Hemen indir!',
+                      );
+                    },
+                  ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
+
+                  const SizedBox(height: 12),
+
+                  NavTile(
+                    isDark: isDark,
+                    icon: Icons.mail_rounded,
+                    iconColor: AppTheme.primaryStatusYellow,
+                    title: 'Bize Ulaşın',
+                    subtitle: 'Öneri veya sorun bildirin',
+                    onTap: () => _contactUs(context),
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
+
+                  const SizedBox(height: 12),
+
+                  NavTile(
                     isDark: isDark,
                     icon: Icons.help_outline_rounded,
-                    iconColor: AppTheme.primaryStatusYellow,
+                    iconColor: AppTheme.primaryStatusGreen,
                     title: 'Nasıl Kullanılır?',
                     subtitle: 'Uygulama turunu tekrar başlat',
                     onTap: () => context.push('/onboarding'),
-                  ),
-                )
-                .animate()
-                .fadeIn(delay: 300.ms, duration: 400.ms)
-                .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack)
-                .slideY(begin: 0.1, curve: Curves.easeOut),
+                  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
 
-            // ── Çıkış (sadece giriş yapılmışsa) ──────────────────────────
-            if (auth.isAuthenticated) ...[
-              const SizedBox(height: 10),
-              Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: NavTile(
+                  // ── Çıkış Yap (Sadece giriş yapıldıysa) ───────────────────
+                  if (auth.isAuthenticated) ...[
+                    const SizedBox(height: 12),
+                    NavTile(
                       isDark: isDark,
                       icon: Icons.logout_rounded,
-                      iconColor: Colors.orangeAccent,
+                      iconColor: Colors.redAccent,
                       title: 'Çıkış Yap',
-                      subtitle: auth.email ?? '',
+                      subtitle: 'Hesabınızdan güvenli çıkış',
                       onTap: () => _confirmSignOut(context, ref),
                       showArrow: false,
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(delay: 400.ms, duration: 400.ms)
-                  .scale(
-                    begin: const Offset(0.9, 0.9),
-                    curve: Curves.easeOutBack,
-                  )
-                  .slideY(begin: 0.1, curve: Curves.easeOut),
-            ],
-
-            const SizedBox(height: 24),
-
-            // ── Hakkında ──────────────────────────────────────────────────
-            const SectionTitle('Hakkında'),
-            InfoCard(
-              isDark: isDark,
-            ).animate().fadeIn(delay: 300.ms, duration: 350.ms),
+                    ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _contactUs(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: const [
+            Icon(Icons.mail_rounded, color: AppTheme.primaryBlue),
+            SizedBox(width: 8),
+            Text('Bize Ulaşın'),
+          ],
+        ),
+        content: const Text(
+          'Her türlü destek ve geri bildirim için bize email atabilirsiniz:\n\ninfo@hearmeout.com',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tamam'),
+          ),
+        ],
       ),
     );
   }
@@ -130,21 +186,19 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Çıkış Yap'),
-        content: const Text('Hesabından çıkmak istediğine emin misin?'),
+        content: const Text('Hesabınızdan çıkmak istediğinize emin misiniz?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('İptal'),
           ),
-          TextButton(
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () {
               Navigator.pop(context);
               ref.read(authProvider.notifier).signOut();
             },
-            child: const Text(
-              'Çıkış Yap',
-              style: TextStyle(color: Colors.orangeAccent),
-            ),
+            child: const Text('Çıkış Yap'),
           ),
         ],
       ),
