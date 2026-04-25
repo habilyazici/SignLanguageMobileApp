@@ -1,5 +1,6 @@
 import './config';
 import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
@@ -23,6 +24,12 @@ app.use('/api/history', historyRouter);
 app.use('/api/bookmarks', bookmarksRouter);
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
+
+// Global error handler
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: 'Sunucu hatasi.' });
+});
 
 app.listen(config.port, () => {
   console.log(`Server: http://localhost:${config.port}`);

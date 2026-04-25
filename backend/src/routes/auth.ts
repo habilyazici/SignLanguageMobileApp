@@ -32,21 +32,23 @@ authRouter.post('/register', async (req: Request, res: Response): Promise<void> 
 
   const { name, email, password } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    res.status(409).json({ error: 'Bu e-posta zaten kayitli.' });
-    return;
+  try {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      res.status(409).json({ error: 'Bu e-posta zaten kayitli.' });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({ data: { name, email, passwordHash } });
+
+    res.status(201).json({
+      token: signToken(user.id),
+      user: { id: user.id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
   }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: { name, email, passwordHash },
-  });
-
-  res.status(201).json({
-    token: signToken(user.id),
-    user: { id: user.id, name: user.name, email: user.email },
-  });
 });
 
 authRouter.post('/login', async (req: Request, res: Response): Promise<void> => {
@@ -58,20 +60,24 @@ authRouter.post('/login', async (req: Request, res: Response): Promise<void> => 
 
   const { email, password } = parsed.data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    res.status(401).json({ error: 'E-posta veya sifre hatali.' });
-    return;
-  }
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(401).json({ error: 'E-posta veya sifre hatali.' });
+      return;
+    }
 
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) {
-    res.status(401).json({ error: 'E-posta veya sifre hatali.' });
-    return;
-  }
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: 'E-posta veya sifre hatali.' });
+      return;
+    }
 
-  res.json({
-    token: signToken(user.id),
-    user: { id: user.id, name: user.name, email: user.email },
-  });
+    res.json({
+      token: signToken(user.id),
+      user: { id: user.id, name: user.name, email: user.email },
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
 });
