@@ -201,30 +201,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _contactUs(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Row(
-          children: const [
-            Icon(Icons.mail_rounded, color: AppTheme.primaryBlue),
-            SizedBox(width: 8),
-            Text('Bize Ulaşın'),
-          ],
-        ),
-        content: const Text(
-          'Her türlü destek ve geri bildirim için bize email atabilirsiniz:\n\ninfo@hearmeout.com',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Tamam'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _confirmSignOut(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
