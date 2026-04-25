@@ -2,21 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_state.dart';
-import '../../domain/repositories/auth_repository.dart';
 
-// Mevcut import'lar auth_provider.dart üzerinden geldiğinden uyumluluk için yeniden dışa aktar.
 export '../../domain/entities/auth_state.dart' show AuthStatus, AuthState;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Repository provider
-// ─────────────────────────────────────────────────────────────────────────────
-
-final _authRepositoryProvider = Provider<AuthRepository>(
+final _authRepositoryProvider = Provider<AuthRepositoryImpl>(
   (ref) => AuthRepositoryImpl(),
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Auth provider
 // ─────────────────────────────────────────────────────────────────────────────
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
@@ -25,13 +17,17 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     ref.keepAlive();
-    return const AuthState();
+    _restoreSession();
+    return const AuthState(status: AuthStatus.loading);
   }
 
-  Future<bool> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> _restoreSession() async {
+    final repo = ref.read(_authRepositoryProvider);
+    final restored = await repo.restoreSession();
+    state = restored;
+  }
+
+  Future<bool> signIn({required String email, required String password}) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     final result = await ref
         .read(_authRepositoryProvider)
@@ -53,5 +49,8 @@ class AuthNotifier extends Notifier<AuthState> {
     return result.isAuthenticated;
   }
 
-  void signOut() => state = const AuthState();
+  Future<void> signOut() async {
+    await ref.read(_authRepositoryProvider).clearSession();
+    state = const AuthState();
+  }
 }
