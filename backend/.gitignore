@@ -24,6 +24,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Video files — git'e commit edilmemeli (26 MB)
+public/videos/
+
 # Logs
 *.log
 npm-debug.log*
