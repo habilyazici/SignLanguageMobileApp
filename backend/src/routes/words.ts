@@ -26,8 +26,6 @@ function trLower(s: string): string {
     .replace(/Ç/g, 'ç').toLowerCase();
 }
 
-// "Söylemek, Demek" → ["söylemek", "demek"]
-// "Sıfır (0)"       → ["sıfır"]
 function manifestKeys(word: string): string[] {
   const stripped = word.replace(/\s*\(.*?\)/g, '').trim();
   return stripped
@@ -38,25 +36,24 @@ function manifestKeys(word: string): string[] {
 
 // GET /api/words/manifest
 wordsRouter.get('/manifest', async (_req: Request, res: Response): Promise<void> => {
-  if (manifestCache) {
-    res.json({ words: manifestCache });
-    return;
-  }
+  if (manifestCache) { res.json({ words: manifestCache }); return; }
 
-  const all = await prisma.word.findMany({
-    select: { word: true, videoFilename: true, cdnVideoUrl: true },
-  });
+  try {
+    const all = await prisma.word.findMany({
+      select: { word: true, videoFilename: true, cdnVideoUrl: true },
+    });
 
-  const manifest: Record<string, string> = {};
-  for (const w of all) {
-    const url = videoUrl(w);
-    for (const key of manifestKeys(w.word)) {
-      manifest[key] = url;
+    const manifest: Record<string, string> = {};
+    for (const w of all) {
+      const url = videoUrl(w);
+      for (const key of manifestKeys(w.word)) manifest[key] = url;
     }
-  }
 
-  manifestCache = manifest;
-  res.json({ words: manifest });
+    manifestCache = manifest;
+    res.json({ words: manifest });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
 });
 
 // GET /api/words?letter=A&q=ara&page=1&limit=50
@@ -71,58 +68,60 @@ wordsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
   if (letter) where.letter = letter.toUpperCase();
   if (q) where.word = { contains: q, mode: 'insensitive' };
 
-  const [words, total] = await Promise.all([
-    prisma.word.findMany({
-      where,
-      select: {
-        id: true, wordId: true, word: true, letter: true,
-        meaningEn: true, videoFilename: true, cdnVideoUrl: true,
-      },
-      orderBy: { word: 'asc' },
-      skip,
-      take: limit,
-    }),
-    prisma.word.count({ where }),
-  ]);
+  try {
+    const [words, total] = await Promise.all([
+      prisma.word.findMany({
+        where,
+        select: {
+          id: true, wordId: true, word: true, letter: true,
+          meaningEn: true, videoFilename: true, cdnVideoUrl: true,
+        },
+        orderBy: { word: 'asc' },
+        skip,
+        take: limit,
+      }),
+      prisma.word.count({ where }),
+    ]);
 
-  res.json({
-    data: words.map(w => ({
-      id: w.id,
-      wordId: w.wordId,
-      word: w.word,
-      letter: w.letter,
-      meaningEn: w.meaningEn,
-      videoUrl: videoUrl(w),
-    })),
-    total,
-    page,
-    limit,
-    pages: Math.ceil(total / limit),
-  });
+    res.json({
+      data: words.map(w => ({
+        id: w.id,
+        wordId: w.wordId,
+        word: w.word,
+        letter: w.letter,
+        meaningEn: w.meaningEn,
+        videoUrl: videoUrl(w),
+      })),
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
 });
 
 // GET /api/words/:id
 wordsRouter.get('/:id', async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(req.params['id'] ?? '', 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: 'Gecersiz ID.' });
-    return;
-  }
+  if (isNaN(id)) { res.status(400).json({ error: 'Gecersiz ID.' }); return; }
 
-  const word = await prisma.word.findUnique({ where: { id } });
-  if (!word) {
-    res.status(404).json({ error: 'Kelime bulunamadi.' });
-    return;
-  }
+  try {
+    const word = await prisma.word.findUnique({ where: { id } });
+    if (!word) { res.status(404).json({ error: 'Kelime bulunamadi.' }); return; }
 
-  res.json({
-    id: word.id,
-    wordId: word.wordId,
-    word: word.word,
-    letter: word.letter,
-    meaningEn: word.meaningEn,
-    allVideos: word.allVideos,
-    detailUrl: word.detailUrl,
-    videoUrl: videoUrl(word),
-  });
+    res.json({
+      id: word.id,
+      wordId: word.wordId,
+      word: word.word,
+      letter: word.letter,
+      meaningEn: word.meaningEn,
+      allVideos: word.allVideos,
+      detailUrl: word.detailUrl,
+      videoUrl: videoUrl(word),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
 });
