@@ -18,7 +18,6 @@ import '../../domain/repositories/recognition_repository.dart';
 export '../../domain/entities/recognition_state.dart'
     show RecognitionState, LandmarkDevData;
 
-
 // Repository provider
 final _recognitionRepositoryProvider = Provider<RecognitionRepository>(
   (_) => RecognitionRepositoryImpl(
@@ -152,7 +151,12 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
     if (result.topPredictions.isNotEmpty) {
       final labelRepo = ref.read(labelRepositoryProvider);
       _topPredictions = result.topPredictions
-          .map((p) => (word: labelRepo.getTrWord(p.classIndex), confidence: p.confidence))
+          .map(
+            (p) => (
+              word: labelRepo.getTrWord(p.classIndex),
+              confidence: p.confidence,
+            ),
+          )
           .toList();
     }
 
@@ -172,12 +176,6 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       final threshold = settings.stableFramesThreshold;
       if (_streak >= threshold) {
         final word = ref.read(labelRepositoryProvider).getTrWord(maxIdx);
-
-        if (word == 'boş') {
-          // 'boş' sınıfı tespit edildiğinde streak'i koru ama ekrana bir şey yazma
-          state = state.copyWith(confidenceScore: maxScore);
-          return;
-        }
 
         if (word != _lastShownWord) {
           _lastShownWord = word;
