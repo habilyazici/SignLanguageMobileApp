@@ -1,0 +1,63 @@
+# ── Claude Code (AI araç hafızası ve worktree'ler) ───────────────────────────
+.claude/
+
+# ── Not dosyaları ────────────────────────────────────────────────────────────
+Not
+not
+*.notes
+*.note
+notes/
+docs/private/
+TODO.md
+NOTES.md
+
+# ── Hassas / ortam değişkenleri ──────────────────────────────────────────────
+.env
+.env.*
+*.key
+*.keystore
+*.jks
+key.properties
+google-services.json
+GoogleService-Info.plist
+secrets.json
+credentials.json
+
+# ── İşletim sistemi ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+
+# ── IDE / Editör ─────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.iml
+
+# ── Python (backend / model training) ───────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+*.whl
+
+# ── Model dosyaları (büyük binary'ler) ──────────────────────────────────────
+*.tflite
+*.h5
+*.pb
+*.onnx
+*.pt
+*.pth
+
+# Sadece assets/models/ içindeki model dosyalarına izin ver
+!frontend/assets/models/*.tflite
+
+# ── Flutter build artifacts (frontend/.gitignore kapsar ama yedek) ──────────
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
