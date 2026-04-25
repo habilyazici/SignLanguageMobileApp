@@ -1,6 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
+/// Uygulama genelinde kullanılan standart kart widget'ı.
+/// Beyaz arka plan, ince kenarlık ve hafif gölge.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final double? width;
@@ -13,38 +15,29 @@ class GlassCard extends StatelessWidget {
     required this.child,
     this.width,
     this.height,
-    this.borderRadius = 24.0,
-    this.padding = const EdgeInsets.all(20.0),
+    this.borderRadius = 16.0,
+    this.padding = const EdgeInsets.all(16.0),
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          width: width,
-          height: height,
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 20,
-                spreadRadius: 1,
-              ),
-            ],
+    return Container(
+      width: width,
+      height: height,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(color: AppTheme.borderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
-          child: child,
-        ),
+        ],
       ),
+      child: child,
     );
   }
 }

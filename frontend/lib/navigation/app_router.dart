@@ -7,8 +7,7 @@ import '../features/home/presentation/screens/home_screen.dart';
 import '../features/dictionary/presentation/screens/dictionary_screen.dart';
 import '../features/dictionary/presentation/screens/dictionary_detail_screen.dart';
 import '../features/translation/presentation/screens/translation_screen.dart';
-import '../features/favorites/presentation/screens/favorites_screen.dart';
-import '../features/profile/presentation/screens/profile_screen.dart';
+import '../features/history/presentation/screens/history_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
@@ -35,24 +34,20 @@ final router = GoRouter(
     ),
 
     // ── Shell: bottom nav taşıyan 5 tab ──────────────────────────────
+    // 0=Anasayfa  1=Sözlük  2=Çeviri  3=Geçmiş  4=Ayarlar
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) => ScaffoldWithNav(child: child),
       routes: [
         GoRoute(path: '/home',        builder: (context, _) => const HomeScreen()),
-        GoRoute(path: '/dictionary',   builder: (context, _) => const DictionaryScreen()),
-        GoRoute(path: '/translation',  builder: (context, _) => const TranslationScreen()),
-        GoRoute(path: '/favorites',    builder: (context, _) => const FavoritesScreen()),
-        GoRoute(path: '/profile',      builder: (context, _) => const ProfileScreen()),
+        GoRoute(path: '/dictionary',  builder: (context, _) => const DictionaryScreen()),
+        GoRoute(path: '/translation', builder: (context, _) => const TranslationScreen()),
+        GoRoute(path: '/gecmis',      builder: (context, _) => const HistoryScreen()),
+        GoRoute(path: '/settings',    builder: (context, _) => const SettingsScreen()),
       ],
     ),
 
     // ── Tam ekran rotalar (bottom nav yok) ───────────────────────────
-    GoRoute(
-      path: '/settings',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SettingsScreen(),
-    ),
     GoRoute(
       path: '/dictionary/:id',
       parentNavigatorKey: _rootNavigatorKey,

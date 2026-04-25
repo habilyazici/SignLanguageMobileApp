@@ -337,59 +337,6 @@ class MotionThresholdRow extends StatelessWidget {
   }
 }
 
-// ── Landmark Legend (Dev Mode) ───────────────────────────────────────────────
-class LandmarkLegend extends StatelessWidget {
-  const LandmarkLegend({super.key, required this.isDark});
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Kamera üzerinde gösterilen noktalar:',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.white54 : AppTheme.midGrey,
-            ),
-          ),
-          const SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _dotLegend('Mavi', 'Bilek & El', Colors.blue),
-                _dotLegend('Sarı', 'Parmak Eklemleri', Colors.yellow),
-                _dotLegend('Yeşil', 'Parmak Uçları', Colors.green),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _dotLegend(String label, String desc, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-          ),
-          const SizedBox(width: 6),
-          Text('$label: $desc', style: const TextStyle(fontSize: 11)),
-        ],
-      ),
-    );
-  }
-}
-
 // ── Yardımcı İkon Kutusu ─────────────────────────────────────────────────────
 Widget _iconBox(IconData icon, Color color) {
   return Container(
