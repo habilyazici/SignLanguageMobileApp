@@ -173,6 +173,12 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
       if (_streak >= threshold) {
         final word = ref.read(labelRepositoryProvider).getTrWord(maxIdx);
 
+        if (word == 'boş') {
+          // 'boş' sınıfı tespit edildiğinde streak'i koru ama ekrana bir şey yazma
+          state = state.copyWith(confidenceScore: maxScore);
+          return;
+        }
+
         if (word != _lastShownWord) {
           _lastShownWord = word;
           final updated = [...state.sentence, word];
