@@ -6,12 +6,10 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../recognition/presentation/screens/recognition_screen.dart';
 import '../../../text_to_sign/presentation/screens/translator_screen.dart';
 
-/// İşaret Oku ve İşaret Anlat sayfalarını tek çatı altında birleştiren ekran.
+/// Çeviri merkezi — İşaret Oku ve İşaret Anlat modlarını içerir.
 ///
-/// Yapı:
-///   - Üstte özel segment tab çubuğu (2 sekme)
-///   - Altta [TabBarView]: sağa/sola kaydırma ile sekme geçişi
-///   - Kamera yaşam döngüsü: [RecognitionScreen] görünürken aktif, diğerinde kapalı
+/// İşaret Oku (index 0): Tam ekran kamera, işaret tanıma
+/// İşaret Anlat (index 1): Metin → işaret çevirisi
 class TranslationScreen extends ConsumerStatefulWidget {
   const TranslationScreen({super.key});
 
@@ -29,7 +27,6 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
 
-    // İlk render'dan sonra kamera durumunu belirle
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _syncCamera(_tabController.index);
     });
@@ -55,19 +52,23 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppTheme.softGrey,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            _TranslationTabBar(controller: _tabController, isDark: isDark),
+            // ── Mod Seçici ──────────────────────────────────────────────
+            _ModeSelector(controller: _tabController),
+
+            // ── İçerik ─────────────────────────────────────────────────
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: const [RecognitionScreen(), TranslatorScreen()],
+                children: const [
+                  RecognitionScreen(),
+                  TranslatorScreen(),
+                ],
               ),
             ),
           ],
@@ -78,50 +79,50 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Özel segment tab çubuğu
+// Mod seçici — minimal pill tasarımı
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _TranslationTabBar extends StatelessWidget {
-  const _TranslationTabBar({required this.controller, required this.isDark});
-
+class _ModeSelector extends StatelessWidget {
+  const _ModeSelector({required this.controller});
   final TabController controller;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
       child: AnimatedBuilder(
         animation: controller,
         builder: (context, _) {
           final index = controller.index;
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              height: 56,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : AppTheme.primaryBlue.withValues(alpha: 0.07),
-              ),
-              child: Row(
-                children: [
-                  _TabItem(
-                    icon: Icons.videocam_rounded,
-                    label: 'İşaretten Metne',
-                    isSelected: index == 0,
-                    isDark: isDark,
-                    onTap: () => controller.animateTo(0),
-                  ),
-                  _TabItem(
-                    icon: Icons.sign_language_rounded,
-                    label: 'Metinden İşarete',
-                    isSelected: index == 1,
-                    isDark: isDark,
-                    onTap: () => controller.animateTo(1),
-                  ),
-                ],
-              ),
+          return Container(
+            height: 42,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                _ModeTab(
+                  icon: Icons.videocam_rounded,
+                  label: 'İşaret Oku',
+                  isSelected: index == 0,
+                  onTap: () => controller.animateTo(0),
+                ),
+                _ModeTab(
+                  icon: Icons.sign_language_rounded,
+                  label: 'İşaret Anlat',
+                  isSelected: index == 1,
+                  onTap: () => controller.animateTo(1),
+                ),
+              ],
             ),
           );
         },
@@ -130,19 +131,17 @@ class _TranslationTabBar extends StatelessWidget {
   }
 }
 
-class _TabItem extends StatelessWidget {
-  const _TabItem({
+class _ModeTab extends StatelessWidget {
+  const _ModeTab({
     required this.icon,
     required this.label,
     required this.isSelected,
-    required this.isDark,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
   final bool isSelected;
-  final bool isDark;
   final VoidCallback onTap;
 
   @override
@@ -151,48 +150,27 @@ class _TabItem extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          margin: EdgeInsets.zero,
-          height: double
-              .infinity, // Ebeveyni uçtan uca kapla (Resimdeki boşluğu çözer)
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? AppTheme.secondaryBlue : AppTheme.primaryBlue)
-                : Colors.transparent,
-            borderRadius: BorderRadius.zero,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppTheme.primaryBlue.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 18, // 16'dan büyütüldü
-                color: isSelected
-                    ? Colors.white
-                    : (isDark
-                          ? Colors.white.withValues(alpha: 0.5)
-                          : AppTheme.primaryBlue.withValues(alpha: 0.6)),
+                size: 15,
+                color: isSelected ? Colors.white : AppTheme.textMuted,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 5),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14, // 13'ten büyütüldü
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark
-                            ? Colors.white.withValues(alpha: 0.5)
-                            : AppTheme.primaryBlue.withValues(alpha: 0.6)),
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? Colors.white : AppTheme.textMuted,
                 ),
               ),
             ],

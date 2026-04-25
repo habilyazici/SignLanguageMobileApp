@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,30 +9,26 @@ class ScaffoldWithNav extends ConsumerWidget {
 
   const ScaffoldWithNav({super.key, required this.child});
 
-  // Görsel soldan-sağa sırayla eşleşen index → rota tablosu:
-  // 0=AnaSayfa  1=Sözlük  2=Çeviri  3=Favoriler  4=Profil
+  // 0=Anasayfa  1=Sözlük  2=Çeviri  3=Geçmiş  4=Ayarlar
   static const _tabRoutes = [
     '/home',
     '/dictionary',
     '/translation',
-    '/favorites',
-    '/profile',
+    '/gecmis',
+    '/settings',
   ];
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/dictionary')) return 1;
+    if (location.startsWith('/home'))        return 0;
+    if (location.startsWith('/dictionary'))  return 1;
     if (location.startsWith('/translation')) return 2;
-    if (location.startsWith('/favorites')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/gecmis'))      return 3;
+    if (location.startsWith('/settings'))    return 4;
     return 0;
   }
 
   void _onTap(BuildContext context, WidgetRef ref, int index) {
-    // index 2 = Çeviri (kamera alt sekmesi olan İşaret Oku).
-    // TranslationScreen kendi alt sekme durumuna göre kamerayı yönetir;
-    // diğer sekmelerden gelindiğinde kamerayı kapattığımızdan emin oluruz.
     if (index != 2) {
       ref.read(cameraActiveProvider.notifier).setActive(active: false);
     }
@@ -42,138 +37,119 @@ class ScaffoldWithNav extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [AppTheme.darkBg, AppTheme.gradientDeep]
-                    : [AppTheme.softGrey, const Color(0xFFD6E2F0)],
-              ),
-            ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: _SwipeNavWrapper(
-              currentIndex: _calculateSelectedIndex(context),
-              onNavigate: (index) => _onTap(context, ref, index),
-              child: child,
-            ),
+      backgroundColor: AppTheme.softGrey,
+      extendBody: true,
+      body: _SwipeNavWrapper(
+        currentIndex: _calculateSelectedIndex(context),
+        onNavigate: (index) => _onTap(context, ref, index),
+        child: child,
+      ),
+      bottomNavigationBar: _buildBottomNav(context, ref),
+    );
+  }
+
+  Widget _buildBottomNav(BuildContext context, WidgetRef ref) {
+    final currentIndex = _calculateSelectedIndex(context);
+    final bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: AppTheme.borderColor, width: 1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 20,
+            offset: Offset(0, -4),
           ),
         ],
       ),
-      extendBody: true,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(35),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-              child: Container(
-                height: 84,
-                decoration: BoxDecoration(
-                  color: (isDark ? AppTheme.darkSurface : Colors.white)
-                      .withValues(alpha: isDark ? 0.35 : 0.45),
-                  border: Border.all(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.15),
-                    width: 1.5,
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 60,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.topCenter,
+            children: [
+              // ── 4 normal tab ──────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.home_rounded,
+                      label: 'Anasayfa',
+                      isSelected: currentIndex == 0,
+                      onTap: () => _onTap(context, ref, 0),
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.menu_book_rounded,
+                      label: 'Sözlük',
+                      isSelected: currentIndex == 1,
+                      onTap: () => _onTap(context, ref, 1),
+                    ),
+                  ),
+                  // Merkez kamera butonu için boşluk
+                  const Expanded(child: SizedBox()),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.history_rounded,
+                      label: 'Geçmiş',
+                      isSelected: currentIndex == 3,
+                      onTap: () => _onTap(context, ref, 3),
+                    ),
+                  ),
+                  Expanded(
+                    child: _NavItem(
+                      icon: Icons.settings_rounded,
+                      label: 'Ayarlar',
+                      isSelected: currentIndex == 4,
+                      onTap: () => _onTap(context, ref, 4),
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Merkez yükseltilmiş kamera butonu ────────────────────
+              Positioned(
+                top: -(bottomPadding > 0 ? 20.0 : 24.0),
+                child: GestureDetector(
+                  onTap: () => _onTap(context, ref, 2),
+                  child: Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF0046AF), Color(0xFF005CE1)],
+                      ),
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.35),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      currentIndex == 2
+                          ? Icons.camera_alt_rounded
+                          : Icons.camera_alt_outlined,
+                      color: Colors.white,
+                      size: 26,
+                    ),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: _NavBarItem(
-                        icon: Icons.home_rounded,
-                        label: 'Ana Sayfa',
-                        isSelected: _calculateSelectedIndex(context) == 0,
-                        onTap: () => _onTap(context, ref, 0),
-                      ),
-                    ),
-                    Expanded(
-                      child: _NavBarItem(
-                        icon: Icons.menu_book_rounded,
-                        label: 'Sözlük',
-                        isSelected: _calculateSelectedIndex(context) == 1,
-                        onTap: () => _onTap(context, ref, 1),
-                      ),
-                    ),
-                    Expanded(
-                      child: Transform.translate(
-                        offset: const Offset(0, -10),
-                        child: GestureDetector(
-                          onTap: () => _onTap(context, ref, 2),
-                          behavior: HitTestBehavior.opaque,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primaryBlue,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.primaryBlue.withValues(
-                                        alpha: 0.4,
-                                      ),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.photo_camera_rounded,
-                                  color: Colors.white,
-                                  size: 26,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Kamera',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppTheme.primaryBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: _NavBarItem(
-                        icon: Icons.bookmark_rounded,
-                        label: 'Favoriler',
-                        isSelected: _calculateSelectedIndex(context) == 3,
-                        onTap: () => _onTap(context, ref, 3),
-                      ),
-                    ),
-                    Expanded(
-                      child: _NavBarItem(
-                        icon: Icons.person_rounded,
-                        label: 'Profil',
-                        isSelected: _calculateSelectedIndex(context) == 4,
-                        onTap: () => _onTap(context, ref, 4),
-                      ),
-                    ),
-                  ],
-                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -182,8 +158,7 @@ class ScaffoldWithNav extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Global swipe navigation wrapper (Instagram-style)
-// Swipe right (velocity > 0) → previous tab, swipe left (velocity < 0) → next tab
+// Swipe ile sekmeler arası geçiş (kamera sekmesinde devre dışı)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SwipeNavWrapper extends StatelessWidget {
@@ -201,17 +176,20 @@ class _SwipeNavWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (currentIndex == 2) return child;
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragEnd: (details) {
         final v = details.primaryVelocity;
         if (v == null) return;
+        // index 2 (kamera) swipe'la atlanır: 1→3, 3→1
         if (v > _threshold && currentIndex > 0) {
-          // Finger moved right → go to left tab
-          onNavigate(currentIndex - 1);
+          final prev = currentIndex == 3 ? 1 : currentIndex - 1;
+          onNavigate(prev);
         } else if (v < -_threshold && currentIndex < 4) {
-          // Finger moved left → go to right tab
-          onNavigate(currentIndex + 1);
+          final next = currentIndex == 1 ? 3 : currentIndex + 1;
+          onNavigate(next);
         }
       },
       child: child,
@@ -219,13 +197,15 @@ class _SwipeNavWrapper extends StatelessWidget {
   }
 }
 
-class _NavBarItem extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _NavBarItem({
+  const _NavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
@@ -234,56 +214,32 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = AppTheme.secondaryBlue;
-    final inactiveColor = isDark
-        ? Colors.white.withValues(alpha: 0.45)
-        : AppTheme.primaryBlue.withValues(alpha: 0.45);
+    final color = isSelected ? AppTheme.primaryBlue : AppTheme.textMuted;
 
-    return Tooltip(
-      message: label,
-      preferBelow: false,
-      verticalOffset: 48,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? activeColor : inactiveColor,
-                size: 24,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                color: color,
               ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 9.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? activeColor : inactiveColor,
-                  letterSpacing: -0.2,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: isSelected ? 16 : 0,
-                height: isSelected ? 3 : 0,
-                decoration: BoxDecoration(
-                  color: activeColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
-          ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
