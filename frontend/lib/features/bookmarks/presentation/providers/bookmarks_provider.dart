@@ -10,16 +10,24 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 class BookmarksState {
   final Set<int> wordIds;
   final bool isLoading;
+  final String? error;
 
-  const BookmarksState({this.wordIds = const {}, this.isLoading = false});
+  const BookmarksState({this.wordIds = const {}, this.isLoading = false, this.error});
 
-  BookmarksState copyWith({Set<int>? wordIds, bool? isLoading}) => BookmarksState(
+  BookmarksState copyWith({
+    Set<int>? wordIds,
+    bool? isLoading,
+    Object? error = _sentinel,
+  }) => BookmarksState(
         wordIds: wordIds ?? this.wordIds,
         isLoading: isLoading ?? this.isLoading,
+        error: error == _sentinel ? this.error : error as String?,
       );
 
   bool contains(int wordId) => wordIds.contains(wordId);
 }
+
+const _sentinel = Object();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider
@@ -39,15 +47,17 @@ class BookmarksNotifier extends Notifier<BookmarksState> {
   }
 
   Future<void> _fetch() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, error: null);
     try {
       final repo = ref.read(bookmarksRepositoryProvider);
       final ids = await repo.fetchBookmarks();
       state = state.copyWith(wordIds: ids, isLoading: false);
     } catch (_) {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, error: 'Favoriler yüklenemedi.');
     }
   }
+
+  void retry() => _fetch();
 
   Future<void> toggle(int wordId) async {
     final wasBookmarked = state.wordIds.contains(wordId);

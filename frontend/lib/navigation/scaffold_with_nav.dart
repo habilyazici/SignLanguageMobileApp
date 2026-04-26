@@ -14,7 +14,7 @@ class ScaffoldWithNav extends ConsumerWidget {
     '/home',
     '/dictionary',
     '/translation',
-    '/gecmis',
+    '/history',
     '/profile',
   ];
 
@@ -23,7 +23,7 @@ class ScaffoldWithNav extends ConsumerWidget {
     if (location.startsWith('/home'))        return 0;
     if (location.startsWith('/dictionary'))  return 1;
     if (location.startsWith('/translation')) return 2;
-    if (location.startsWith('/gecmis'))      return 3;
+    if (location.startsWith('/history'))      return 3;
     if (location.startsWith('/profile'))     return 4;
     return 0;
   }

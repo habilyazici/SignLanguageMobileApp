@@ -15,7 +15,7 @@ extension AuthHttpClient on Ref {
   /// Tüm API istekleri için varsayılan başlıklar
   Map<String, String> _getHeaders({bool isJson = false}) {
     final headers = {
-      'bypass-tunnel-reminder': 'true',
+      'ngrok-skip-browser-warning': 'true',
       if (_token != null) 'Authorization': 'Bearer $_token',
       if (isJson) 'Content-Type': 'application/json',
     };

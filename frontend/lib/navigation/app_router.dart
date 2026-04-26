@@ -54,7 +54,7 @@ final router = GoRouter(
             return TranslationScreen(initialTab: tab);
           },
         ),
-        GoRoute(path: '/gecmis',      builder: (context, _) => const HistoryScreen()),
+        GoRoute(path: '/history',     builder: (context, _) => const HistoryScreen()),
         GoRoute(path: '/profile',     builder: (context, _) => const ProfileScreen()),
       ],
     ),

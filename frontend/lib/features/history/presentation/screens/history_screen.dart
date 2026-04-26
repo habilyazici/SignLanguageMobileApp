@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/turkish_normalizer.dart';
 import '../../../../shared/presentation/widgets/app_logo.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/history_item.dart';
@@ -31,12 +32,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final auth = ref.watch(authProvider);
     final history = ref.watch(historyProvider);
 
-    final filtered = _search.text.trim().isEmpty
+    final q = TurkishNormalizer.trLower(_search.text.trim());
+    final filtered = q.isEmpty
         ? history.items
         : history.items
-            .where((i) => i.text
-                .toLowerCase()
-                .contains(_search.text.trim().toLowerCase()))
+            .where((i) => TurkishNormalizer.trLower(i.text).contains(q))
             .toList();
 
     return Scaffold(

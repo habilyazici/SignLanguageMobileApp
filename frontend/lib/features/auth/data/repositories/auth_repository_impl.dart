@@ -39,7 +39,7 @@ const _storage = FlutterSecureStorage(
 class AuthRepositoryImpl implements AuthRepository {
   static const _authHeaders = {
     'Content-Type': 'application/json',
-    'bypass-tunnel-reminder': 'true',
+    'ngrok-skip-browser-warning': 'true',
   };
 
   @override

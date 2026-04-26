@@ -195,7 +195,6 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
             state = state.copyWith(
               predictedWord: '',
               confidenceScore: 0.0,
-              sentence: [],
             );
           });
         } else {
@@ -215,4 +214,12 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
   void pauseCamera() => _repo.pauseCamera();
   void resumeCamera() => _repo.resumeCamera();
   Future<void> switchCamera() => _repo.switchCamera();
+
+  void clearSentence() {
+    _clearTimer?.cancel();
+    _lastShownWord = '';
+    _streak = 0;
+    _lastIdx = -1;
+    state = state.copyWith(sentence: [], predictedWord: '', confidenceScore: 0.0);
+  }
 }
