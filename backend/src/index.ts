@@ -3,6 +3,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { config } from './config';
 import { authRouter } from './routes/auth';
@@ -15,6 +16,27 @@ const app = express();
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(express.json());
+
+// Genel limiter: 200 istek / 1 dakika / IP
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla istek gönderildi. Lütfen bekleyin.' },
+});
+
+// Auth limiter: 20 istek / 15 dakika / IP (brute-force koruması)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Çok fazla giriş denemesi. 15 dakika bekleyin.' },
+});
+
+app.use('/api', generalLimiter);
+app.use('/api/auth', authLimiter);
 
 app.use('/videos', express.static(path.join(process.cwd(), 'public', 'videos')));
 

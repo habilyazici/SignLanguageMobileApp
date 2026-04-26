@@ -1,21 +1,23 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'auth_widgets.dart';
 
-class ForgotPasswordScreen extends ConsumerStatefulWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() =>
-      _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState
-    extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey  = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   bool _sent      = false;
@@ -30,7 +32,15 @@ class _ForgotPasswordScreenState
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _loading = true);
-    await Future.delayed(const Duration(milliseconds: 800)); // API stub
+    try {
+      await http.post(
+        Uri.parse('$kApiBaseUrl/api/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': _emailCtrl.text.trim()}),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {
+      // Hata olsa bile "gönderildi" göster — kullanıcı varlığını açıklama
+    }
     if (mounted) setState(() { _loading = false; _sent = true; });
   }
 

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { prisma } from '../db';
+import type { Prisma } from '../../generated/prisma/client';
 import { config } from '../config';
 
 export const wordsRouter = Router();
@@ -64,7 +65,7 @@ wordsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
   const limit = Math.min(200, Math.max(1, parseInt(asString(req.query['limit']) ?? '50', 10)));
   const skip = (page - 1) * limit;
 
-  const where: Parameters<typeof prisma.word.findMany>[0]['where'] = {};
+  const where: Prisma.WordWhereInput = {};
   if (letter) where.letter = letter.toUpperCase();
   if (q) where.word = { contains: q, mode: 'insensitive' };
 
@@ -104,7 +105,7 @@ wordsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
 
 // GET /api/words/:id
 wordsRouter.get('/:id', async (req: Request, res: Response): Promise<void> => {
-  const id = parseInt(req.params['id'] ?? '', 10);
+  const id = parseInt(String(req.params['id'] ?? ''), 10);
   if (isNaN(id)) { res.status(400).json({ error: 'Gecersiz ID.' }); return; }
 
   try {

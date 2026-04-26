@@ -63,7 +63,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Row(
                 children: [
-                  AppLogo(height: 22),
+                  AppLogo(height: 40),
                   const Spacer(),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
@@ -277,25 +277,7 @@ class _SignCard extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        leading: Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryBlueTint,
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              sign.label.isEmpty ? '?' : sign.label[0].toUpperCase(),
-              style: const TextStyle(
-                color: AppTheme.primaryBlue,
-                fontWeight: FontWeight.w700,
-                fontSize: 17,
-              ),
-            ),
-          ),
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         title: Text(
           sign.label,
           style: const TextStyle(
