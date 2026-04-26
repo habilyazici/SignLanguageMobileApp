@@ -63,7 +63,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 // ── Geri ────────────────────────────────────────────────
                 IconButton(
-                  onPressed: () => context.go('/login'),
+                  onPressed: () => context.pop(),
                   icon: Icon(
                     Icons.arrow_back_ios_rounded,
                     color: isDark ? Colors.white70 : AppTheme.primaryBlue,

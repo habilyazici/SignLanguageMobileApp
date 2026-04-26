@@ -63,9 +63,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    // ref.read ile notifier almak build() içinde geçerlidir:
+    // Notifier referansı sabit kalır, her frame'de yeniden oluşturulmaz.
     final n = ref.read(settingsProvider.notifier);
     final auth = ref.watch(authProvider);
     final isGuest = auth.isGuest;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: AppTheme.softGrey,
@@ -184,22 +187,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (_visible('Genel & Görünüm')) ...[
               const SettingsSection('Genel & Görünüm'),
               SettingsCard(
-                isDark: false,
+                isDark: isDark,
                 children: [
                   ThemeRow(
                     current: settings.themeMode,
                     onChanged: n.setThemeMode,
-                    isDark: false,
+                    isDark: isDark,
                   ),
                   SettingsDivider(isDark: false),
                   TextSizeRow(
                     current: settings.textSize,
                     onChanged: n.setTextSize,
-                    isDark: false,
+                    isDark: isDark,
                   ),
                   SettingsDivider(isDark: false),
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.back_hand_rounded,
                     iconColor: const Color(0xFF7C4DFF),
                     title: 'Solak Modu',
@@ -217,10 +220,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (_visible('Ses')) ...[
               const SettingsSection('Ses'),
               SettingsCard(
-                isDark: false,
+                isDark: isDark,
                 children: [
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.volume_up_rounded,
                     iconColor: Colors.deepOrangeAccent,
                     title: 'Sesli Okuma (TTS)',
@@ -232,7 +235,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   SettingsDivider(isDark: false),
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.mic_rounded,
                     iconColor: Colors.pinkAccent,
                     title: 'Sesli Giriş (STT)',
@@ -250,10 +253,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (_visible('Veri & Video')) ...[
               const SettingsSection('Veri & Video'),
               SettingsCard(
-                isDark: false,
+                isDark: isDark,
                 children: [
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.data_usage_rounded,
                     iconColor: Colors.blueAccent,
                     title: 'Mobil Veride Videoyu Kapat',
@@ -267,11 +270,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   VideoQualityRow(
                     current: settings.videoQuality,
                     onChanged: n.setVideoQuality,
-                    isDark: false,
+                    isDark: isDark,
                   ),
                   SettingsDivider(isDark: false),
                   SettingsActionRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.cleaning_services_rounded,
                     iconColor: Colors.blueAccent,
                     title: 'Önbelleği Temizle',
@@ -290,10 +293,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (_visible('Gizlilik & Veri')) ...[
               const SettingsSection('Gizlilik & Veri'),
               SettingsCard(
-                isDark: false,
+                isDark: isDark,
                 children: [
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.security_rounded,
                     iconColor: AppTheme.primaryStatusGreen,
                     title: 'Sıfır Veri Modu (Yerel)',
@@ -305,7 +308,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   SettingsDivider(isDark: false),
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.cloud_off_rounded,
                     iconColor: Colors.blueGrey,
                     title: 'Bulut Senkronizasyonu',
@@ -319,7 +322,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   SettingsDivider(isDark: false),
                   SettingsActionRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.delete_forever_rounded,
                     iconColor: AppTheme.primaryStatusRed,
                     title: 'Hesabı Sil',
@@ -328,7 +331,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     labelColor: AppTheme.primaryStatusRed,
                     helpText:
                         'Uygulama üzerindeki tüm varlığınızı, ayarlarınızı ve verilerinizi siler.',
-                    onTap: () => SettingsDialogs.showDeleteAccountDialog(context, false),
+                    onTap: isGuest
+                        ? () => SettingsDialogs.showDeleteAccountDialog(context, isDark)
+                        : () => SettingsDialogs.showDeleteAccountDialog(context, isDark, ref: ref),
                   ),
                 ],
               ).animate().fadeIn(delay: 220.ms, duration: 350.ms).slideY(begin: 0.06, end: 0),
@@ -338,10 +343,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (_visible('İleri Seviye (Geliştirici)')) ...[
               const SettingsSection('İleri Seviye (Geliştirici)'),
               SettingsCard(
-                isDark: false,
+                isDark: isDark,
                 children: [
                   SettingsSwitchRow(
-                    isDark: false,
+                    isDark: isDark,
                     icon: Icons.precision_manufacturing_rounded,
                     iconColor: Colors.cyanAccent,
                     title: 'Geliştirici Ayarlarını Etkinleştir',
@@ -355,29 +360,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ConfidenceRow(
                       current: settings.confidenceLevel,
                       onChanged: n.setConfidenceLevel,
-                      isDark: false,
+                      isDark: isDark,
                     ),
                     SettingsDivider(isDark: false),
                     StabilityRow(
-                      isDark: false,
+                      isDark: isDark,
                       current: settings.stableFramesThreshold,
                       onChanged: n.setStableFramesThreshold,
                     ),
                     SettingsDivider(isDark: false),
                     FpsRow(
-                      isDark: false,
+                      isDark: isDark,
                       current: settings.fpsPreference,
                       onChanged: n.setFpsPreference,
                     ),
                     SettingsDivider(isDark: false),
                     MotionThresholdRow(
-                      isDark: false,
+                      isDark: isDark,
                       current: settings.motionThreshold,
                       onChanged: n.setMotionThreshold,
                     ),
                     SettingsDivider(isDark: false),
                     SettingsSwitchRow(
-                      isDark: false,
+                      isDark: isDark,
                       icon: Icons.ads_click_rounded,
                       iconColor: Colors.amberAccent,
                       title: 'Hızlı Dev Butonu',

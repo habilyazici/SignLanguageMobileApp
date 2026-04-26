@@ -74,9 +74,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sttEnabled = ref.watch(settingsProvider).sttEnabled;
-    final ttsState = ref.watch(textToSignProvider);
+    final textToSignState = ref.watch(textToSignProvider);
     final notifier = ref.read(textToSignProvider.notifier);
-    final manifestReady = !ttsState.isLoading || ttsState.hasTokens;
+    final manifestReady = !textToSignState.isLoading || textToSignState.hasTokens;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -88,13 +88,13 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
             // ── Token grid veya boş alan ──────────────────────────────────
             Expanded(
               flex: 5, // Kamera kartı (Recognition) ile birebir aynı yükseklik!
-              child: ttsState.hasTokens
+              child: textToSignState.hasTokens
                   ? _TokenGrid(
-                      tokens: ttsState.tokens,
-                      currentIndex: ttsState.currentIndex,
-                      isPlaying: ttsState.isPlaying,
+                      tokens: textToSignState.tokens,
+                      currentIndex: textToSignState.currentIndex,
+                      isPlaying: textToSignState.isPlaying,
                       onVideoEnd: () {
-                        if (ttsState.isPlaying) notifier.next();
+                        if (textToSignState.isPlaying) notifier.next();
                       },
                       onTap: (i) => notifier.goTo(i),
                     )
@@ -119,18 +119,18 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                           mainAxisAlignment: MainAxisAlignment
                               .end, // Yukarıdan boşluk bırakır, aşağı yaslar
                           children: [
-                            if (ttsState.hasTokens)
+                            if (textToSignState.hasTokens)
                               _PlaybackBar(
-                                isPlaying: ttsState.isPlaying,
-                                isFirst: ttsState.currentIndex == 0,
-                                isLast: ttsState.isLastToken,
+                                isPlaying: textToSignState.isPlaying,
+                                isFirst: textToSignState.currentIndex == 0,
+                                isLast: textToSignState.isLastToken,
                                 onPrev: notifier.previous,
                                 onPlay: notifier.play,
                                 onPause: notifier.pause,
                                 onNext: notifier.next,
                               ).animate().fadeIn(duration: 200.ms),
 
-                            if (ttsState.hasTokens) const SizedBox(height: 12),
+                            if (textToSignState.hasTokens) const SizedBox(height: 12),
 
                             // ── Metin giriş alanı ──────────────────────────────
                             Padding(
@@ -156,7 +156,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                                           ),
                                           borderSide: BorderSide.none,
                                         ),
-                                        suffixIcon: ttsState.hasTokens
+                                        suffixIcon: textToSignState.hasTokens
                                             ? IconButton(
                                                 icon: const Icon(
                                                   Icons.close_rounded,

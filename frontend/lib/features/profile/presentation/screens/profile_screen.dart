@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/presentation/widgets/app_logo.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
+import '../../../history/presentation/providers/history_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -24,6 +25,9 @@ class ProfileScreen extends ConsumerWidget {
     final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'M';
     final bookmarkCount = ref.watch(
       bookmarksProvider.select((s) => s.wordIds.length),
+    );
+    final translationCount = ref.watch(
+      historyProvider.select((s) => s.items.length),
     );
 
     return Scaffold(
@@ -233,7 +237,7 @@ class ProfileScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     _StatItem(
-                      value: '0',
+                      value: '$translationCount',
                       label: 'Çeviri',
                       icon: Icons.translate_rounded,
                     ),
@@ -321,11 +325,20 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.mail_rounded,
                   iconColor: AppTheme.primaryStatusYellow,
                   title: 'Bize Ulaşın',
-                  onTap: () => launchUrl(
-                    Uri.parse(
+                  onTap: () async {
+                    final uri = Uri.parse(
                       'mailto:habilyazici00@gmail.com?subject=Hear%20Me%20Out%20-%20Geri%20Bildirim',
-                    ),
-                  ),
+                    );
+                    final launched = await launchUrl(uri);
+                    if (!launched && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('E-posta uygulaması açılamadı.'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
                 ),
                 _Divider(),
                 _Tile(

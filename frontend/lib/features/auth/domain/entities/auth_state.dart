@@ -1,5 +1,9 @@
 enum AuthStatus { guest, loading, authenticated }
 
+// copyWith içinde null'a sıfırlamak için sentinel kullanılır.
+// Bkz: HistoryState, aynı pattern.
+const _sentinel = Object();
+
 class AuthState {
   final AuthStatus status;
   final String? displayName;
@@ -26,17 +30,19 @@ class AuthState {
     return displayName![0].toUpperCase();
   }
 
+  /// [errorMessage] parametresi açıkça `null` geçilirse hata temizlenir.
+  /// Geçilmezse mevcut hata korunur.
   AuthState copyWith({
     AuthStatus? status,
     String? displayName,
     String? email,
     String? token,
-    String? errorMessage,
+    Object? errorMessage = _sentinel,
   }) => AuthState(
     status: status ?? this.status,
     displayName: displayName ?? this.displayName,
     email: email ?? this.email,
     token: token ?? this.token,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: errorMessage == _sentinel ? this.errorMessage : errorMessage as String?,
   );
 }
