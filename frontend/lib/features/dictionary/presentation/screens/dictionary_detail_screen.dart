@@ -3,10 +3,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:video_player/video_player.dart';
 
-import '../../../../core/constants/api_constants.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
@@ -49,9 +48,7 @@ class _WordDetail {
 
 final _wordDetailProvider =
     FutureProvider.family<_WordDetail, int>((ref, id) async {
-  final res = await http
-      .get(Uri.parse('$kApiBaseUrl/api/words/$id'))
-      .timeout(const Duration(seconds: 10));
+  final res = await ref.apiGet('/api/words/$id');
   if (res.statusCode != 200) throw Exception('Kelime yuklenemedi.');
   return _WordDetail.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
 });
@@ -291,7 +288,10 @@ class _VideoHeaderState extends ConsumerState<_VideoHeader> {
       }
     }
 
-    _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    _ctrl = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoUrl),
+      httpHeaders: const {'ngrok-skip-browser-warning': 'true'},
+    );
     await _ctrl!.initialize();
     _ctrl!.addListener(_onControllerUpdate);
     _ctrl!.setLooping(true);
@@ -493,7 +493,10 @@ class _AltVideoCardState extends ConsumerState<_AltVideoCard> {
           return;
         }
       }
-      _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+      _ctrl = VideoPlayerController.networkUrl(
+        Uri.parse(widget.url),
+        httpHeaders: const {'ngrok-skip-browser-warning': 'true'},
+      );
       await _ctrl!.initialize();
       _ctrl!.play();
       setState(() { _ready = true; _playing = true; });
