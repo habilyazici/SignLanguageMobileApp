@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
@@ -72,8 +73,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 // Logo - Büyütülmüş ve sadeleştirilmiş (daire kaldırıldı)
                 Image.asset(
                   'assets/images/logo.png',
-                  width: 240,
-                  height: 240,
+                  width: 200,
+                  height: 200,
                   fit: BoxFit.contain,
                   errorBuilder: (ctx, err, st) => Icon(
                     Icons.hearing,
@@ -88,6 +89,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                       curve: Curves.easeOutBack,
                     )
                     .fadeIn(duration: 600.ms),
+
+                const SizedBox(height: 16),
+
+                // Uygulama Adı
+                Text(
+                  'Hear Me Out',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppTheme.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                )
+                    .animate()
+                    .slideY(begin: 0.2, end: 0, duration: 600.ms, curve: Curves.easeOutQuint)
+                    .fadeIn(delay: 300.ms, duration: 500.ms),
 
                 const SizedBox(height: 8),
 
