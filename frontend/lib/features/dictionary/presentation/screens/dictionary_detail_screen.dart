@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Model
@@ -252,19 +254,21 @@ class _DetailBody extends ConsumerWidget {
 // Video header
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _VideoHeader extends StatefulWidget {
+class _VideoHeader extends ConsumerStatefulWidget {
   const _VideoHeader({required this.videoUrl});
   final String videoUrl;
 
   @override
-  State<_VideoHeader> createState() => _VideoHeaderState();
+  ConsumerState<_VideoHeader> createState() => _VideoHeaderState();
 }
 
-class _VideoHeaderState extends State<_VideoHeader> {
+class _VideoHeaderState extends ConsumerState<_VideoHeader> {
   VideoPlayerController? _ctrl;
   bool _ready = false;
   bool _showPlayIcon = false;
   double _speed = 1.0;
+  bool _isPlaying = false;
+  bool _blockedByCellular = false;
 
   static const _speeds = [1.0, 1.5, 2.0, 0.5];
 
@@ -275,22 +279,41 @@ class _VideoHeaderState extends State<_VideoHeader> {
   }
 
   Future<void> _init() async {
+    final settings = ref.read(settingsProvider);
+
+    if (settings.cellularVideoDisabled) {
+      final result = await Connectivity().checkConnectivity();
+      final onCellular = result.contains(ConnectivityResult.mobile) &&
+          !result.contains(ConnectivityResult.wifi);
+      if (onCellular) {
+        if (mounted) setState(() => _blockedByCellular = true);
+        return;
+      }
+    }
+
     _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
     await _ctrl!.initialize();
     _ctrl!.addListener(_onControllerUpdate);
     _ctrl!.setLooping(true);
-    _ctrl!.play();
-    if (mounted) setState(() => _ready = true);
+
+    final autoplay = settings.videoQuality != VideoQuality.dataSaver;
+    if (autoplay) _ctrl!.play();
+    if (mounted) setState(() { _ready = true; _isPlaying = autoplay; });
   }
 
+  // isPlaying değişince rebuild; diğer frame güncellemelerini yoksay.
   void _onControllerUpdate() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    final playing = _ctrl?.value.isPlaying ?? false;
+    if (playing != _isPlaying) {
+      setState(() => _isPlaying = playing);
+    }
   }
 
   void _togglePlayPause() {
     final ctrl = _ctrl;
     if (ctrl == null) return;
-    if (ctrl.value.isPlaying) {
+    if (_isPlaying) {
       ctrl.pause();
     } else {
       ctrl.play();
@@ -319,7 +342,6 @@ class _VideoHeaderState extends State<_VideoHeader> {
   @override
   Widget build(BuildContext context) {
     final ctrl = _ctrl;
-    final isPlaying = ctrl?.value.isPlaying ?? false;
 
     return Container(
       color: AppTheme.primaryBlue,
@@ -349,7 +371,7 @@ class _VideoHeaderState extends State<_VideoHeader> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                           color: Colors.white,
                           size: 32,
                         ),
@@ -389,7 +411,7 @@ class _VideoHeaderState extends State<_VideoHeader> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                                   color: Colors.white,
                                   size: 24,
                                 ),
@@ -426,9 +448,11 @@ class _VideoHeaderState extends State<_VideoHeader> {
                 ],
               ),
             )
-          : const Center(
-              child: CircularProgressIndicator(color: Colors.white54),
-            ),
+          : _blockedByCellular
+              ? const _CellularBlockPlaceholder()
+              : const Center(
+                  child: CircularProgressIndicator(color: Colors.white54),
+                ),
     );
   }
 }
@@ -437,22 +461,38 @@ class _VideoHeaderState extends State<_VideoHeader> {
 // Alternatif video kartı (CDN URL'leri)
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _AltVideoCard extends StatefulWidget {
+class _AltVideoCard extends ConsumerStatefulWidget {
   const _AltVideoCard({required this.url, required this.index});
   final String url;
   final int index;
 
   @override
-  State<_AltVideoCard> createState() => _AltVideoCardState();
+  ConsumerState<_AltVideoCard> createState() => _AltVideoCardState();
 }
 
-class _AltVideoCardState extends State<_AltVideoCard> {
+class _AltVideoCardState extends ConsumerState<_AltVideoCard> {
   VideoPlayerController? _ctrl;
   bool _ready = false;
   bool _playing = false;
 
   Future<void> _toggle() async {
     if (_ctrl == null) {
+      final settings = ref.read(settingsProvider);
+      if (settings.cellularVideoDisabled) {
+        final result = await Connectivity().checkConnectivity();
+        final onCellular = result.contains(ConnectivityResult.mobile) &&
+            !result.contains(ConnectivityResult.wifi);
+        if (onCellular && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Video yüklemek için Wi-Fi bağlantısı gerekli.'),
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 3),
+            ),
+          );
+          return;
+        }
+      }
       _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.url));
       await _ctrl!.initialize();
       _ctrl!.play();
@@ -553,6 +593,33 @@ class _AltVideoCardState extends State<_AltVideoCard> {
 // ─────────────────────────────────────────────────────────────────────────────
 // Küçük yardımcı widget'lar
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _CellularBlockPlaceholder extends StatelessWidget {
+  const _CellularBlockPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppTheme.primaryBlue,
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.wifi_off_rounded, color: Colors.white54, size: 40),
+          SizedBox(height: 8),
+          Text(
+            'Wi-Fi bağlantısı gerekli',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Mobil veride video devre dışı (Ayarlar)',
+            style: TextStyle(color: Colors.white38, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _LetterBadge extends StatelessWidget {
   const _LetterBadge({required this.letter});
