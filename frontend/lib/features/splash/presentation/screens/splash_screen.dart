@@ -31,9 +31,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? Colors.white : AppTheme.primaryBlue;
+    final textColor = isDark ? Colors.white70 : AppTheme.midGrey;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.primaryBlue,
+      backgroundColor: isDark ? AppTheme.darkBg : Colors.white,
       body: Stack(
         children: [
           // ── Arka plan dekoratif daireler ──────────────────────────────
@@ -45,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
+                color: accentColor.withValues(alpha: isDark ? 0.04 : 0.03),
               ),
             ),
           ),
@@ -57,7 +59,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 240,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.04),
+                color: accentColor.withValues(alpha: isDark ? 0.03 : 0.02),
               ),
             ),
           ),
@@ -67,46 +69,34 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo
-                Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.15),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (ctx, err, st) => const Icon(
-                            Icons.hearing,
-                            size: 56,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    )
+                // Logo - Büyütülmüş ve sadeleştirilmiş (daire kaldırıldı)
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 240,
+                  height: 240,
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, st) => Icon(
+                    Icons.hearing,
+                    size: 100,
+                    color: accentColor,
+                  ),
+                )
                     .animate()
                     .scale(
-                      begin: const Offset(0.5, 0.5),
-                      duration: 600.ms,
+                      begin: const Offset(0.8, 0.8),
+                      duration: 800.ms,
                       curve: Curves.easeOutBack,
                     )
-                    .fadeIn(duration: 400.ms),
+                    .fadeIn(duration: 600.ms),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Slogan
                 Text(
                   'İşaret dilini herkes için erişilebilir yap',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: textColor,
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
@@ -120,7 +110,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   height: 32,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: accentColor.withValues(alpha: 0.7),
                   ),
                 ).animate().fadeIn(delay: 900.ms, duration: 400.ms),
               ],
@@ -137,7 +127,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.white.withValues(alpha: 0.4),
+                color: textColor.withValues(alpha: 0.5),
                 letterSpacing: 0.5,
               ),
             ).animate().fadeIn(delay: 1200.ms, duration: 500.ms),
