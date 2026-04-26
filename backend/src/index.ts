@@ -53,6 +53,10 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Sunucu hatasi.' });
 });
 
-app.listen(config.port, () => {
+const server = app.listen(config.port, '0.0.0.0', () => {
   console.log(`Server: http://localhost:${config.port}`);
+});
+
+server.on('error', (err) => {
+  console.error('SERVER ERROR:', err);
 });
