@@ -280,14 +280,22 @@ class _CameraLayer extends StatelessWidget {
       );
     }
     final controller = cameraController!;
+    final previewSize = controller.value.previewSize;
+    if (previewSize == null) {
+      return Shimmer.fromColors(
+        baseColor: const Color(0xFF1A1A1A),
+        highlightColor: const Color(0xFF2E2E2E),
+        child: Container(color: const Color(0xFF1A1A1A)),
+      );
+    }
     return GestureDetector(
       onDoubleTap: onDoubleTap,
       child: SizedBox.expand(
         child: FittedBox(
           fit: BoxFit.contain,
           child: SizedBox(
-            width: controller.value.previewSize!.height,
-            height: controller.value.previewSize!.width,
+            width: previewSize.height,
+            height: previewSize.width,
             child: CameraPreview(controller),
           ),
         ),

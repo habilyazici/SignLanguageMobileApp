@@ -199,8 +199,6 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
           }
           _clearTimer?.cancel();
           _clearTimer = Timer(const Duration(seconds: 4), () {
-            // Smoothing state'ini de sıfırla; yoksa aynı kelime bir daha
-            // gösterilemiyor (_lastShownWord hâlâ dolu kalıyordu).
             _lastShownWord = '';
             _streak = 0;
             _lastIdx = -1;

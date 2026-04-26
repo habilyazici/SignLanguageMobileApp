@@ -83,7 +83,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // ── Günün İşareti ──────────────────────────────────────────
-              _DailyWordCard(word: dailyWord.word)
+              _DailyWordCard(wordId: dailyWord.id, word: dailyWord.word)
                   .animate()
                   .fadeIn(delay: 160.ms, duration: 400.ms)
                   .slideY(begin: 0.08, end: 0),
@@ -133,7 +133,7 @@ class HomeScreen extends ConsumerWidget {
                       subtitle: 'Metni işarete çevir',
                       icon: Icons.sign_language_rounded,
                       color: AppTheme.secondaryBlue,
-                      onTap: () => context.go('/translation'),
+                      onTap: () => context.go('/translation?tab=1'),
                     ).animate().fadeIn(delay: 320.ms, duration: 350.ms).slideY(begin: 0.08, end: 0),
                   ),
                   const SizedBox(width: 12),
@@ -161,13 +161,14 @@ class HomeScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DailyWordCard extends StatelessWidget {
-  const _DailyWordCard({required this.word});
+  const _DailyWordCard({required this.wordId, required this.word});
+  final int wordId;
   final String word;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go('/dictionary'),
+      onTap: () => context.push('/dictionary/$wordId'),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
