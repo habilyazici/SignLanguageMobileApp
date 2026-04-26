@@ -6,6 +6,28 @@ import '../../../../core/constants/api_constants.dart';
 import '../../domain/entities/auth_state.dart';
 import '../../domain/repositories/auth_repository.dart';
 
+bool _isJwtExpired(String token) {
+  try {
+    final parts = token.split('.');
+    if (parts.length != 3) return true;
+    // base64url → base64 (pad to multiple of 4)
+    var payload = parts[1].replaceAll('-', '+').replaceAll('_', '/');
+    switch (payload.length % 4) {
+      case 2:
+        payload += '==';
+      case 3:
+        payload += '=';
+    }
+    final decoded = jsonDecode(utf8.decode(base64Decode(payload))) as Map<String, dynamic>;
+    final exp = decoded['exp'];
+    if (exp == null) return false;
+    final expiry = DateTime.fromMillisecondsSinceEpoch((exp as int) * 1000);
+    return DateTime.now().isAfter(expiry);
+  } catch (_) {
+    return true; // parse failed → treat as expired
+  }
+}
+
 const _kTokenKey = 'auth_token';
 const _kNameKey = 'auth_name';
 const _kEmailKey = 'auth_email';
@@ -15,6 +37,11 @@ const _storage = FlutterSecureStorage(
 );
 
 class AuthRepositoryImpl implements AuthRepository {
+  static const _authHeaders = {
+    'Content-Type': 'application/json',
+    'bypass-tunnel-reminder': 'true',
+  };
+
   @override
   Future<AuthState> signIn({
     required String email,
@@ -24,7 +51,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final res = await http
           .post(
             Uri.parse('$kApiBaseUrl/api/auth/login'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _authHeaders,
             body: jsonEncode({'email': email, 'password': password}),
           )
           .timeout(const Duration(seconds: 10));
@@ -69,7 +96,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final res = await http
           .post(
             Uri.parse('$kApiBaseUrl/api/auth/register'),
-            headers: {'Content-Type': 'application/json'},
+            headers: _authHeaders,
             body: jsonEncode({'name': name, 'email': email, 'password': password}),
           )
           .timeout(const Duration(seconds: 10));
@@ -123,7 +150,7 @@ class AuthRepositoryImpl implements AuthRepository {
           .put(
             Uri.parse('$kApiBaseUrl/api/auth/profile'),
             headers: {
-              'Content-Type': 'application/json',
+              ..._authHeaders,
               'Authorization': 'Bearer $token',
             },
             body: jsonEncode(body),
@@ -150,12 +177,54 @@ class AuthRepositoryImpl implements AuthRepository {
     final name = await _storage.read(key: _kNameKey);
     final email = await _storage.read(key: _kEmailKey);
     if (token == null || email == null) return const AuthState();
+    if (_isJwtExpired(token)) {
+      await clearSession();
+      return const AuthState();
+    }
     return AuthState(
       status: AuthStatus.authenticated,
       token: token,
       displayName: name,
       email: email,
     );
+  }
+
+  @override
+  Future<void> forgotPassword({required String email}) async {
+    try {
+      await http
+          .post(
+            Uri.parse('$kApiBaseUrl/api/auth/forgot-password'),
+            headers: _authHeaders,
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(const Duration(seconds: 10));
+    } catch (_) {
+      // Güvenlik gereği hata olsa bile sessiz devam et
+    }
+  }
+
+  @override
+  Future<({bool success, String? error})> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await http
+          .post(
+            Uri.parse('$kApiBaseUrl/api/auth/reset-password'),
+            headers: _authHeaders,
+            body: jsonEncode({'email': email, 'code': code, 'newPassword': newPassword}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (res.statusCode == 200) return (success: true, error: null);
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      return (success: false, error: body['error'] as String? ?? 'Şifre sıfırlanamadı.');
+    } catch (_) {
+      return (success: false, error: 'Sunucuya bağlanılamadı.');
+    }
   }
 
   Future<({bool success, String? error})> deleteAccount() async {
@@ -167,7 +236,7 @@ class AuthRepositoryImpl implements AuthRepository {
           .delete(
             Uri.parse('$kApiBaseUrl/api/auth/profile'),
             headers: {
-              'Content-Type': 'application/json',
+              ..._authHeaders,
               'Authorization': 'Bearer $token',
             },
           )
