@@ -28,8 +28,10 @@ final bookmarksProvider =
 class BookmarksNotifier extends Notifier<BookmarksState> {
   @override
   BookmarksState build() {
-    final auth = ref.watch(authProvider);
-    if (auth.isAuthenticated) Future.microtask(_fetch);
+    final isAuthenticated = ref.watch(
+      authProvider.select((a) => a.isAuthenticated),
+    );
+    if (isAuthenticated) Future.microtask(_fetch);
     return const BookmarksState();
   }
 

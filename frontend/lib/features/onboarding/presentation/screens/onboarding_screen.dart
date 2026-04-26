@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_keys.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 
 class _OnboardingPage {
   final IconData icon;
@@ -68,14 +69,14 @@ const _pages = [
   ),
 ];
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
@@ -108,7 +109,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _completeAndNavigate() async {
-    final prefs = await SharedPreferences.getInstance();
+    // main.dart'ta override edilmiş provider üzerinden yazılır;
+    // SharedPreferences.getInstance() bunu bypass ederdi.
+    final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setBool(AppKeys.onboardingCompleted, true);
     if (!mounted) return;
     context.go('/home');
