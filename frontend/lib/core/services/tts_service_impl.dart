@@ -17,28 +17,32 @@ class TtsServiceImpl implements TtsService {
   String? _pendingWord;
 
   @override
-  Future<void> initialize() async {
+  Future<void> initialize({void Function(bool isSpeaking)? onSpeakingChanged}) async {
     try {
-      // Android için sistem TTS motoru ayarları
       if (Platform.isAndroid) {
         await _tts.setQueueMode(1); // FLUSH — yeni kelime eskiyi keser
       }
 
       await _tts.setLanguage('tr-TR');
-      await _tts.setSpeechRate(0.45);  // Biraz yavaş — net anlaşılsın
+      await _tts.setSpeechRate(0.45);
       await _tts.setVolume(1.0);
       await _tts.setPitch(1.0);
 
-      // Türkçe ses motoru yoksa İngilizce geri dön
       final languages = await _tts.getLanguages as List?;
       if (languages != null && !languages.contains('tr-TR')) {
         await _tts.setLanguage('tr');
       }
 
+      if (onSpeakingChanged != null) {
+        _tts.setStartHandler(() => onSpeakingChanged(true));
+        _tts.setCompletionHandler(() => onSpeakingChanged(false));
+        _tts.setCancelHandler(() => onSpeakingChanged(false));
+        _tts.setErrorHandler((_) => onSpeakingChanged(false));
+      }
+
       _ready = true;
       debugPrint('✅ TTS hazır (tr-TR)');
 
-      // Başlatma sırasında gelen kelime varsa şimdi seslendir
       if (_pendingWord != null) {
         final word = _pendingWord!;
         _pendingWord = null;

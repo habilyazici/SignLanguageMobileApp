@@ -53,4 +53,20 @@ class AuthNotifier extends Notifier<AuthState> {
     await ref.read(_authRepositoryProvider).clearSession();
     state = const AuthState();
   }
+
+  Future<String?> updateProfile({
+    String? name,
+    String? currentPassword,
+    String? newPassword,
+  }) async {
+    final result = await ref.read(_authRepositoryProvider).updateProfile(
+      name: name,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+    if (result.success && result.newName != null) {
+      state = state.copyWith(displayName: result.newName);
+    }
+    return result.error;
+  }
 }

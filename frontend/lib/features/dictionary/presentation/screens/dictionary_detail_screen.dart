@@ -7,6 +7,8 @@ import 'package:video_player/video_player.dart';
 
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Model
@@ -98,12 +100,17 @@ class DictionaryDetailScreen extends ConsumerWidget {
 // Ana gövde
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _DetailBody extends StatelessWidget {
+class _DetailBody extends ConsumerWidget {
   const _DetailBody({required this.word});
   final _WordDetail word;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authProvider);
+    final isBookmarked = ref.watch(
+      bookmarksProvider.select((s) => s.contains(word.id)),
+    );
+
     return Scaffold(
       backgroundColor: AppTheme.softGrey,
       body: CustomScrollView(
@@ -147,12 +154,17 @@ class _DetailBody extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      // Bookmark butonu — ileride bağlanacak
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isBookmarked
+                              ? AppTheme.primaryBlueTint
+                              : Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppTheme.borderColor),
+                          border: Border.all(
+                            color: isBookmarked
+                                ? AppTheme.primaryBlue
+                                : AppTheme.borderColor,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.05),
@@ -162,9 +174,17 @@ class _DetailBody extends StatelessWidget {
                           ],
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.bookmark_border_rounded),
+                          icon: Icon(
+                            isBookmarked
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                          ),
                           color: AppTheme.primaryBlue,
-                          onPressed: () {},
+                          onPressed: auth.isAuthenticated
+                              ? () => ref
+                                  .read(bookmarksProvider.notifier)
+                                  .toggle(word.id)
+                              : () => _showLoginPrompt(context),
                         ),
                       ),
                     ],
@@ -217,6 +237,15 @@ class _DetailBody extends StatelessWidget {
       ),
     );
   }
+
+  void _showLoginPrompt(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Kaydetmek için giriş yapmanız gerekiyor.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,6 +263,10 @@ class _VideoHeader extends StatefulWidget {
 class _VideoHeaderState extends State<_VideoHeader> {
   VideoPlayerController? _ctrl;
   bool _ready = false;
+  bool _showPlayIcon = false;
+  double _speed = 1.0;
+
+  static const _speeds = [1.0, 1.5, 2.0, 0.5];
 
   @override
   void initState() {
@@ -244,51 +277,154 @@ class _VideoHeaderState extends State<_VideoHeader> {
   Future<void> _init() async {
     _ctrl = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
     await _ctrl!.initialize();
+    _ctrl!.addListener(_onControllerUpdate);
     _ctrl!.setLooping(true);
     _ctrl!.play();
     if (mounted) setState(() => _ready = true);
   }
 
+  void _onControllerUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  void _togglePlayPause() {
+    final ctrl = _ctrl;
+    if (ctrl == null) return;
+    if (ctrl.value.isPlaying) {
+      ctrl.pause();
+    } else {
+      ctrl.play();
+    }
+    setState(() => _showPlayIcon = true);
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) setState(() => _showPlayIcon = false);
+    });
+  }
+
+  void _cycleSpeed() {
+    final ctrl = _ctrl;
+    if (ctrl == null) return;
+    final next = _speeds[(_speeds.indexOf(_speed) + 1) % _speeds.length];
+    ctrl.setPlaybackSpeed(next);
+    setState(() => _speed = next);
+  }
+
   @override
   void dispose() {
+    _ctrl?.removeListener(_onControllerUpdate);
     _ctrl?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = _ctrl;
+    final isPlaying = ctrl?.value.isPlaying ?? false;
+
     return Container(
       color: AppTheme.primaryBlue,
-      child: _ready && _ctrl != null
-          ? Stack(
-              fit: StackFit.expand,
-              children: [
-                FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: _ctrl!.value.size.width,
-                    height: _ctrl!.value.size.height,
-                    child: VideoPlayer(_ctrl!),
+      child: _ready && ctrl != null
+          ? GestureDetector(
+              onTap: _togglePlayPause,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: ctrl.value.size.width,
+                      height: ctrl.value.size.height,
+                      child: VideoPlayer(ctrl),
+                    ),
                   ),
-                ),
-                // Alt gradient
-                Positioned(
-                  bottom: 0, left: 0, right: 0,
-                  child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.4),
+
+                  // tap feedback overlay
+                  if (_showPlayIcon)
+                    Center(
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    ),
+
+                  // bottom controls
+                  Positioned(
+                    bottom: 0, left: 0, right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.6),
+                          ],
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          VideoProgressIndicator(
+                            ctrl,
+                            allowScrubbing: true,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            colors: VideoProgressColors(
+                              playedColor: Colors.white,
+                              bufferedColor: Colors.white38,
+                              backgroundColor: Colors.white24,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                                onPressed: _togglePlayPause,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: _cycleSpeed,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.white38),
+                                  ),
+                                  child: Text(
+                                    '${_speed == _speed.truncateToDouble() ? _speed.toInt() : _speed}x',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                          ),
                         ],
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             )
           : const Center(
               child: CircularProgressIndicator(color: Colors.white54),

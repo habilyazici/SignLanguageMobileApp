@@ -43,7 +43,7 @@ bookmarksRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> 
 
 // POST /api/bookmarks/:wordId
 bookmarksRouter.post('/:wordId', async (req: AuthRequest, res: Response): Promise<void> => {
-  const wordId = parseInt(req.params['wordId'] ?? '', 10);
+  const wordId = parseInt(String(req.params['wordId'] ?? ''), 10);
   if (isNaN(wordId)) { res.status(400).json({ error: 'Gecersiz wordId.' }); return; }
 
   try {
@@ -60,7 +60,7 @@ bookmarksRouter.post('/:wordId', async (req: AuthRequest, res: Response): Promis
 
 // DELETE /api/bookmarks/:wordId
 bookmarksRouter.delete('/:wordId', async (req: AuthRequest, res: Response): Promise<void> => {
-  const wordId = parseInt(req.params['wordId'] ?? '', 10);
+  const wordId = parseInt(String(req.params['wordId'] ?? ''), 10);
   if (isNaN(wordId)) { res.status(400).json({ error: 'Gecersiz wordId.' }); return; }
 
   try {

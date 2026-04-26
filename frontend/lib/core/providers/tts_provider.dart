@@ -8,23 +8,22 @@ import '../services/tts_service_impl.dart';
 
 final _ttsServiceProvider = Provider<TtsService>((_) => TtsServiceImpl());
 
+/// State: TTS'in şu an konuşup konuşmadığı (true = konuşuyor)
 final ttsProvider =
-    NotifierProvider<TtsNotifier, void>(TtsNotifier.new);
+    NotifierProvider<TtsNotifier, bool>(TtsNotifier.new);
 
-class TtsNotifier extends Notifier<void> {
+class TtsNotifier extends Notifier<bool> {
   late final TtsService _service;
 
   @override
-  void build() {
+  bool build() {
     ref.keepAlive();
     _service = ref.read(_ttsServiceProvider);
-    _service.initialize();
+    _service.initialize(onSpeakingChanged: (val) => state = val);
     ref.onDispose(_service.dispose);
+    return false;
   }
 
-  /// Kelimeyi seslendir (önceki konuşmayı keser)
   void speak(String word) => _service.speak(word);
-
-  /// Seslendirmeyi durdur
   void stop() => _service.stop();
 }

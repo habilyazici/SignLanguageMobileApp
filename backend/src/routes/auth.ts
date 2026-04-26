@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { config } from '../config';
+import { requireAuth } from '../middleware/requireAuth';
+import type { AuthRequest } from '../middleware/requireAuth';
 
 export const authRouter = Router();
 
@@ -77,6 +79,64 @@ authRouter.post('/login', async (req: Request, res: Response): Promise<void> => 
       token: signToken(user.id),
       user: { id: user.id, name: user.name, email: user.email },
     });
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
+});
+
+const forgotPasswordSchema = z.object({ email: z.string().email() });
+
+authRouter.post('/forgot-password', async (req: Request, res: Response): Promise<void> => {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Gecersiz e-posta.' });
+    return;
+  }
+  // Güvenlik: kullanıcı varlığını açıklamamak için her zaman başarılı döner.
+  // Gerçek uygulamada burada e-posta servisiyle sıfırlama bağlantısı gönderilir.
+  res.json({ message: 'Sifırlama baglantısı gönderildi.' });
+});
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2).optional(),
+  currentPassword: z.string().min(1).optional(),
+  newPassword: z.string().min(6).optional(),
+}).refine(
+  data => !data.newPassword || !!data.currentPassword,
+  { message: 'Yeni sifre icin mevcut sifre gerekli.' },
+);
+
+authRouter.put('/profile', requireAuth, async (req: AuthRequest, res: Response): Promise<void> => {
+  const parsed = updateProfileSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Gecersiz veri.', details: parsed.error.flatten() });
+    return;
+  }
+
+  const { name, currentPassword, newPassword } = parsed.data;
+  if (!name && !newPassword) {
+    res.status(400).json({ error: 'Guncelleme icin en az bir alan gerekli.' });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+    if (!user) { res.status(404).json({ error: 'Kullanici bulunamadi.' }); return; }
+
+    if (newPassword) {
+      const valid = await bcrypt.compare(currentPassword!, user.passwordHash);
+      if (!valid) { res.status(400).json({ error: 'Mevcut sifre hatali.' }); return; }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: req.userId! },
+      data: {
+        ...(name ? { name } : {}),
+        ...(newPassword ? { passwordHash: await bcrypt.hash(newPassword, 10) } : {}),
+      },
+    });
+
+    res.json({ id: updated.id, name: updated.name, email: updated.email });
   } catch (err) {
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }

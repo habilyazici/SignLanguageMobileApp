@@ -40,9 +40,19 @@ historyRouter.post('/', async (req: AuthRequest, res: Response): Promise<void> =
   }
 });
 
+// DELETE /api/history (all)
+historyRouter.delete('/', async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    await prisma.history.deleteMany({ where: { userId: req.userId! } });
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).json({ error: 'Sunucu hatasi.' });
+  }
+});
+
 // DELETE /api/history/:id
 historyRouter.delete('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
-  const id = req.params['id'] ?? '';
+  const id = String(req.params['id'] ?? '');
 
   try {
     const item = await prisma.history.findUnique({ where: { id } });
