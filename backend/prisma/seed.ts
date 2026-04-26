@@ -26,7 +26,7 @@ function wordToFilename(wordId: string, word: string): string {
 }
 
 async function main(): Promise<void> {
-  const jsonPath = path.join(__dirname, '..', 'public', 'tid_words.json');
+  const jsonPath = path.join(__dirname, 'data', 'tid_words.json');
   const videosDir = path.join(__dirname, '..', 'public', 'videos');
 
   console.log('JSON:', jsonPath);
