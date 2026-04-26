@@ -1,5 +1,8 @@
-/// Backend API base URL.
-/// Android emülatöründe 10.0.2.2 host'u temsil eder.
-/// iOS simülatöründe localhost kullanılabilir.
-/// Production'da gerçek URL ile değiştirilmeli.
-const kApiBaseUrl = 'http://10.0.2.2:3000';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+/// Backend API base URL'i .env dosyasından okunur.
+String get kApiBaseUrl {
+  final ip = dotenv.get('BASE_IP', fallback: 'localhost');
+  final port = dotenv.get('PORT', fallback: '3000');
+  return 'http://$ip:$port';
+}
