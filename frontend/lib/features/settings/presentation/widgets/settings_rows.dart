@@ -86,9 +86,9 @@ class TextSizeRow extends StatelessWidget {
           SettingsSegmentButtons<AppTextSize>(
             isDark: isDark,
             items: const [
-              (AppTextSize.standard, 'S'),
-              (AppTextSize.large, 'M'),
-              (AppTextSize.extraLarge, 'L'),
+              (AppTextSize.standard, 'Küçük'),
+              (AppTextSize.large, 'Standart'),
+              (AppTextSize.extraLarge, 'Büyük'),
             ],
             current: current,
             onChanged: onChanged,

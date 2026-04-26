@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,10 +39,10 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             // ── Üst Bar ───────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Row(
                 children: [
-                  AppLogo(height: 40),
+                  AppLogo(height: 72),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => context.push('/settings'),
@@ -87,7 +88,29 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ).animate().fadeIn(duration: 350.ms),
 
-            const SizedBox(height: 24),
+            // ── Başlık ────────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: Text(
+                'Profilim',
+                style: GoogleFonts.poppins(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                  height: 1.1,
+                ),
+              ),
+            ).animate().fadeIn(delay: 40.ms, duration: 350.ms),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Hesabını ve tercihlerini yönet',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ).animate().fadeIn(delay: 60.ms, duration: 350.ms),
+
+            const SizedBox(height: 12),
 
             // ── Profil Kartı ──────────────────────────────────────────────
             Padding(

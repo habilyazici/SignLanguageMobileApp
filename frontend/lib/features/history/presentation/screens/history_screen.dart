@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/presentation/widgets/app_logo.dart';
@@ -45,10 +46,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           children: [
             // ── Üst Bar ─────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Row(
                 children: [
-                  AppLogo(height: 40),
+                  AppLogo(height: 72),
                   const Spacer(),
                   if (history.items.isNotEmpty)
                     _IconBtn(
@@ -62,20 +63,27 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
             // ── Başlık ───────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               child: Text(
                 'Geçmiş',
-                style: Theme.of(context).textTheme.displayMedium,
+                style: GoogleFonts.poppins(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                  height: 1.1,
+                ),
               ),
             ).animate().fadeIn(delay: 60.ms, duration: 300.ms),
-
+            const SizedBox(height: 4),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
                 'Tanınan tüm işaretler burada kaydedilir.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ).animate().fadeIn(delay: 80.ms, duration: 300.ms),
+
+            const SizedBox(height: 8),
 
             // ── Arama ───────────────────────────────────────────────────
             Padding(
