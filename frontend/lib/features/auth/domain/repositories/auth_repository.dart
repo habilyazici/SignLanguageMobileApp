@@ -26,4 +26,14 @@ abstract interface class AuthRepository {
     String? currentPassword,
     String? newPassword,
   });
+
+  /// Şifre sıfırlama kodu e-posta ile gönderir (hata olsa bile sessiz geçer).
+  Future<void> forgotPassword({required String email});
+
+  /// OTP kodu ve yeni şifre ile şifreyi sıfırlar.
+  Future<({bool success, String? error})> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  });
 }

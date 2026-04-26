@@ -77,4 +77,18 @@ class AuthNotifier extends Notifier<AuthState> {
     }
     return result.error;
   }
+
+  Future<void> forgotPassword({required String email}) =>
+      ref.read(_authRepositoryProvider).forgotPassword(email: email);
+
+  Future<({bool success, String? error})> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) =>
+      ref.read(_authRepositoryProvider).resetPassword(
+        email: email,
+        code: code,
+        newPassword: newPassword,
+      );
 }
