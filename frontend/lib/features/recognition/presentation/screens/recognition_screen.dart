@@ -168,6 +168,9 @@ class RecognitionScreen extends ConsumerWidget {
                   onShare: state.sentence.isNotEmpty
                       ? () => Share.share(state.sentence.join(' '))
                       : null,
+                  onClear: state.sentence.isNotEmpty
+                      ? () => notifier.clearSentence()
+                      : null,
                 ),
               ),
             ],
@@ -187,12 +190,14 @@ class _ResultPanel extends StatelessWidget {
     this.onTtsReplay,
     this.onCopy,
     this.onShare,
+    this.onClear,
   });
   final RecognitionState state;
   final bool isDark;
   final VoidCallback? onTtsReplay;
   final VoidCallback? onCopy;
   final VoidCallback? onShare;
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +236,7 @@ class _ResultPanel extends StatelessWidget {
             onTtsReplay: onTtsReplay,
             onCopy: onCopy,
             onShare: onShare,
+            onClear: onClear,
           ),
         ],
       ),
@@ -516,11 +522,13 @@ class _ActionBar extends StatelessWidget {
     this.onTtsReplay,
     this.onCopy,
     this.onShare,
+    this.onClear,
   });
   final bool isDark;
   final VoidCallback? onTtsReplay;
   final VoidCallback? onCopy;
   final VoidCallback? onShare;
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -548,6 +556,14 @@ class _ActionBar extends StatelessWidget {
           label: 'Paylaş',
           color: isDark ? AppTheme.secondaryBlue : AppTheme.primaryBlue,
           onTap: onShare,
+          isDark: isDark,
+        ),
+        const SizedBox(width: 12),
+        _ActionBtn(
+          icon: Icons.delete_sweep_rounded,
+          label: 'Temizle',
+          color: isDark ? Colors.redAccent[100]! : Colors.redAccent,
+          onTap: onClear,
           isDark: isDark,
         ),
       ],

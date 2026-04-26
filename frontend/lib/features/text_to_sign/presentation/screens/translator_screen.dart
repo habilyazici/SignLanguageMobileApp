@@ -76,7 +76,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
     final sttEnabled = ref.watch(settingsProvider).sttEnabled;
     final textToSignState = ref.watch(textToSignProvider);
     final notifier = ref.read(textToSignProvider.notifier);
-    final manifestReady = !textToSignState.isLoading || textToSignState.hasTokens;
+    final manifestReady = !textToSignState.isLoading && textToSignState.error == null;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -88,17 +88,22 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
             // ── Token grid veya boş alan ──────────────────────────────────
             Expanded(
               flex: 5, // Kamera kartı (Recognition) ile birebir aynı yükseklik!
-              child: textToSignState.hasTokens
-                  ? _TokenGrid(
-                      tokens: textToSignState.tokens,
-                      currentIndex: textToSignState.currentIndex,
-                      isPlaying: textToSignState.isPlaying,
-                      onVideoEnd: () {
-                        if (textToSignState.isPlaying) notifier.next();
-                      },
-                      onTap: (i) => notifier.goTo(i),
+              child: textToSignState.error != null
+                  ? _ManifestError(
+                      isDark: isDark,
+                      onRetry: notifier.retryInit,
                     )
-                  : _EmptyArea(isDark: isDark),
+                  : textToSignState.hasTokens
+                      ? _TokenGrid(
+                          tokens: textToSignState.tokens,
+                          currentIndex: textToSignState.currentIndex,
+                          isPlaying: textToSignState.isPlaying,
+                          onVideoEnd: () {
+                            if (textToSignState.isPlaying) notifier.next();
+                          },
+                          onTap: (i) => notifier.goTo(i),
+                        )
+                      : _EmptyArea(isDark: isDark),
             ),
 
             const SizedBox(height: 16),
@@ -247,7 +252,11 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                                           ),
                                         ),
                                   label: Text(
-                                    manifestReady ? 'Çevir' : 'Hazırlanıyor…',
+                                    textToSignState.error != null
+                                        ? 'Bağlantı hatası'
+                                        : manifestReady
+                                            ? 'Çevir'
+                                            : 'Hazırlanıyor…',
                                   ),
                                   style: FilledButton.styleFrom(
                                     backgroundColor: AppTheme.primaryBlue,
@@ -379,6 +388,57 @@ class _PlaybackBar extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Manifest hata alanı
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _ManifestError extends StatelessWidget {
+  const _ManifestError({required this.isDark, required this.onRetry});
+  final bool isDark;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.wifi_off_rounded,
+                size: 48, color: isDark ? Colors.white24 : Colors.black12),
+            const SizedBox(height: 12),
+            Text(
+              'Kelime haritası yüklenemedi',
+              style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white38 : AppTheme.midGrey),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Tekrar Dene'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: 300.ms);
   }
 }
 

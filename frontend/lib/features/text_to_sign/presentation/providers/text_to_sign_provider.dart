@@ -24,6 +24,7 @@ class TextToSignState {
   final bool isPlaying;
   final bool isLoading;
   final String inputText;
+  final String? error;
 
   const TextToSignState({
     this.tokens = const [],
@@ -31,6 +32,7 @@ class TextToSignState {
     this.isPlaying = false,
     this.isLoading = false,
     this.inputText = '',
+    this.error,
   });
 
   bool get hasTokens => tokens.isNotEmpty;
@@ -44,14 +46,18 @@ class TextToSignState {
     bool? isPlaying,
     bool? isLoading,
     String? inputText,
+    Object? error = _sentinel,
   }) => TextToSignState(
     tokens: tokens ?? this.tokens,
     currentIndex: currentIndex ?? this.currentIndex,
     isPlaying: isPlaying ?? this.isPlaying,
     isLoading: isLoading ?? this.isLoading,
     inputText: inputText ?? this.inputText,
+    error: error == _sentinel ? this.error : error as String?,
   );
 }
+
+const _sentinel = Object();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Notifier
@@ -75,8 +81,15 @@ class TextToSignNotifier extends Notifier<TextToSignState> {
   Future<void> _init() async {
     try {
       await _repo.initialize();
-    } catch (_) {}
-    state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, error: null);
+    } catch (_) {
+      state = state.copyWith(isLoading: false, error: 'Kelime haritası yüklenemedi.');
+    }
+  }
+
+  void retryInit() {
+    state = state.copyWith(isLoading: true, error: null);
+    Future.microtask(_init);
   }
 
   /// Metni parse edip token listesi oluşturur

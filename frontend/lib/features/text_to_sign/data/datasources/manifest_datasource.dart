@@ -15,7 +15,7 @@ class ManifestDatasource {
     final uri = Uri.parse('$kApiBaseUrl/api/words/manifest');
     final res = await http.get(
       uri,
-      headers: {'bypass-tunnel-reminder': 'true'},
+      headers: {'ngrok-skip-browser-warning': 'true'},
     ).timeout(const Duration(seconds: 20));
 
     if (res.statusCode != 200) {

@@ -1,16 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/repositories/bookmarks_repository.dart';
 import '../datasources/bookmarks_api_datasource.dart';
+
+export '../../domain/repositories/bookmarks_repository.dart';
 
 final bookmarksRepositoryProvider = Provider<BookmarksRepository>((ref) {
   final datasource = ref.watch(bookmarksDatasourceProvider);
   return BookmarksRepositoryImpl(datasource);
 });
-
-abstract class BookmarksRepository {
-  Future<Set<int>> fetchBookmarks();
-  Future<void> addBookmark(int wordId);
-  Future<void> deleteBookmark(int wordId);
-}
 
 class BookmarksRepositoryImpl implements BookmarksRepository {
   final BookmarksApiDatasource _datasource;

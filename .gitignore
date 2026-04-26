@@ -44,25 +44,3 @@ env/
 *.egg-info/
 dist/
 *.whl
-
-# ── Model dosyaları (büyük binary'ler) ──────────────────────────────────────
-*.tflite
-*.h5
-*.pb
-*.onnx
-*.pt
-*.pth
-
-# Sadece assets/models/ içindeki model dosyalarına izin ver
-!frontend/assets/models/*.tflite
-
-# ── Flutter build artifacts (frontend/.gitignore kapsar ama yedek) ──────────
-frontend/build/
-frontend/.dart_tool/
-frontend/.flutter-plugins
-frontend/.flutter-plugins-dependencies
-
-# ── Scratch / Temp ──────────────────────────────────────────────────────────
-backend/scratch/
-
-frontend/analyze_output.txt

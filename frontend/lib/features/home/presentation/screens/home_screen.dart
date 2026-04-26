@@ -9,6 +9,19 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../dictionary/presentation/providers/dictionary_provider.dart';
 import '../providers/home_provider.dart';
 
+String _greeting() {
+  final hour = DateTime.now().hour;
+  if (hour >= 5 && hour < 12) return 'Günaydın';
+  if (hour >= 12 && hour < 17) return 'Tünaydın';
+  if (hour >= 17 && hour < 22) return 'İyi Akşamlar';
+  return 'İyi Geceler';
+}
+
+String _capitalize(String s) {
+  if (s.isEmpty) return s;
+  return s[0].toUpperCase() + s.substring(1).toLowerCase();
+}
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -23,21 +36,8 @@ class HomeScreen extends ConsumerWidget {
       dictionaryProvider.select((s) => s.allSigns.length),
     );
 
-    String getGreeting() {
-      final hour = DateTime.now().hour;
-      if (hour >= 5 && hour < 12) return 'Günaydın';
-      if (hour >= 12 && hour < 17) return 'Tünaydın';
-      if (hour >= 17 && hour < 22) return 'İyi Akşamlar';
-      return 'İyi Geceler';
-    }
-
-    String capitalize(String s) {
-      if (s.isEmpty) return s;
-      return s[0].toUpperCase() + s.substring(1).toLowerCase();
-    }
-
-    final greeting = getGreeting();
-    final name = capitalize(displayName);
+    final greeting = _greeting();
+    final name = _capitalize(displayName);
 
     return Scaffold(
       backgroundColor: AppTheme.softGrey,
