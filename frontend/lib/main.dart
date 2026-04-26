@@ -12,8 +12,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await dotenv.load(fileName: ".env");
-    debugPrint('DEBUG: .env file loaded successfully');
-    debugPrint('DEBUG: Loaded keys: ${dotenv.env.keys}');
   } catch (e) {
     debugPrint('ERROR: Could not load .env file: $e');
   }
