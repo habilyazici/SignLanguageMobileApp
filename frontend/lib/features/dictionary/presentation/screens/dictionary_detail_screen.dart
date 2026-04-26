@@ -289,9 +289,6 @@ class _VideoHeaderState extends ConsumerState<_VideoHeader> {
       }
     }
 
-    // DEBUG: Video oynatılmadan hemen önce linke bakalım
-    debugPrint('DEBUG: DictionaryDetail videoUrl -> ${widget.videoUrl}');
-
     _ctrl = VideoPlayerController.networkUrl(
       Uri.parse(widget.videoUrl),
       httpHeaders: const {'ngrok-skip-browser-warning': 'true'},

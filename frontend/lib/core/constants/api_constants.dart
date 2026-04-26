@@ -7,9 +7,5 @@ String get kApiBaseUrl {
   final port = dotenv.get('PORT', fallback: '3000');
   final protocol = port == '443' ? 'https' : 'http';
   final url = '$protocol://$ip${port == '443' ? '' : ':$port'}';
-  
-  // DEBUG: Uygulamanın hangi adrese gittiğini görelim
-  debugPrint('DEBUG: Flutter is connecting to -> $url');
-  
   return url;
 }
