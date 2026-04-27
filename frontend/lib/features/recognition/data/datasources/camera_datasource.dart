@@ -36,6 +36,7 @@ class CameraDataSource {
         ? ImageFormatGroup.bgra8888
         : ImageFormatGroup.yuv420;
 
+    // Eski controller'ı kapat — hata olsa da devam et.
     try {
       await _camera?.stopImageStream();
     } catch (_) {}
@@ -50,22 +51,28 @@ class CameraDataSource {
       imageFormatGroup: format,
     );
     await _camera!.initialize();
-    debugPrint(
-      '📷 Kamera hazır: ${selected.name} (sensör: ${_camera!.description.sensorOrientation}°)',
-    );
+    if (kDebugMode) {
+      debugPrint(
+        '📷 Kamera hazır: ${selected.name} (sensör: ${_camera!.description.sensorOrientation}°)',
+      );
+    }
     _controllerCtrl.add(_camera);
   }
 
   void startStream(void Function(CameraImage) onFrame) {
     try {
       _camera?.startImageStream(onFrame);
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ startImageStream hatası: $e');
+    }
   }
 
   void stopStream() {
     try {
       _camera?.stopImageStream();
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ stopImageStream hatası: $e');
+    }
   }
 
   Future<void> switchCamera() async {

@@ -13,7 +13,7 @@ class LabelMapper {
       final csvString = await rootBundle.loadString('assets/models/labels.csv');
       final lines = csvString.split('\n');
 
-      // İlk satır başlık (Header) olduğu için 1'den başlıyoruz
+      // İlk satır başlık (Header) olduğu için 1'den başlıyoruz.
       for (int i = 1; i < lines.length; i++) {
         final line = lines[i].trim();
         if (line.isEmpty) continue;
@@ -28,7 +28,7 @@ class LabelMapper {
       }
       _isLoaded = true;
     } catch (e) {
-      debugPrint('Label CSV yüklenirken hata oluştu: $e');
+      if (kDebugMode) debugPrint('Label CSV yüklenirken hata oluştu: $e');
     }
   }
 
@@ -41,8 +41,8 @@ class LabelMapper {
 
   /// TFLite'dan çıkan index numarasını vererek Türkçe kelime karşılığını alır.
   static String getTrWord(int index) {
-    if (!_isLoaded) {
-      debugPrint('Uyarı: loadLabels() henüz çağrılmadı!');
+    if (kDebugMode && !_isLoaded) {
+      debugPrint('Uyarı: LabelMapper.loadLabels() henüz çağrılmadı!');
     }
     return _trLabels[index] ?? 'Bilinmiyor';
   }

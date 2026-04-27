@@ -23,7 +23,9 @@ class DictionaryApiDatasource {
       }
 
       final body = jsonDecode(res.body) as Map<String, dynamic>;
-      final data = (body['data'] as List).cast<Map<String, dynamic>>();
+      final rawData = body['data'];
+      if (rawData is! List) throw Exception('Beklenmeyen API yanıtı: data alanı eksik.');
+      final data = rawData.cast<Map<String, dynamic>>();
 
       for (final item in data) {
         all.add(SignEntry(
@@ -35,7 +37,7 @@ class DictionaryApiDatasource {
         ));
       }
 
-      final pages = body['pages'] as int;
+      final pages = (body['pages'] as num?)?.toInt() ?? 1;
       if (page >= pages) break;
       page++;
     }

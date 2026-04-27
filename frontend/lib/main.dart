@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -13,7 +14,7 @@ void main() async {
   try {
     await dotenv.load(fileName: ".env");
   } catch (e) {
-    debugPrint('ERROR: Could not load .env file: $e');
+    if (kDebugMode) debugPrint('ERROR: Could not load .env file: $e');
   }
   await initializeDateFormatting('tr_TR', null);
 

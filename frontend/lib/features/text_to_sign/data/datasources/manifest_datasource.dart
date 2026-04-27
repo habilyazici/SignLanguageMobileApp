@@ -12,18 +12,20 @@ class ManifestDatasource {
   const ManifestDatasource();
 
   Future<Map<String, String>> fetchManifest() async {
-    final uri = Uri.parse('$kApiBaseUrl/api/words/manifest');
-    final res = await http.get(
-      uri,
-      headers: {'ngrok-skip-browser-warning': 'true'},
-    ).timeout(const Duration(seconds: 20));
+    final res = await http
+        .get(
+          Uri.parse('$kApiBaseUrl/api/words/manifest'),
+          headers: kNgrokHeaders,
+        )
+        .timeout(kDataTimeout);
 
     if (res.statusCode != 200) {
       throw Exception('Manifest yüklenemedi: ${res.statusCode}');
     }
 
     final body = jsonDecode(res.body) as Map<String, dynamic>;
-    final words = body['words'] as Map<String, dynamic>;
-    return words.map((k, v) => MapEntry(k, v as String));
+    final rawWords = body['words'];
+    if (rawWords is! Map) throw Exception('Beklenmeyen manifest formatı.');
+    return rawWords.map((k, v) => MapEntry(k as String, v as String));
   }
 }

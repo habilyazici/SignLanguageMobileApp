@@ -28,7 +28,9 @@ class TtsServiceImpl implements TtsService {
       await _tts.setVolume(1.0);
       await _tts.setPitch(1.0);
 
-      final languages = await _tts.getLanguages as List?;
+      // getLanguages dönüş tipi platforma göre değişebilir, güvenli kontrol.
+      final dynamic rawLangs = await _tts.getLanguages;
+      final languages = rawLangs is List ? rawLangs : null;
       if (languages != null && !languages.contains('tr-TR')) {
         await _tts.setLanguage('tr');
       }
@@ -41,7 +43,7 @@ class TtsServiceImpl implements TtsService {
       }
 
       _ready = true;
-      debugPrint('✅ TTS hazır (tr-TR)');
+      if (kDebugMode) debugPrint('✅ TTS hazır (tr-TR)');
 
       if (_pendingWord != null) {
         final word = _pendingWord!;
@@ -49,16 +51,16 @@ class TtsServiceImpl implements TtsService {
         await _tts.speak(word);
       }
     } catch (e) {
-      debugPrint('❌ TTS başlatma hatası: $e');
+      if (kDebugMode) debugPrint('❌ TTS başlatma hatası: $e');
     }
   }
 
-  /// Yeni kelime geldiğinde çağrılır — önceki konuşmayı keserek başlar
+  /// Yeni kelime geldiğinde çağrılır — önceki konuşmayı keserek başlar.
   @override
   Future<void> speak(String word) async {
     if (word.isEmpty) return;
     if (!_ready) {
-      // TTS henüz hazır değil — en son kelimeyi beklet (eski bekleme iptal)
+      // TTS henüz hazır değil — en son kelimeyi beklet (eski bekleme iptal).
       _pendingWord = word;
       return;
     }
@@ -66,7 +68,7 @@ class TtsServiceImpl implements TtsService {
       await _tts.stop();
       await _tts.speak(word);
     } catch (e) {
-      debugPrint('❌ TTS speak hatası: $e');
+      if (kDebugMode) debugPrint('❌ TTS speak hatası: $e');
     }
   }
 
@@ -74,7 +76,9 @@ class TtsServiceImpl implements TtsService {
   Future<void> stop() async {
     try {
       await _tts.stop();
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ TTS stop hatası: $e');
+    }
   }
 
   @override
