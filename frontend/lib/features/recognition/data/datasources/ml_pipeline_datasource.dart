@@ -89,6 +89,8 @@ class MlPipelineDatasource {
         ? _fillHands(
             hands,
             frame,
+            imageWidth: image.width.toDouble(),
+            imageHeight: image.height.toDouble(),
             cropSide: cropSide,
             cropXOff: cropXOff,
             sensorOrientation: sensorOrientation,
@@ -139,6 +141,8 @@ class MlPipelineDatasource {
   ({List<Offset> right, List<Offset> left}) _fillHands(
     List<dynamic> hands,
     List<double> frame, {
+    required double imageWidth,
+    required double imageHeight,
     required int cropSide,
     required int cropXOff,
     required int sensorOrientation,
@@ -148,9 +152,10 @@ class MlPipelineDatasource {
     final displayRight = <Offset>[];
     final displayLeft = <Offset>[];
 
-    // ResolutionPreset.low Android: 320×240
-    const double sw = 320.0;
-    const double sh = 240.0;
+    // hand_detection normalize koordinat döndürürse (sx ≤ 1.05) piksel uzayına
+    // çevirmek için gerçek görüntü boyutunu kullan — hardcode değil.
+    final double sw = imageWidth;
+    final double sh = imageHeight;
 
     for (final hand in hands) {
       final bool isAnatomicalRight = (hand.handedness == Handedness.right);

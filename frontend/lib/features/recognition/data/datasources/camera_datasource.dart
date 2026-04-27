@@ -44,9 +44,13 @@ class CameraDataSource {
       await _camera?.dispose();
     } catch (_) {}
 
+    // iOS: medium → daha net önizleme (AVCaptureSessionPresetMedium ≈ 480×360).
+    // Android: low → ML pipeline 320×240 için optimize; daha az bellek.
+    final preset = Platform.isIOS ? ResolutionPreset.medium : ResolutionPreset.low;
+
     _camera = CameraController(
       selected,
-      ResolutionPreset.low,
+      preset,
       enableAudio: false,
       imageFormatGroup: format,
     );

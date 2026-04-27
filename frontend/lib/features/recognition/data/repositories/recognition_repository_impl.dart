@@ -138,7 +138,10 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     }
 
     _frameCounter++;
-    if (_isProcessing || !_ml.isReady) return;
+    // _isInferring kontrolü kritik: TFLite ayrı bir OS thread'de (IsolateInterpreter)
+    // çalışırken hand_detection da native çağrı yapar. iOS'ta eş zamanlı GPU/Metal
+    // erişimi native crash'e yol açar — ikisinin çakışmaması için burada bekletiyoruz.
+    if (_isProcessing || _isInferring || !_ml.isReady) return;
 
     _lastFrameTimeMs = now;
     _isProcessing = true;
@@ -155,7 +158,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
         leftHandMode: _leftHandMode,
       );
 
-      if (doLog) {
+      if (doLog && kDebugMode) {
         debugPrint(
           '📊 [Durum] Kare=$_frameCounter | Buf=${_timedBuffer.length}',
         );
@@ -210,7 +213,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
         });
       }
     } catch (e, st) {
-      debugPrint('❌ Frame hatası: $e\n$st');
+      if (kDebugMode) debugPrint('❌ Frame hatası: $e\n$st');
     } finally {
       _isProcessing = false;
     }
@@ -243,7 +246,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
       final result = await _inference.run(frames);
       if (result != null) {
         // Logları seyrelt: Yaklaşık her 2-3 saniyede bir veya çok yüksek skorlarda bas
-        if (_frameCounter % 50 == 0 || result.confidence > 0.95) {
+        if (kDebugMode && (_frameCounter % 50 == 0 || result.confidence > 0.95)) {
           debugPrint(
             '🧠 Zeka → [${result.classIndex}] %${(result.confidence * 100).toStringAsFixed(0)}',
           );
@@ -251,7 +254,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
         _inferenceCtrl.add(result);
       }
     } catch (e, st) {
-      debugPrint('❌ Çıkarım hatası: $e\n$st');
+      if (kDebugMode) debugPrint('❌ Çıkarım hatası: $e\n$st');
     } finally {
       _isInferring = false;
     }

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/providers/camera_lifecycle_provider.dart';
+import '../../../../../core/providers/translation_tab_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../recognition/presentation/screens/recognition_screen.dart';
 import '../../../text_to_sign/presentation/screens/translator_screen.dart';
 
 /// Çeviri merkezi — İşaret Oku ve İşaret Anlat modlarını içerir.
 ///
-/// İşaret Oku (index 0): Tam ekran kamera, işaret tanıma
-/// İşaret Anlat (index 1): Metin → işaret çevirisi
+/// Tab geçişleri hem _ModeSelector butonlarıyla hem de ScaffoldWithNav'ın
+/// swipe sistemiyle (translationTabProvider üzerinden) tetiklenebilir.
 class TranslationScreen extends ConsumerStatefulWidget {
   const TranslationScreen({super.key, this.initialTab = 0});
   final int initialTab;
@@ -25,15 +26,15 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: widget.initialTab.clamp(0, 1),
-    );
+    final initial = widget.initialTab.clamp(0, 1);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: initial);
     _tabController.addListener(_onTabChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _syncCamera(_tabController.index);
+      if (!mounted) return;
+      // Route'tan gelen initialTab'ı provider ile senkronize et.
+      ref.read(translationTabProvider.notifier).setTab(initial);
+      _syncCamera(initial);
     });
   }
 
@@ -45,18 +46,31 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
   }
 
   void _onTabChanged() {
-    if (!_tabController.indexIsChanging) {
-      _syncCamera(_tabController.index);
+    // Animasyon süresinde birden fazla tetiklenmeyi önle.
+    if (_tabController.indexIsChanging) return;
+    final newTab = _tabController.index;
+    _syncCamera(newTab);
+    // Provider'ı güncelle ki _SwipeNavWrapper sanal indeksi doğru hesaplasın.
+    if (ref.read(translationTabProvider) != newTab) {
+      ref.read(translationTabProvider.notifier).setTab(newTab);
     }
   }
 
-  /// Sekme 0 = İşaret Oku → kamera açık, Sekme 1 = İşaret Anlat → kamera kapalı
+  /// Sekme 0 = İşaret Oku → kamera açık; Sekme 1 = İşaret Anlat → kamera kapalı.
   void _syncCamera(int index) {
     ref.read(cameraActiveProvider.notifier).setActive(active: index == 0);
   }
 
   @override
   Widget build(BuildContext context) {
+    // Swipe navigasyonundan gelen dış tab değişikliklerini dinle.
+    ref.listen(translationTabProvider, (_, next) {
+      if (_tabController.index != next) {
+        _tabController.animateTo(next);
+        // _syncCamera, animasyon bitince _onTabChanged tarafından çağrılır.
+      }
+    });
+
     return Scaffold(
       backgroundColor: AppTheme.softGrey,
       body: SafeArea(
@@ -67,9 +81,13 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
             _ModeSelector(controller: _tabController),
 
             // ── İçerik ─────────────────────────────────────────────────
+            // NeverScrollableScrollPhysics: yatay swipe'lar _SwipeNavWrapper
+            // tarafından yakalanır; bu sayede tab geçişi ve ekran geçişi
+            // aynı gesture sistemiyle tutarlı biçimde çalışır.
             Expanded(
               child: TabBarView(
                 controller: _tabController,
+                physics: const NeverScrollableScrollPhysics(),
                 children: const [
                   RecognitionScreen(),
                   TranslatorScreen(),

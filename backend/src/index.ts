@@ -13,6 +13,9 @@ import { bookmarksRouter } from './routes/bookmarks';
 
 const app = express();
 
+// Trust proxy setting is required for express-rate-limit when running behind a proxy (like ngrok)
+app.set('trust proxy', 1);
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 // ALLOWED_ORIGINS env var tanımlıysa yalnızca o origin'lere izin ver.

@@ -3,13 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../core/providers/camera_lifecycle_provider.dart';
+import '../core/providers/translation_tab_provider.dart';
 
 class ScaffoldWithNav extends ConsumerWidget {
   final Widget child;
 
   const ScaffoldWithNav({super.key, required this.child});
 
-  // 0=Anasayfa  1=Sözlük  2=Çeviri  3=Geçmiş  4=Profil
+  // Rota tabanlı indeks (0-4) — bottom nav için.
   static const _tabRoutes = [
     '/home',
     '/dictionary',
@@ -23,16 +24,20 @@ class ScaffoldWithNav extends ConsumerWidget {
     if (location.startsWith('/home'))        return 0;
     if (location.startsWith('/dictionary'))  return 1;
     if (location.startsWith('/translation')) return 2;
-    if (location.startsWith('/history'))      return 3;
+    if (location.startsWith('/history'))     return 3;
     if (location.startsWith('/profile'))     return 4;
     return 0;
   }
 
   void _onTap(BuildContext context, WidgetRef ref, int index) {
-    if (index != 2) {
+    if (index == 2) {
+      // Kamera butonu: her zaman İşaret Oku (tab 0) sekmesine döner.
+      ref.read(translationTabProvider.notifier).setTab(0);
+      context.go('/translation?tab=0');
+    } else {
       ref.read(cameraActiveProvider.notifier).setActive(active: false);
+      context.go(_tabRoutes[index]);
     }
-    context.go(_tabRoutes[index]);
   }
 
   @override
@@ -42,7 +47,6 @@ class ScaffoldWithNav extends ConsumerWidget {
       extendBody: true,
       body: _SwipeNavWrapper(
         currentIndex: _calculateSelectedIndex(context),
-        onNavigate: (index) => _onTap(context, ref, index),
         child: child,
       ),
       bottomNavigationBar: _buildBottomNav(context, ref),
@@ -116,8 +120,6 @@ class ScaffoldWithNav extends ConsumerWidget {
               ),
 
               // ── Merkez yükseltilmiş kamera butonu ────────────────────
-              // Diğer ikonlardan kasıtlı olarak daha büyük tutulmuştur:
-              // uygulamanın ana aksiyonu olduğu için görsel hiyerarşide öne çıkar.
               Positioned(
                 top: -(bottomPadding > 0 ? 24.0 : 28.0),
                 child: GestureDetector(
@@ -161,38 +163,77 @@ class ScaffoldWithNav extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Swipe ile sekmeler arası geçiş (kamera sekmesinde devre dışı)
+// Swipe navigasyonu — 6 sanal pozisyon
+//
+// Sanal indeks:
+//   0 = Anasayfa   1 = Sözlük   2 = İşaret Oku   3 = İşaret Anlat
+//   4 = Geçmiş     5 = Profil
+//
+// Rota indeksi 2 (translation), aktif sekmeye göre sanal 2 veya 3 olur.
+// Böylece translation ekranında sağa-sola kaydırmak önce sekmeler arasında
+// geçer; kenar sekmeden bir kaydırma daha yapılınca komşu ana sekmeye geçilir
+// (kullanıcının istediği "çift kaydırma" koruması bu şekilde sağlanır).
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _SwipeNavWrapper extends StatelessWidget {
+class _SwipeNavWrapper extends ConsumerWidget {
   const _SwipeNavWrapper({
     required this.currentIndex,
-    required this.onNavigate,
     required this.child,
   });
 
+  /// GoRouter tabanlı rota indeksi (0-4).
   final int currentIndex;
-  final void Function(int index) onNavigate;
   final Widget child;
 
+  // Minimum swipe hızı (px/s) — kazara geçişleri önler.
   static const _threshold = 300.0;
 
+  /// Rota indeksi + translation sekmesini → 6 sanal pozisyona dönüştür.
+  int _effective(int routeIdx, int translationTab) {
+    if (routeIdx < 2) return routeIdx;
+    if (routeIdx == 2) return 2 + translationTab; // 2 veya 3
+    return routeIdx + 1; // history→4, profile→5
+  }
+
+  void _navigate(BuildContext context, WidgetRef ref, int to) {
+    switch (to) {
+      case 0:
+        ref.read(cameraActiveProvider.notifier).setActive(active: false);
+        context.go('/home');
+      case 1:
+        ref.read(cameraActiveProvider.notifier).setActive(active: false);
+        context.go('/dictionary');
+      case 2:
+        // İşaret Oku — translation tab 0
+        ref.read(translationTabProvider.notifier).setTab(0);
+        if (currentIndex != 2) context.go('/translation?tab=0');
+      case 3:
+        // İşaret Anlat — translation tab 1
+        ref.read(translationTabProvider.notifier).setTab(1);
+        if (currentIndex != 2) context.go('/translation?tab=1');
+      case 4:
+        ref.read(cameraActiveProvider.notifier).setActive(active: false);
+        context.go('/history');
+      case 5:
+        ref.read(cameraActiveProvider.notifier).setActive(active: false);
+        context.go('/profile');
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
-    if (currentIndex == 2) return child;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final translationTab = ref.watch(translationTabProvider);
+    final effective = _effective(currentIndex, translationTab);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragEnd: (details) {
         final v = details.primaryVelocity;
         if (v == null) return;
-        // index 2 (kamera) swipe'la atlanır: 1→3, 3→1
-        if (v > _threshold && currentIndex > 0) {
-          final prev = currentIndex == 3 ? 1 : currentIndex - 1;
-          onNavigate(prev);
-        } else if (v < -_threshold && currentIndex < 4) {
-          final next = currentIndex == 1 ? 3 : currentIndex + 1;
-          onNavigate(next);
+        if (v > _threshold && effective > 0) {
+          _navigate(context, ref, effective - 1);
+        } else if (v < -_threshold && effective < 5) {
+          _navigate(context, ref, effective + 1);
         }
       },
       child: child,
