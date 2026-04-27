@@ -60,7 +60,9 @@ class InferenceDatasource {
 
     await _isolateInterpreter!.run(input, output);
 
-    final scores = List<double>.from(output[0] as List);
+    final rawOutput = output[0];
+    if (rawOutput is! List) return null;
+    final scores = List<double>.from(rawOutput);
     var maxScore = 0.0;
     var maxIdx = -1;
     for (int i = 0; i < scores.length; i++) {

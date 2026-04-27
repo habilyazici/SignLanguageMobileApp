@@ -10,53 +10,45 @@ class UnauthorizedException implements Exception {}
 extension AuthHttpClient on Ref {
   String? get _token => read(authProvider).token;
 
-  void _on401() => read(authProvider.notifier).signOut();
-
-  /// Tüm API istekleri için varsayılan başlıklar
-  Map<String, String> _getHeaders({bool isJson = false}) {
-    final headers = {
-      'ngrok-skip-browser-warning': 'true',
-      if (_token != null) 'Authorization': 'Bearer $_token',
-      if (isJson) 'Content-Type': 'application/json',
-    };
-    return headers;
-  }
+  Map<String, String> _getHeaders({bool isJson = false}) => {
+        ...kNgrokHeaders,
+        if (_token != null) 'Authorization': 'Bearer $_token',
+        if (isJson) 'Content-Type': 'application/json',
+      };
 
   Future<http.Response> apiGet(String path) async {
-    final res = await http.get(
-      Uri.parse('$kApiBaseUrl$path'),
-      headers: _getHeaders(),
-    ).timeout(kApiTimeout);
-
+    final res = await http
+        .get(Uri.parse('$kApiBaseUrl$path'), headers: _getHeaders())
+        .timeout(kApiTimeout);
     if (res.statusCode == 401) {
-      _on401();
+      // Token geçersiz — oturumu temizle ve hatayı fırlat.
+      read(authProvider.notifier).signOut();
       throw UnauthorizedException();
     }
     return res;
   }
 
   Future<http.Response> apiPost(String path, {Object? body}) async {
-    final res = await http.post(
-      Uri.parse('$kApiBaseUrl$path'),
-      headers: _getHeaders(isJson: true),
-      body: body != null ? jsonEncode(body) : null,
-    ).timeout(kApiTimeout);
-
+    final res = await http
+        .post(
+          Uri.parse('$kApiBaseUrl$path'),
+          headers: _getHeaders(isJson: true),
+          body: body != null ? jsonEncode(body) : null,
+        )
+        .timeout(kApiTimeout);
     if (res.statusCode == 401) {
-      _on401();
+      read(authProvider.notifier).signOut();
       throw UnauthorizedException();
     }
     return res;
   }
 
   Future<http.Response> apiDelete(String path) async {
-    final res = await http.delete(
-      Uri.parse('$kApiBaseUrl$path'),
-      headers: _getHeaders(),
-    ).timeout(kApiTimeout);
-
+    final res = await http
+        .delete(Uri.parse('$kApiBaseUrl$path'), headers: _getHeaders())
+        .timeout(kApiTimeout);
     if (res.statusCode == 401) {
-      _on401();
+      read(authProvider.notifier).signOut();
       throw UnauthorizedException();
     }
     return res;

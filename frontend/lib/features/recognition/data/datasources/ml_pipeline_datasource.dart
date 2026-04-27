@@ -162,13 +162,15 @@ class MlPipelineDatasource {
       final displayTarget = useRightSlot ? displayRight : displayLeft;
 
       final landmarksRaw = hand.landmarks;
-      if (landmarksRaw == null) continue;
-      final landmarks = landmarksRaw as List;
+      if (landmarksRaw is! List) continue;
 
-      for (int i = 0; i < landmarks.length && i < 21; i++) {
-        final lm = landmarks[i];
-        double sx = (lm.x as num).toDouble();
-        double sy = (lm.y as num).toDouble();
+      for (int i = 0; i < landmarksRaw.length && i < 21; i++) {
+        final lm = landmarksRaw[i] as dynamic;
+        final rawX = lm?.x;
+        final rawY = lm?.y;
+        if (rawX == null || rawY == null) continue;
+        double sx = (rawX as num).toDouble();
+        double sy = (rawY as num).toDouble();
 
         if (sx <= 1.05 && sy <= 1.05) {
           sx *= sw;
