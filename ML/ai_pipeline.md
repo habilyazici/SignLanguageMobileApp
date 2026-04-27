@@ -412,17 +412,3 @@ info/ai_kismi/model_training_v2.py       <- Colab: .npy -> .tflite
 5. 226 kelime siniri: Yeni kelime = yeni veri + yeniden egitim.
 
 ---
-
-## 15. Sonraki Adimlar
-
-```
-[TAMAM]  feature_extraction_v2.py yazildi, Colabda baslandi
-[TAMAM]  Val, Test setleri tamamlandi
-[DEVAM]  Train seti devam ediyor (~28k video, ~2-3 gun)
-[BEKLER] Train bitince model_training_v2.py calistir
-[BEKLER] sign_language_model_v2.tflite -> frontend/assets/models/sign_language_model.tflite
-[BEKLER] Uygulamayi test et, dev modunda koordinatlar dogru mu?
-[EKSIK]  Text-to-sign: backend/video hazir degil (kod stub modda)
-[GELECEK] Parmak alfabesi: eksik TID videolari icin harf harf gosterim
-```
-
