@@ -31,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
     final isGuest = auth.isGuest;
     final dailyWord = ref.watch(dailyWordProvider);
     final displayName =
-        auth.displayName ?? auth.email?.split('@').first ?? 'Kullanıcı';
+        auth.displayName ?? auth.email?.split('@').firstOrNull ?? 'Kullanıcı';
     final dictCount = ref.watch(
       dictionaryProvider.select((s) => s.allSigns.length),
     );

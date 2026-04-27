@@ -83,7 +83,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => context.pop(),
                     color: AppTheme.textPrimary,
                   ),
                   Text(

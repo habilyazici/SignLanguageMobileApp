@@ -1,11 +1,12 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -53,6 +54,18 @@ final _wordDetailProvider =
   if (res.statusCode != 200) throw Exception('Kelime yuklenemedi.');
   return _WordDetail.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cellular check utility — hem VideoHeader hem AltVideoCard kullanır.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Cihazın yalnızca mobil veri üzerinde olup olmadığını döner.
+/// Wi-Fi de aktifse false döner.
+Future<bool> _isOnCellular() async {
+  final result = await Connectivity().checkConnectivity();
+  return result.contains(ConnectivityResult.mobile) &&
+      !result.contains(ConnectivityResult.wifi);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Ekran
@@ -220,14 +233,10 @@ class _DetailBody extends ConsumerWidget {
                     ),
                   ].animate().fadeIn(delay: 220.ms, duration: 350.ms),
 
-                  // ── İpucu kartı ──────────────────────────────────────
+                  // ── Bu işareti dene CTA ──────────────────────────────
                   const SizedBox(height: 20),
-                  _InfoCard(
-                    icon: Icons.tips_and_updates_rounded,
-                    iconColor: AppTheme.primaryStatusYellow,
-                    title: 'İpucu',
-                    body:
-                        'İşareti yaparken yüz ifadeniz ve vücut diliniz de anlamı güçlendirir.',
+                  _TrySignCta(
+                    onTap: () => context.go('/translation'),
                   ).animate().fadeIn(delay: 260.ms, duration: 350.ms),
                 ],
               ),
@@ -279,27 +288,27 @@ class _VideoHeaderState extends ConsumerState<_VideoHeader> {
   Future<void> _init() async {
     final settings = ref.read(settingsProvider);
 
-    if (settings.cellularVideoDisabled) {
-      final result = await Connectivity().checkConnectivity();
-      final onCellular = result.contains(ConnectivityResult.mobile) &&
-          !result.contains(ConnectivityResult.wifi);
-      if (onCellular) {
-        if (mounted) setState(() => _blockedByCellular = true);
-        return;
-      }
+    if (settings.cellularVideoDisabled && await _isOnCellular()) {
+      if (mounted) setState(() => _blockedByCellular = true);
+      return;
     }
 
     _ctrl = VideoPlayerController.networkUrl(
       Uri.parse(widget.videoUrl),
-      httpHeaders: const {'ngrok-skip-browser-warning': 'true'},
+      httpHeaders: kNgrokHeaders,
     );
     await _ctrl!.initialize();
+    if (!mounted) {
+      _ctrl!.dispose();
+      _ctrl = null;
+      return;
+    }
     _ctrl!.addListener(_onControllerUpdate);
     _ctrl!.setLooping(true);
 
     final autoplay = settings.videoQuality != VideoQuality.dataSaver;
     if (autoplay) _ctrl!.play();
-    if (mounted) setState(() { _ready = true; _isPlaying = autoplay; });
+    setState(() { _ready = true; _isPlaying = autoplay; });
   }
 
   // isPlaying değişince rebuild; diğer frame güncellemelerini yoksay.
@@ -459,7 +468,7 @@ class _VideoHeaderState extends ConsumerState<_VideoHeader> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Alternatif video kartı (CDN URL'leri)
+// Alternatif video kartı
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _AltVideoCard extends ConsumerStatefulWidget {
@@ -479,36 +488,42 @@ class _AltVideoCardState extends ConsumerState<_AltVideoCard> {
   Future<void> _toggle() async {
     if (_ctrl == null) {
       final settings = ref.read(settingsProvider);
-      if (settings.cellularVideoDisabled) {
-        final result = await Connectivity().checkConnectivity();
-        final onCellular = result.contains(ConnectivityResult.mobile) &&
-            !result.contains(ConnectivityResult.wifi);
-        if (onCellular && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Video yüklemek için Wi-Fi bağlantısı gerekli.'),
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 3),
-            ),
-          );
-          return;
-        }
+      if (settings.cellularVideoDisabled && await _isOnCellular()) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Video yüklemek için Wi-Fi bağlantısı gerekli.'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return;
       }
+
       _ctrl = VideoPlayerController.networkUrl(
         Uri.parse(widget.url),
-        httpHeaders: const {'ngrok-skip-browser-warning': 'true'},
+        httpHeaders: kNgrokHeaders,
       );
       await _ctrl!.initialize();
+
+      // Widget initialize süresince unmount olmuş olabilir.
+      if (!mounted) {
+        _ctrl!.dispose();
+        _ctrl = null;
+        return;
+      }
+
       _ctrl!.play();
       setState(() { _ready = true; _playing = true; });
       return;
     }
+
     if (_playing) {
       await _ctrl!.pause();
     } else {
       await _ctrl!.play();
     }
-    setState(() => _playing = !_playing);
+    if (mounted) setState(() => _playing = !_playing);
   }
 
   @override
@@ -732,6 +747,61 @@ class _InfoCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Kullanıcıyı tanıma ekranına yönlendiren call-to-action kartı.
+class _TrySignCta extends StatelessWidget {
+  const _TrySignCta({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryBlueTint,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBlue.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.camera_alt_rounded, color: AppTheme.primaryBlue, size: 20),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bu işareti dene',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primaryBlue,
+                    ),
+                  ),
+                  Text(
+                    'Kamera ile tanıma moduna geç',
+                    style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppTheme.primaryBlue),
+          ],
+        ),
       ),
     );
   }
