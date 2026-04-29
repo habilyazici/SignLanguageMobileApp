@@ -9,8 +9,8 @@ class HistoryApiDatasource {
   final Ref _ref;
   const HistoryApiDatasource(this._ref);
 
-  Future<List<HistoryItem>> fetchHistory() async {
-    final res = await _ref.apiGet('/api/history');
+  Future<List<HistoryItem>> fetchHistory({int offset = 0, int limit = 50}) async {
+    final res = await _ref.apiGet('/api/history?offset=$offset&limit=$limit');
     if (res.statusCode != 200) throw Exception('Geçmiş yüklenemedi');
     final list = (jsonDecode(res.body) as List).cast<Map<String, dynamic>>();
     return list.map(HistoryItem.fromJson).toList();

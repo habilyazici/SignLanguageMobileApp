@@ -157,6 +157,10 @@ class AuthRepositoryImpl implements AuthRepository {
           )
           .timeout(kAuthTimeout);
 
+      if (res.statusCode == 401) {
+        await clearSession();
+        return (success: false, error: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.', newName: null);
+      }
       final parsed = jsonDecode(res.body) as Map<String, dynamic>;
       if (res.statusCode == 200) {
         final updatedName = parsed['name'] as String?;
@@ -246,7 +250,10 @@ class AuthRepositoryImpl implements AuthRepository {
         await clearSession();
         return (success: true, error: null);
       }
-
+      if (res.statusCode == 401) {
+        await clearSession();
+        return (success: false, error: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.');
+      }
       final body = jsonDecode(res.body) as Map<String, dynamic>;
       return (success: false, error: body['error'] as String? ?? 'Hesap silinemedi.');
     } catch (_) {

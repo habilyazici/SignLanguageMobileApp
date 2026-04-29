@@ -11,13 +11,16 @@ historyRouter.use(requireAuth);
 
 const addSchema = z.object({ text: z.string().min(1).max(500) });
 
-// GET /api/history
+// GET /api/history?offset=0&limit=50
 historyRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
+  const limit = Math.min(parseInt(String(req.query['limit'] ?? '50'), 10) || 50, 100);
+  const offset = Math.max(parseInt(String(req.query['offset'] ?? '0'), 10) || 0, 0);
   try {
     const items = await prisma.history.findMany({
       where: { userId: req.userId! },
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      take: limit,
+      skip: offset,
     });
     res.json(items);
   } catch (err) {
