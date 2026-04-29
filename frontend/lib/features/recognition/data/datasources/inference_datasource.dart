@@ -114,7 +114,7 @@ class InferenceDatasource {
       return List.generate(RecognitionConstants.windowSize, (i) {
         final src =
             (i * (buffer.length - 1) / (RecognitionConstants.windowSize - 1))
-                .round()
+                .floor() // Python dtype=int truncates (floor), .round() değil
                 .clamp(0, buffer.length - 1);
         return buffer[src];
       });

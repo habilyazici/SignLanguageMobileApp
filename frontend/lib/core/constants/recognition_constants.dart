@@ -20,8 +20,9 @@ abstract final class RecognitionConstants {
   /// Kayan pencere süresi (ms) — son N ms'lik kareler pencereye alınır
   static const int windowMs = 2000;
 
-  /// İlk inference için gereken minimum pencere süresi (ms)
-  static const int minWindowMs = 800;
+  /// İlk inference için gereken minimum pencere süresi (ms).
+  /// 800ms → ~24 gerçek frame, %60 padding. 1200ms → ~36 frame, %40 padding.
+  static const int minWindowMs = 1200;
 
   // ── Inference hız kontrolü ────────────────────────────────────────────────
   /// Her kaçıncı işlenen karede inference yapılır

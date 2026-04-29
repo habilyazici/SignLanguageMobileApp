@@ -202,10 +202,9 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
         }
       }
     } else {
-      // Skor eşiğin altında — streak ve son sınıfı sıfırla
-      _streak = 0;
-      _lastIdx = -1;
-      _lastShownWord = '';
+      // Tek gürültülü frame streak'i sıfırlamasın — eğitimde Gaussian noise augmentation
+      // tam bunu tolere etmek için yapıldı. Streak yavaşça azalsın, hard-reset olmasın.
+      if (_streak > 0) _streak--;
     }
   }
 

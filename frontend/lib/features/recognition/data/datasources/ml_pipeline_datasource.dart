@@ -104,7 +104,7 @@ class MlPipelineDatasource {
       posePoints: posePoints,
       rightHandPoints: handsData.right,
       leftHandPoints: handsData.left,
-      anyDetected: poses.isNotEmpty || hands.isNotEmpty,
+      anyDetected: hands.isNotEmpty, // sadece el görününce buffer doldur — el=0/pose≠0 out-of-distribution pattern'ı engeller
       poseCount: poses.length,
       handCount: hands.length,
     );
