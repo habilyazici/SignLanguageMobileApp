@@ -60,7 +60,8 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
 
   void _onTextChanged(String text) {
     final ts = ref.read(textToSignProvider);
-    if (ts.isLoading || ts.error != null) return;
+    // Hata durumunda kullanıcı yeniden denemeli; yükleme sırasında timer kurulsun.
+    if (ts.error != null) return;
 
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
@@ -309,7 +310,15 @@ class _VideoStageState extends State<_VideoStage> {
 
     if (_initialized && widget.isPlaying != old.isPlaying) {
       if (widget.isPlaying) {
-        _ctrl?.play();
+        if (_ended) {
+          // Video sona ulaşmıştı — başa sar sonra oynat.
+          _ended = false;
+          _ctrl?.seekTo(Duration.zero).then((_) {
+            if (mounted && widget.isPlaying) _ctrl?.play();
+          });
+        } else {
+          _ctrl?.play();
+        }
       } else {
         _ctrl?.pause();
       }

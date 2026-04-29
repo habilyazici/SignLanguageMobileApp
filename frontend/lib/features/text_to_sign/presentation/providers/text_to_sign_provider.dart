@@ -72,6 +72,7 @@ class TextToSignNotifier extends Notifier<TextToSignState> {
 
   @override
   TextToSignState build() {
+    ref.keepAlive();
     _repo = ref.read(_textToSignRepositoryProvider);
     Future.microtask(_init);
     return const TextToSignState(isLoading: true);

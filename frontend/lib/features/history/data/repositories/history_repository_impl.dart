@@ -13,7 +13,8 @@ class HistoryRepositoryImpl implements HistoryRepository {
   const HistoryRepositoryImpl(this._datasource);
 
   @override
-  Future<List<HistoryItem>> fetchHistory() => _datasource.fetchHistory();
+  Future<List<HistoryItem>> fetchHistory({int offset = 0, int limit = 50}) =>
+      _datasource.fetchHistory(offset: offset, limit: limit);
 
   @override
   Future<HistoryItem> addHistory(String text) => _datasource.addHistory(text);

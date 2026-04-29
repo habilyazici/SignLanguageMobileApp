@@ -156,9 +156,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                               ? _EmptyState(isSearch: _search.text.isNotEmpty)
                               : _HistoryList(
                                   items: filtered,
+                                  isLoadingMore: history.isLoadingMore,
+                                  hasMore: history.hasMore && _search.text.isEmpty,
                                   onDelete: (id) => ref
                                       .read(historyProvider.notifier)
                                       .delete(id),
+                                  onLoadMore: () => ref
+                                      .read(historyProvider.notifier)
+                                      .loadMore(),
                                 ),
             ),
           ],
@@ -196,24 +201,69 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _HistoryList extends StatelessWidget {
-  const _HistoryList({required this.items, required this.onDelete});
+class _HistoryList extends StatefulWidget {
+  const _HistoryList({
+    required this.items,
+    required this.onDelete,
+    required this.onLoadMore,
+    required this.isLoadingMore,
+    required this.hasMore,
+  });
   final List<HistoryItem> items;
   final void Function(String id) onDelete;
+  final VoidCallback onLoadMore;
+  final bool isLoadingMore;
+  final bool hasMore;
+
+  @override
+  State<_HistoryList> createState() => _HistoryListState();
+}
+
+class _HistoryListState extends State<_HistoryList> {
+  final _scrollCtrl = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.removeListener(_onScroll);
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!widget.hasMore || widget.isLoadingMore) return;
+    if (_scrollCtrl.position.pixels >=
+        _scrollCtrl.position.maxScrollExtent - 200) {
+      widget.onLoadMore();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-      itemCount: items.length,
-      itemBuilder: (context, i) => _HistoryCard(
-        item: items[i],
-        onDelete: () => onDelete(items[i].id),
-      )
-          .animate()
-          .fadeIn(
-              delay: Duration(milliseconds: 30 * i), duration: 220.ms)
-          .slideY(begin: 0.05, end: 0),
+      itemCount: widget.items.length + (widget.isLoadingMore ? 1 : 0),
+      itemBuilder: (context, i) {
+        if (i == widget.items.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
+          );
+        }
+        return _HistoryCard(
+          item: widget.items[i],
+          onDelete: () => widget.onDelete(widget.items[i].id),
+        )
+            .animate()
+            .fadeIn(delay: Duration(milliseconds: 30 * i), duration: 220.ms)
+            .slideY(begin: 0.05, end: 0);
+      },
     );
   }
 }
