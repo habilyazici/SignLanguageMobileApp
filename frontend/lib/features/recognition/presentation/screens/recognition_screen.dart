@@ -418,6 +418,7 @@ class _DevStatsPanel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _statRow('BUF', '${d.bufferFill}/60', Colors.white70),
+                _statRow('LAT', '${d.latencyMs}ms', d.latencyMs > 150 ? Colors.orangeAccent : Colors.greenAccent),
                 _statRow('POSE', '${d.poseCount}', Colors.yellowAccent),
                 _statRow('HAND', '${d.handCount}', Colors.white70),
                 _statRow('R', '${d.rightHand.length}pt', Colors.redAccent),
@@ -654,12 +655,16 @@ class _SentenceRow extends StatelessWidget {
         alignment: WrapAlignment.center,
         spacing: 8,
         runSpacing: 8,
-        children: sentence.map((word) {
-          return Text(
-            word,
-            style: textStyle,
-          ).animate().fadeIn(duration: 200.ms).slideY(begin: 0.1, end: 0);
-        }).toList(),
+        children: [
+          for (int i = 0; i < sentence.length; i++)
+            if (i == sentence.length - 1)
+              Text(sentence[i], style: textStyle)
+                  .animate()
+                  .fadeIn(duration: 200.ms)
+                  .slideY(begin: 0.1, end: 0)
+            else
+              Text(sentence[i], style: textStyle),
+        ],
       ),
     );
   }

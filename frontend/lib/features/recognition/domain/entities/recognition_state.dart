@@ -11,6 +11,7 @@ class LandmarkDevData {
   final int bufferFill;
   final int poseCount;
   final int handCount;
+  final int latencyMs;
 
   /// Modelin en yüksek olasılıklı ilk 3 tahmini (Türkçe etiket + güven skoru).
   final List<({String word, double confidence})> topPredictions;
@@ -22,6 +23,7 @@ class LandmarkDevData {
     required this.bufferFill,
     required this.poseCount,
     required this.handCount,
+    this.latencyMs = 0,
     this.topPredictions = const [],
   });
 }

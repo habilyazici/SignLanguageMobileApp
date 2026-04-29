@@ -81,6 +81,7 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
         bufferFill: data.bufferFill,
         poseCount: data.poseCount,
         handCount: data.handCount,
+        latencyMs: data.latencyMs,
         topPredictions: _topPredictions,
       );
     });
@@ -192,10 +193,7 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
             _lastShownWord = '';
             _streak = 0;
             _lastIdx = -1;
-            state = state.copyWith(
-              predictedWord: '',
-              confidenceScore: 0.0,
-            );
+            state = state.copyWith(predictedWord: '', confidenceScore: 0.0);
           });
         } else {
           state = state.copyWith(confidenceScore: maxScore);
@@ -219,6 +217,10 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
     _lastShownWord = '';
     _streak = 0;
     _lastIdx = -1;
-    state = state.copyWith(sentence: [], predictedWord: '', confidenceScore: 0.0);
+    state = state.copyWith(
+      sentence: [],
+      predictedWord: '',
+      confidenceScore: 0.0,
+    );
   }
 }

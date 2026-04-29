@@ -10,6 +10,7 @@ class MlFrameResult {
   final bool anyDetected;
   final int poseCount;
   final int handCount;
+  final int latencyMs;
 
   const MlFrameResult({
     required this.features,
@@ -19,5 +20,6 @@ class MlFrameResult {
     required this.anyDetected,
     required this.poseCount,
     required this.handCount,
+    required this.latencyMs,
   });
 }
