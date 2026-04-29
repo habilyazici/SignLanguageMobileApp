@@ -37,7 +37,7 @@ abstract final class RecognitionConstants {
   /// Araya giren karelerde son bilinen pose değerleri taşınır.
   /// hand detection her frame çalışmaya devam eder (asıl darboğaz).
   /// Yavaş cihazlarda (latency > kLatencySlowMs) bu değer otomatik artar.
-  static const int poseEvery = 3;
+  static const int poseEvery = 1;
 
   /// Bu eşiğin (ms) üzerinde latency ölçülürse poseEvery bir adım artar.
   static const int kLatencySlowMs = 100;

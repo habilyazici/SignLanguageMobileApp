@@ -184,6 +184,7 @@ class MlPipelineDatasource {
       final double displayH = rotated ? data.width.toDouble() : data.height.toDouble();
 
       if (poses.isNotEmpty) {
+        // _lastPoseFeatures per-landmark olarak _fillPose içinde güncellenir.
         posePoints = _fillPose(
           poses.first,
           frame,
@@ -194,9 +195,6 @@ class MlPipelineDatasource {
           displayWidth: displayW,
           displayHeight: displayH,
         );
-        for (int i = 0; i < 22; i++) {
-          _lastPoseFeatures[i] = frame[84 + i];
-        }
       } else {
         // Pose atlandı veya tespit edilemedi — son bilinen değerleri taşı
         for (int i = 0; i < 22; i++) {
@@ -324,6 +322,9 @@ class MlPipelineDatasource {
       if (isFlipped) mx = 1.0 - mx;
       frame[84 + i * 2] = mx;
       frame[84 + i * 2 + 1] = my;
+      // Sadece tespit edilen landmark'lar güncellenir — null olanlar önceki değeri korur.
+      _lastPoseFeatures[i * 2] = mx;
+      _lastPoseFeatures[i * 2 + 1] = my;
       pts.add(Offset(lm.x / displayWidth, lm.y / displayHeight));
     }
     return pts;
@@ -350,6 +351,9 @@ class MlPipelineDatasource {
         final lm = lms[i] as dynamic;
         double sx = (lm.x as num).toDouble();
         double sy = (lm.y as num).toDouble();
+        // hand_detection koordinatları normalize [0,1] döner; piksel aralığına çevir.
+        // Eşik 1.05: tracking artifact'larında ufak taşma (1.01 gibi) varsa da
+        // normalize kabul edilir, >= 1.05 ise zaten piksel koordinatı olarak gelmiştir.
         if (sx <= 1.05) {
           sx *= imageWidth;
           sy *= imageHeight;
@@ -359,7 +363,9 @@ class MlPipelineDatasource {
         if (isFlipped) mx = 1.0 - mx;
         frame[offset + i * 2] = mx;
         frame[offset + i * 2 + 1] = my;
-        target.add(Offset((240.0 - sy) / 240.0, sx / 320.0));
+        // Dev overlay: gerçek çözünürlük kullanılır (Android 320×240, iOS 480×360).
+        // 90° sensör dönüşü: kamera-Y → ekran-X, kamera-X → ekran-Y.
+        target.add(Offset((imageHeight - sy) / imageHeight, sx / imageWidth));
       }
     }
     return (right: rPts, left: lPts);
