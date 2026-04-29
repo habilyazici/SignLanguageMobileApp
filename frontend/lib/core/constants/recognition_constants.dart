@@ -25,8 +25,8 @@ abstract final class RecognitionConstants {
   static const int minWindowMs = 1200;
 
   // ── Inference hız kontrolü ────────────────────────────────────────────────
-  /// Her kaçıncı işlenen karede inference yapılır
-  static const int inferEvery = 8;
+  /// Her kaçıncı işlenen karede inference yapılır (A32 için 2-3 ideal)
+  static const int inferEvery = 2;
 
   // ── Temporal smoothing ────────────────────────────────────────────────────
   /// Aynı sınıfın kaç ardışık inference'ta görülmesi gerektiği

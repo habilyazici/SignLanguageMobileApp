@@ -22,6 +22,7 @@ class InferenceDatasource {
 
   Future<void> initialize() async {
     final opts = tflite.InterpreterOptions()..threads = 4;
+
     _interpreter = await tflite.Interpreter.fromAsset(
       'assets/models/sign_language_model_v2.tflite',
       options: opts,
