@@ -6,13 +6,18 @@ import { config } from '../config';
 
 export const wordsRouter = Router();
 
-let manifestCache: Record<string, string> | null = null;
+interface ManifestCache {
+  data: Record<string, string>;
+  builtAt: number;
+}
+let manifestCache: ManifestCache | null = null;
+const MANIFEST_TTL_MS = 5 * 60 * 1000; // 5 dakika
 
-const videoUrl = (word: any) => {
+const videoUrl = (word: { videoFilename: string | null; cdnVideoUrl: string }): string => {
   if (word.videoFilename) {
-    return `${config.baseUrl}/videos/${word.videoFilename}`;
+    return `${config.baseUrl}/videos/${encodeURIComponent(word.videoFilename)}`;
   }
-  return word.cdnVideoUrl || '';
+  return word.cdnVideoUrl;
 };
 
 function asString(val: unknown): string | undefined {
@@ -39,7 +44,10 @@ function manifestKeys(word: string): string[] {
 
 // GET /api/words/manifest
 wordsRouter.get('/manifest', async (_req: Request, res: Response): Promise<void> => {
-  if (manifestCache) { res.json({ words: manifestCache }); return; }
+  if (manifestCache && Date.now() - manifestCache.builtAt < MANIFEST_TTL_MS) {
+    res.json({ words: manifestCache.data });
+    return;
+  }
 
   try {
     const all = await prisma.word.findMany({
@@ -52,9 +60,10 @@ wordsRouter.get('/manifest', async (_req: Request, res: Response): Promise<void>
       for (const key of manifestKeys(w.word)) manifest[key] = url;
     }
 
-    manifestCache = manifest;
+    manifestCache = { data: manifest, builtAt: Date.now() };
     res.json({ words: manifest });
   } catch (err) {
+    console.error('[words]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -101,6 +110,7 @@ wordsRouter.get('/', async (req: Request, res: Response): Promise<void> => {
       pages: Math.ceil(total / limit),
     });
   } catch (err) {
+    console.error('[words]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -125,6 +135,7 @@ wordsRouter.get('/:id', async (req: Request, res: Response): Promise<void> => {
       videoUrl: videoUrl(word),
     });
   } catch (err) {
+    console.error('[words]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
