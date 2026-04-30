@@ -51,6 +51,7 @@ authRouter.post('/register', async (req: Request, res: Response): Promise<void> 
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (err) {
+    console.error('[POST /auth/register]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -82,6 +83,7 @@ authRouter.post('/login', async (req: Request, res: Response): Promise<void> => 
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (err) {
+    console.error('[POST /auth/login]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -164,6 +166,7 @@ authRouter.post('/reset-password', async (req: Request, res: Response): Promise<
 
     res.json({ message: 'Sifre guncellendi.' });
   } catch (err) {
+    console.error('[POST /auth/reset-password]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -209,6 +212,7 @@ authRouter.put('/profile', requireAuth, async (req: AuthRequest, res: Response):
 
     res.json({ id: updated.id, name: updated.name, email: updated.email });
   } catch (err) {
+    console.error('[PUT /auth/profile]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -223,6 +227,7 @@ authRouter.delete('/profile', requireAuth, async (req: AuthRequest, res: Respons
 
     res.status(204).send();
   } catch (err) {
+    console.error('[DELETE /auth/profile]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });

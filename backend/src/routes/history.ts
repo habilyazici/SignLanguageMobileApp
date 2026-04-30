@@ -24,6 +24,7 @@ historyRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> =>
     });
     res.json(items);
   } catch (err) {
+    console.error('[history]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -39,6 +40,7 @@ historyRouter.post('/', async (req: AuthRequest, res: Response): Promise<void> =
     });
     res.status(201).json(item);
   } catch (err) {
+    console.error('[history]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -49,6 +51,7 @@ historyRouter.delete('/', async (req: AuthRequest, res: Response): Promise<void>
     await prisma.history.deleteMany({ where: { userId: req.userId! } });
     res.status(204).end();
   } catch (err) {
+    console.error('[history]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -67,6 +70,7 @@ historyRouter.delete('/:id', async (req: AuthRequest, res: Response): Promise<vo
     }
     res.status(204).end();
   } catch (err) {
+    console.error('[history]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });

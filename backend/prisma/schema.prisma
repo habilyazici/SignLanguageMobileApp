@@ -52,7 +52,7 @@ model PasswordResetToken {
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  @@index([email])
+  @@index([email, used, expiresAt])
 }
 
 model Bookmark {

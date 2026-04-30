@@ -29,7 +29,7 @@ app.use(cors(
     : undefined, // tüm origin'ler
 ));
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Genel limiter: 200 istek / 1 dakika / IP
 const generalLimiter = rateLimit({

@@ -10,7 +10,7 @@ export const bookmarksRouter = Router();
 bookmarksRouter.use(requireAuth);
 
 function bookmarkVideoUrl(word: { videoFilename: string | null; cdnVideoUrl: string }): string {
-  if (word.videoFilename) return `${config.baseUrl}/videos/${word.videoFilename}`;
+  if (word.videoFilename) return `${config.baseUrl}/videos/${encodeURIComponent(word.videoFilename)}`;
   return word.cdnVideoUrl;
 }
 
@@ -37,6 +37,7 @@ bookmarksRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> 
       createdAt: b.createdAt,
     })));
   } catch (err) {
+    console.error('[bookmarks]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -54,6 +55,7 @@ bookmarksRouter.post('/:wordId', async (req: AuthRequest, res: Response): Promis
     });
     res.status(201).json(bookmark);
   } catch (err) {
+    console.error('[bookmarks]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
@@ -67,6 +69,7 @@ bookmarksRouter.delete('/:wordId', async (req: AuthRequest, res: Response): Prom
     await prisma.bookmark.deleteMany({ where: { userId: req.userId!, wordId } });
     res.status(204).end();
   } catch (err) {
+    console.error('[bookmarks]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
 });
