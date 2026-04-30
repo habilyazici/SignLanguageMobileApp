@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/sign_entry.dart';
+import '../../domain/entities/word_detail.dart';
 import '../../domain/repositories/dictionary_repository.dart';
 import '../datasources/dictionary_api_datasource.dart';
 
@@ -14,4 +15,7 @@ class DictionaryRepositoryImpl implements DictionaryRepository {
 
   @override
   Future<List<SignEntry>> fetchAll() => _datasource.fetchAll();
+
+  @override
+  Future<WordDetail> fetchById(int id) => _datasource.fetchById(id);
 }

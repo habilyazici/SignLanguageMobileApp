@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -7,52 +6,20 @@ import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../core/constants/api_constants.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Model
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _WordDetail {
-  final int id;
-  final String word;
-  final String letter;
-  final String? meaningEn;
-  final String videoUrl;
-  final List<String> allVideos;
-
-  const _WordDetail({
-    required this.id,
-    required this.word,
-    required this.letter,
-    required this.meaningEn,
-    required this.videoUrl,
-    required this.allVideos,
-  });
-
-  factory _WordDetail.fromJson(Map<String, dynamic> j) => _WordDetail(
-        id: j['id'] as int,
-        word: j['word'] as String,
-        letter: j['letter'] as String,
-        meaningEn: j['meaningEn'] as String?,
-        videoUrl: j['videoUrl'] as String,
-        allVideos: (j['allVideos'] as List?)?.cast<String>() ?? [],
-      );
-}
+import '../../data/repositories/dictionary_repository_impl.dart';
+import '../../domain/entities/word_detail.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Provider
 // ─────────────────────────────────────────────────────────────────────────────
 
 final _wordDetailProvider =
-    FutureProvider.family<_WordDetail, int>((ref, id) async {
-  final res = await ref.apiGet('/api/words/$id');
-  if (res.statusCode != 200) throw Exception('Kelime yuklenemedi.');
-  return _WordDetail.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
+    FutureProvider.family<WordDetail, int>((ref, id) async {
+  return ref.watch(dictionaryRepositoryProvider).fetchById(id);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -115,7 +82,7 @@ class DictionaryDetailScreen extends ConsumerWidget {
 
 class _DetailBody extends ConsumerWidget {
   const _DetailBody({required this.word});
-  final _WordDetail word;
+  final WordDetail word;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
