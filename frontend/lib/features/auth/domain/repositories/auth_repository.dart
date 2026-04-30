@@ -36,4 +36,7 @@ abstract interface class AuthRepository {
     required String code,
     required String newPassword,
   });
+
+  /// Hesabı sunucudan siler ve yerel oturumu temizler.
+  Future<({bool success, String? error})> deleteAccount();
 }

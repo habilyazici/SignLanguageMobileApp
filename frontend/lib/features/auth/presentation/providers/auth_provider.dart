@@ -2,10 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_state.dart';
+import '../../domain/repositories/auth_repository.dart';
 
 export '../../domain/entities/auth_state.dart' show AuthStatus, AuthState;
 
-final _authRepositoryProvider = Provider<AuthRepositoryImpl>(
+final _authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepositoryImpl(),
 );
 

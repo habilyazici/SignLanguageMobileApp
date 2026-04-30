@@ -231,6 +231,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
   Future<({bool success, String? error})> deleteAccount() async {
     final token = await _storage.read(key: _kTokenKey);
     if (token == null) return (success: false, error: 'Oturum bulunamadı.');
