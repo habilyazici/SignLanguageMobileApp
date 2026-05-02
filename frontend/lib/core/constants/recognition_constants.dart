@@ -52,8 +52,10 @@ abstract final class RecognitionConstants {
   /// Normalize uzayında ortalama mutlak fark eşiği (0..1 arası).
   /// 0.008 = nefes/kamera titremesi yeterli (çok hassas).
   /// 0.025 = gerçek el hareketi gerektirir.
-  static const double motionThreshold = 0.025;
+  static const double motionThreshold = 0.030;
 
-  /// Son hareketten bu kadar ms sonra inference durur
-  static const int motionWindowMs = 1000;
+  /// Son hareketten bu kadar ms sonra inference durur.
+  /// Düşük tutmak önemli: hareket durduktan sonra el sabit poza girince
+  /// model o pozu yüksek güvenle yanlış bir kelimeye atayabiliyor.
+  static const int motionWindowMs = 500;
 }
