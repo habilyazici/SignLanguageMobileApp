@@ -4,7 +4,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/presentation/widgets/app_logo.dart';
 import '../../domain/entities/sign_entry.dart';
 import '../providers/dictionary_provider.dart';
 
@@ -59,13 +58,33 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Üst Bar ───────────────────────────────────────────────────
+            // ── Başlık + Kelime Sayısı ────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  AppLogo(height: 72),
-                  const Spacer(),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'İşaret Sözlüğü',
+                          style: GoogleFonts.poppins(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '1500+ işareti keşfet ve öğren',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Container(
@@ -95,28 +114,6 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
                 ],
               ),
             ).animate().fadeIn(duration: 350.ms),
-
-            // ── Başlık ────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Text(
-                'İşaret Sözlüğü',
-                style: GoogleFonts.poppins(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
-                  height: 1.1,
-                ),
-              ),
-            ).animate().fadeIn(delay: 60.ms, duration: 350.ms),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                '1500+ işareti keşfet ve öğren',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ).animate().fadeIn(delay: 100.ms, duration: 350.ms),
 
             const SizedBox(height: 8),
 
