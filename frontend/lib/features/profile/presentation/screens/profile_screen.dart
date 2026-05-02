@@ -7,7 +7,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/presentation/widgets/app_logo.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
 import '../../../history/presentation/providers/history_provider.dart';
@@ -37,13 +36,33 @@ class ProfileScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.only(bottom: 100),
           children: [
-            // ── Üst Bar ───────────────────────────────────────────────────
+            // ── Başlık + Ayarlar ──────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  AppLogo(height: 72),
-                  const Spacer(),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Profilim',
+                          style: GoogleFonts.poppins(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Hesabını ve tercihlerini yönet',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
                   GestureDetector(
                     onTap: () => context.push('/settings'),
                     child: Container(
@@ -87,28 +106,6 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ).animate().fadeIn(duration: 350.ms),
-
-            // ── Başlık ────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Text(
-                'Profilim',
-                style: GoogleFonts.poppins(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
-                  height: 1.1,
-                ),
-              ),
-            ).animate().fadeIn(delay: 40.ms, duration: 350.ms),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                'Hesabını ve tercihlerini yönet',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ).animate().fadeIn(delay: 60.ms, duration: 350.ms),
 
             const SizedBox(height: 12),
 
@@ -290,47 +287,6 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ).animate().fadeIn(delay: 120.ms, duration: 350.ms),
 
-            // ── Giriş CTA — sadece misafir ────────────────────────────────
-            if (isGuest) ...[
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () => context.push('/login'),
-                        child: const Text('Giriş Yap'),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: OutlinedButton(
-                        onPressed: () => context.push('/register'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppTheme.primaryBlue),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: const Text(
-                          'Kayıt Ol',
-                          style: TextStyle(
-                            color: AppTheme.primaryBlue,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 160.ms, duration: 350.ms),
-            ],
-
             // ── Uygulama Bölümü ───────────────────────────────────────────
             _SectionLabel('Uygulama'),
             _Card(
@@ -412,12 +368,12 @@ class ProfileScreen extends ConsumerWidget {
   void _confirmSignOut(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Çıkış Yap'),
         content: const Text('Hesabınızdan çıkmak istediğinize emin misiniz?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('İptal'),
           ),
           FilledButton(
@@ -425,7 +381,7 @@ class ProfileScreen extends ConsumerWidget {
               backgroundColor: AppTheme.primaryStatusRed,
             ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               ref.read(authProvider.notifier).signOut();
             },
             child: const Text('Çıkış Yap'),

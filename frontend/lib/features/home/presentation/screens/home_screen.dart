@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/presentation/widgets/app_logo.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../dictionary/presentation/providers/dictionary_provider.dart';
 import '../providers/home_provider.dart';
@@ -47,15 +46,35 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 2),
-
-              // ── Üst Bar ───────────────────────────────────────────────
+              // ── Üst Bar — Karşılama + Profil ─────────────────────────
+              const SizedBox(height: 20),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  AppLogo(height: 72),
-                  const Spacer(),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isGuest ? '$greeting!' : '$greeting, $name!',
+                          style: GoogleFonts.poppins(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Bugün ne öğrenmek istersin?',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: () => context.go('/profile'),
+                    onTap: () => isGuest ? context.push('/login') : context.go('/profile'),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -81,27 +100,6 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ).animate().fadeIn(duration: 350.ms),
 
-              const SizedBox(height: 8),
-
-              // ── Karşılama ─────────────────────────────────────────────
-              Text(
-                    isGuest ? '$greeting!' : '$greeting, $name!',
-                    style: GoogleFonts.poppins(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
-                      height: 1.1,
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(delay: 80.ms, duration: 350.ms)
-                  .slideY(begin: -0.1, end: 0),
-              const SizedBox(height: 4),
-              Text(
-                'Bugün ne öğrenmek istersin?',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ).animate().fadeIn(delay: 120.ms, duration: 350.ms),
-
               const SizedBox(height: 24),
 
               // ── Günün İşareti ──────────────────────────────────────────
@@ -113,16 +111,6 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 28),
 
               // ── Hızlı Erişim ──────────────────────────────────────────
-              Text(
-                'Hızlı Erişim',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
-              ).animate().fadeIn(delay: 200.ms, duration: 300.ms),
-              const SizedBox(height: 12),
-
               // Büyük birincil kart — Çeviri (kamera + metin modlarını kapsar)
               _PrimaryQuickCard(
                     title: 'Çeviri',
@@ -284,7 +272,7 @@ class _DailyWordCard extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.waving_hand_rounded,
+                        Icons.lightbulb_rounded,
                         color: Colors.white,
                         size: 26,
                       ),

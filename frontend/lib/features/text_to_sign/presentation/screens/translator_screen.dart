@@ -23,39 +23,68 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   final _stt = SpeechToText();
   bool _sttReady = false;
   bool _listening = false;
+  bool _continuous = true; // sürekli dinleme modu
   Timer? _debounce;
+  Timer? _restartDelay;
 
   @override
   void initState() {
     super.initState();
-    _initStt();
+    // İlk frame render olduktan sonra başlat — Android permission dialog'u
+    // widget tree hazır olmadan açılırsa initialize() false döner.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initStt());
   }
 
   Future<void> _initStt() async {
-    final ready = await _stt.initialize();
-    if (mounted) setState(() => _sttReady = ready);
+    final ready = await _stt.initialize(
+      onError: (_) {
+        if (mounted) setState(() => _listening = false);
+      },
+    );
+    if (!mounted) return;
+    setState(() => _sttReady = ready);
+    // STT hazırsa ve ayarlarda açıksa otomatik başlat
+    if (ready && ref.read(settingsProvider).sttEnabled) {
+      _startListening();
+    }
+  }
+
+  Future<void> _startListening() async {
+    if (!_sttReady || _listening) return;
+    setState(() => _listening = true);
+    await _stt.listen(
+      onResult: (result) {
+        if (!result.finalResult) return;
+        final text = result.recognizedWords;
+        if (text.trim().isNotEmpty) {
+          _controller.text = text;
+          ref.read(textToSignProvider.notifier).translate(text);
+        }
+        if (!mounted) return;
+        setState(() => _listening = false);
+        // Sürekli mod açıksa kısa bekleyip tekrar dinle
+        if (_continuous && ref.read(settingsProvider).sttEnabled) {
+          _restartDelay = Timer(const Duration(milliseconds: 400), () {
+            if (mounted && _continuous) _startListening();
+          });
+        }
+      },
+      localeId: 'tr_TR',
+      listenFor: const Duration(seconds: 60),
+      pauseFor: const Duration(seconds: 2),
+    );
   }
 
   Future<void> _toggleListening() async {
     if (_listening) {
+      _continuous = false;
+      _restartDelay?.cancel();
       await _stt.stop();
-      setState(() => _listening = false);
-      return;
+      if (mounted) setState(() => _listening = false);
+    } else {
+      _continuous = true;
+      _startListening();
     }
-    setState(() => _listening = true);
-    await _stt.listen(
-      onResult: (result) {
-        if (result.finalResult) {
-          final text = result.recognizedWords;
-          _controller.text = text;
-          setState(() => _listening = false);
-          if (text.trim().isNotEmpty) {
-            ref.read(textToSignProvider.notifier).translate(text);
-          }
-        }
-      },
-      localeId: 'tr_TR',
-    );
   }
 
   void _onTextChanged(String text) {
@@ -85,6 +114,8 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _restartDelay?.cancel();
+    _continuous = false;
     _controller.dispose();
     _stt.cancel();
     super.dispose();
@@ -160,7 +191,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                           isDark: isDark,
                           onTap: notifier.goTo,
                         ).animate().fadeIn(duration: 200.ms),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         _PlaybackBar(
                           isPlaying: ts.isPlaying,
                           isFirst: ts.currentIndex == 0,
@@ -169,8 +200,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                           onPlay: notifier.play,
                           onPause: notifier.pause,
                           onNext: notifier.next,
+                          onRestart: notifier.restart,
                         ).animate().fadeIn(duration: 200.ms),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 6),
                       ],
 
                       // Metin giriş satırı
@@ -725,6 +757,7 @@ class _PlaybackBar extends StatelessWidget {
     required this.onPlay,
     required this.onPause,
     required this.onNext,
+    required this.onRestart,
   });
 
   final bool isPlaying;
@@ -734,6 +767,7 @@ class _PlaybackBar extends StatelessWidget {
   final VoidCallback onPlay;
   final VoidCallback onPause;
   final VoidCallback onNext;
+  final VoidCallback onRestart;
 
   @override
   Widget build(BuildContext context) {
@@ -741,11 +775,17 @@ class _PlaybackBar extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
+          icon: const Icon(Icons.replay_rounded),
+          onPressed: onRestart,
+          iconSize: 24,
+          tooltip: 'Baştan Oynat',
+        ),
+        IconButton(
           icon: const Icon(Icons.skip_previous_rounded),
           onPressed: isFirst ? null : onPrev,
           iconSize: 28,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
         FilledButton(
           onPressed: isPlaying ? onPause : onPlay,
           style: FilledButton.styleFrom(
@@ -758,7 +798,7 @@ class _PlaybackBar extends StatelessWidget {
             size: 28,
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 4),
         IconButton(
           icon: const Icon(Icons.skip_next_rounded),
           onPressed: isLast ? null : onNext,

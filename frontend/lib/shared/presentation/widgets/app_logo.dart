@@ -15,6 +15,7 @@ class AppLogo extends StatelessWidget {
       'assets/images/logo.png',
       height: height,
       fit: BoxFit.contain,
+      alignment: Alignment.centerLeft,
       errorBuilder: (context, error, stackTrace) => _FallbackLogo(height: height),
     );
   }

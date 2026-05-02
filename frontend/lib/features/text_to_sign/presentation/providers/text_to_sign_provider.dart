@@ -92,16 +92,22 @@ class TextToSignNotifier extends Notifier<TextToSignState> {
     Future.microtask(_init);
   }
 
-  /// Metni parse edip token listesi oluşturur.
+  /// Metni parse edip token listesi oluşturur ve otomatik oynatır.
   void translate(String text) {
     if (text.trim().isEmpty) return;
     final tokens = _repo.parse(text);
     state = state.copyWith(
       tokens: tokens,
       currentIndex: 0,
-      isPlaying: false,
+      isPlaying: true,
       inputText: text,
     );
+  }
+
+  /// Başa dön ve baştan oynat.
+  void restart() {
+    if (!state.hasTokens) return;
+    state = state.copyWith(currentIndex: 0, isPlaying: true);
   }
 
   void play() => state = state.copyWith(isPlaying: true);
