@@ -13,8 +13,9 @@ class _OnboardingPage {
   final String title;
   final String subtitle;
   final String body;
-  final String detailsTitle;
-  final String detailsBody;
+  final List<String> tips;
+  final String? actionLabel;
+  final String? actionRoute;
 
   const _OnboardingPage({
     required this.icon,
@@ -22,8 +23,9 @@ class _OnboardingPage {
     required this.title,
     required this.subtitle,
     required this.body,
-    required this.detailsTitle,
-    required this.detailsBody,
+    required this.tips,
+    this.actionLabel,
+    this.actionRoute,
   });
 }
 
@@ -35,11 +37,13 @@ const _pages = [
     subtitle: 'Kamera ile anlık tanıma',
     body:
         'Kamerayı açıp işaret yapmanız yeterli. Gerçek zamanlı olarak tanır ve metne dönüştürür.',
-    detailsTitle: 'Kamera & Işık İpuçları',
-    detailsBody:
-        '• En iyi sonuç için yeterli ışıkta kullanın.\n'
-        '• Ellerinizi kamera çerçevesi içinde tutun.\n'
-        '• Ayarlardan haptik geri bildirimi açabilirsiniz.',
+    tips: [
+      'En iyi sonuç için yeterli ışıkta kullanın.',
+      'Ellerinizi kamera çerçevesi içinde tutun.',
+      'Ayarlardan solak modunu açabilirsiniz.',
+    ],
+    actionLabel: 'Kamerayı Aç',
+    actionRoute: '/translation?tab=0',
   ),
   _OnboardingPage(
     icon: Icons.sign_language_rounded,
@@ -47,12 +51,14 @@ const _pages = [
     title: 'İşaret Anlat',
     subtitle: 'Yaz ya da sesli söyle',
     body:
-        'Uygulama yazdıklarınıza veya söylediklerinize karşılık gelen işaretleri oynatır.',
-    detailsTitle: 'Giriş Yöntemleri',
-    detailsBody:
-        '• Metin kutusuna kelime yazarak arama yapın.\n'
-        '• Mikrofon butonuna basarak sesli komut verin.\n'
-        '• İşaretleri yavaşlatabilir veya tekrar oynatabilirsiniz.',
+        'Yazdıklarınıza veya söylediklerinize karşılık gelen işaretleri oynatır.',
+    tips: [
+      'Metin kutusuna kelime yazın, otomatik çevrilir.',
+      'Mikrofon butonuyla sesli komut verin.',
+      'Oynatma kontrolüyle istediğiniz kelimeye atlayın.',
+    ],
+    actionLabel: 'Dene',
+    actionRoute: '/translation?tab=1',
   ),
   _OnboardingPage(
     icon: Icons.menu_book_rounded,
@@ -61,11 +67,13 @@ const _pages = [
     subtitle: '1500+ işaret · Offline',
     body:
         'İnternet gerektirmeden tüm işaretleri keşfedin ve bilgilerinizi kaydedin.',
-    detailsTitle: 'Ek Özellikler',
-    detailsBody:
-        '• Acil durum mesajlarınızı tek tuşla gösterin.\n'
-        '• Sağlık kartınızı oluşturup profile ekleyin.\n'
-        '• Tüm veriler cihazınızda güvenle saklanır.',
+    tips: [
+      'Kelimeleri favorilere ekleyip hızla ulaşın.',
+      'Geçmişten öğrendiğiniz işaretleri tekrar edin.',
+      'Tüm veriler cihazınızda güvenle saklanır.',
+    ],
+    actionLabel: 'Sözlüğü Keşfet',
+    actionRoute: '/dictionary',
   ),
 ];
 
@@ -158,26 +166,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       }),
                     ),
                     // Atla
-                    OutlinedButton(
+                    FilledButton(
                       onPressed: _skip,
-                      style: OutlinedButton.styleFrom(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: pageColor.withValues(alpha: 0.12),
                         foregroundColor: pageColor,
-                        side: BorderSide(color: pageColor),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                          horizontal: 20,
+                          vertical: 10,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        elevation: 0,
                       ),
                       child: const Text(
                         'Atla',
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -267,18 +274,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _PageContent extends StatefulWidget {
+class _PageContent extends StatelessWidget {
   const _PageContent({required this.page, required this.isDark});
 
   final _OnboardingPage page;
   final bool isDark;
-
-  @override
-  State<_PageContent> createState() => _PageContentState();
-}
-
-class _PageContentState extends State<_PageContent> {
-  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -288,23 +288,18 @@ class _PageContentState extends State<_PageContent> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 20),
-          // İkon
           Container(
                 width: 140,
                 height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: widget.page.iconColor.withValues(alpha: 0.1),
+                  color: page.iconColor.withValues(alpha: 0.1),
                   border: Border.all(
-                    color: widget.page.iconColor.withValues(alpha: 0.2),
+                    color: page.iconColor.withValues(alpha: 0.2),
                     width: 2,
                   ),
                 ),
-                child: Icon(
-                  widget.page.icon,
-                  size: 64,
-                  color: widget.page.iconColor,
-                ),
+                child: Icon(page.icon, size: 64, color: page.iconColor),
               )
               .animate()
               .scale(
@@ -314,15 +309,14 @@ class _PageContentState extends State<_PageContent> {
               )
               .fadeIn(duration: 400.ms),
 
-          const SizedBox(height: 44),
+          const SizedBox(height: 36),
 
-          // Başlık
           Text(
-                widget.page.title,
+                page.title,
                 style: GoogleFonts.poppins(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: widget.isDark ? Colors.white : widget.page.iconColor,
+                  color: isDark ? Colors.white : page.iconColor,
                 ),
                 textAlign: TextAlign.center,
               )
@@ -330,118 +324,102 @@ class _PageContentState extends State<_PageContent> {
               .fadeIn(delay: 150.ms, duration: 400.ms)
               .slideY(begin: 0.1),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
-          // Alt başlık
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
             decoration: BoxDecoration(
-              color: widget.page.iconColor.withValues(alpha: 0.1),
+              color: page.iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              widget.page.subtitle,
+              page.subtitle,
               style: TextStyle(
                 fontSize: 13,
-                color: widget.page.iconColor,
+                color: page.iconColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Açıklama
           Text(
-            widget.page.body,
+            page.body,
             style: TextStyle(
               fontSize: 15,
               height: 1.6,
-              color: widget.isDark ? Colors.white60 : AppTheme.midGrey,
+              color: isDark ? Colors.white60 : AppTheme.midGrey,
             ),
             textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
-          // ── Genişletilebilir Bilgi Alanı ───────────────────────────────
-          GestureDetector(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: widget.page.iconColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: widget.page.iconColor.withValues(
-                    alpha: _isExpanded ? 0.3 : 0.1,
-                  ),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          // İpuçları — doğrudan görünür, expand gerektirmez
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: page.iconColor.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: page.iconColor.withValues(alpha: 0.15)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: page.tips.map((tip) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        _isExpanded
-                            ? Icons.keyboard_arrow_up_rounded
-                            : Icons.lightbulb_outline_rounded,
-                        size: 18,
-                        color: widget.page.iconColor,
+                      Container(
+                        margin: const EdgeInsets.only(top: 5),
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: page.iconColor,
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _isExpanded ? 'Kapat' : 'Daha Fazla Bilgi',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: widget.page.iconColor,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          tip,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.5,
+                            color: isDark ? Colors.white70 : AppTheme.midGrey,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  AnimatedCrossFade(
-                    firstChild: const SizedBox(width: double.infinity),
-                    secondChild: Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.page.detailsTitle,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: widget.isDark
-                                  ? Colors.white
-                                  : widget.page.iconColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            widget.page.detailsBody,
-                            style: TextStyle(
-                              fontSize: 13,
-                              height: 1.5,
-                              color: widget.isDark
-                                  ? Colors.white70
-                                  : AppTheme.midGrey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    crossFadeState: _isExpanded
-                        ? CrossFadeState.showSecond
-                        : CrossFadeState.showFirst,
-                    duration: const Duration(milliseconds: 300),
-                  ),
-                ],
-              ),
+                );
+              }).toList(),
             ),
-          ).animate().fadeIn(delay: 450.ms, duration: 400.ms),
+          ).animate().fadeIn(delay: 420.ms, duration: 400.ms),
+
+          // Sayfaya özgü eylem butonu
+          if (page.actionLabel != null && page.actionRoute != null) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => context.push(page.actionRoute!),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+              label: Text(page.actionLabel!),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: page.iconColor,
+                side: BorderSide(color: page.iconColor.withValues(alpha: 0.5)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ).animate().fadeIn(delay: 500.ms, duration: 350.ms),
+          ],
+
+          const SizedBox(height: 16),
         ],
       ),
     );

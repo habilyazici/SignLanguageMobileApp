@@ -644,7 +644,7 @@ class _StageError extends StatelessWidget {
 // Token şeridi — yatay kaydırılabilir kelime chip'leri
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _TokenStrip extends StatelessWidget {
+class _TokenStrip extends StatefulWidget {
   const _TokenStrip({
     required this.tokens,
     required this.currentIndex,
@@ -658,15 +658,57 @@ class _TokenStrip extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   @override
+  State<_TokenStrip> createState() => _TokenStripState();
+}
+
+class _TokenStripState extends State<_TokenStrip> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_TokenStrip old) {
+    super.didUpdateWidget(old);
+    if (old.currentIndex != widget.currentIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToActive());
+    }
+  }
+
+  void _scrollToActive() {
+    if (!_scrollController.hasClients) return;
+    // Her chip ortalama 80px genişliğinde + 6px separator
+    const itemWidth = 86.0;
+    final targetOffset = widget.currentIndex * itemWidth;
+    final viewWidth = _scrollController.position.viewportDimension;
+    final offset = (targetOffset - viewWidth / 2 + itemWidth / 2).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      offset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 36,
       child: ListView.separated(
+        controller: _scrollController,
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
-        itemCount: tokens.length,
+        itemCount: widget.tokens.length,
         separatorBuilder: (_, _) => const SizedBox(width: 6),
         itemBuilder: (_, i) {
+          final tokens = widget.tokens;
+          final currentIndex = widget.currentIndex;
+          final isDark = widget.isDark;
           final token = tokens[i];
           final isActive = i == currentIndex;
           final hasVideo = token is SignFound;
@@ -676,7 +718,7 @@ class _TokenStrip extends StatelessWidget {
           };
 
           return GestureDetector(
-            onTap: () => onTap(i),
+            onTap: () => widget.onTap(i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
