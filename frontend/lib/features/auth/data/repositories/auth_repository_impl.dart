@@ -10,7 +10,6 @@ bool _isJwtExpired(String token) {
   try {
     final parts = token.split('.');
     if (parts.length != 3) return true;
-    // base64url → base64 (pad to multiple of 4)
     var payload = parts[1].replaceAll('-', '+').replaceAll('_', '/');
     switch (payload.length % 4) {
       case 2:
@@ -20,12 +19,32 @@ bool _isJwtExpired(String token) {
     }
     final decoded = jsonDecode(utf8.decode(base64Decode(payload))) as Map<String, dynamic>;
     final exp = decoded['exp'];
-    if (exp == null) return false;
-    final expiry = DateTime.fromMillisecondsSinceEpoch((exp as int) * 1000);
+    // exp yoksa veya geçersiz tipte → güvenli tarafta kal, expire say
+    if (exp == null || exp is! int) return true;
+    final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
     return DateTime.now().isAfter(expiry);
   } catch (_) {
-    return true; // parse failed → treat as expired
+    return true;
   }
+}
+
+/// Backend yanıtından string field güvenle okur
+String? _safeString(Map<String, dynamic> map, String key) {
+  final v = map[key];
+  if (v == null) return null;
+  return v.toString();
+}
+
+/// Hata tipine göre kullanıcı dostu mesaj üretir
+String _errorMessage(Object e) {
+  final s = e.toString();
+  if (s.contains('TimeoutException') || s.contains('timeout')) {
+    return 'Sunucu yanıt vermedi. İnternet bağlantınızı kontrol edin.';
+  }
+  if (s.contains('SocketException') || s.contains('NetworkException')) {
+    return 'İnternet bağlantısı yok.';
+  }
+  return 'Sunucuya bağlanılamadı.';
 }
 
 const _kTokenKey = 'auth_token';
@@ -59,29 +78,42 @@ class AuthRepositoryImpl implements AuthRepository {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
 
       if (res.statusCode == 200) {
-        final token = body['token'] as String;
-        final user = body['user'] as Map<String, dynamic>;
-        await _saveSession(
-          token: token,
-          name: user['name'] as String,
-          email: user['email'] as String,
-        );
+        final token = _safeString(body, 'token') ?? '';
+        final user = body['user'] is Map<String, dynamic>
+            ? body['user'] as Map<String, dynamic>
+            : <String, dynamic>{};
+        final name = _safeString(user, 'name') ?? '';
+        final email = _safeString(user, 'email') ?? '';
+        if (token.isEmpty || email.isEmpty) {
+          return const AuthState(
+            status: AuthStatus.guest,
+            errorMessage: 'Sunucu geçersiz yanıt döndürdü.',
+          );
+        }
+        await _saveSession(token: token, name: name, email: email);
         return AuthState(
           status: AuthStatus.authenticated,
           token: token,
-          displayName: user['name'] as String,
-          email: user['email'] as String,
+          displayName: name,
+          email: email,
+        );
+      }
+
+      if (res.statusCode == 401) {
+        return AuthState(
+          status: AuthStatus.guest,
+          errorMessage: body['error'] as String? ?? 'E-posta veya şifre hatalı.',
         );
       }
 
       return AuthState(
         status: AuthStatus.guest,
-        errorMessage: body['error'] as String? ?? 'Giriş başarısız.',
+        errorMessage: _safeString(body, 'error') ?? 'Giriş başarısız.',
       );
-    } catch (_) {
-      return const AuthState(
+    } catch (e) {
+      return AuthState(
         status: AuthStatus.guest,
-        errorMessage: 'Sunucuya bağlanılamadı.',
+        errorMessage: _errorMessage(e),
       );
     }
   }
@@ -104,29 +136,42 @@ class AuthRepositoryImpl implements AuthRepository {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
 
       if (res.statusCode == 201) {
-        final token = body['token'] as String;
-        final user = body['user'] as Map<String, dynamic>;
-        await _saveSession(
-          token: token,
-          name: user['name'] as String,
-          email: user['email'] as String,
-        );
+        final token = _safeString(body, 'token') ?? '';
+        final user = body['user'] is Map<String, dynamic>
+            ? body['user'] as Map<String, dynamic>
+            : <String, dynamic>{};
+        final name = _safeString(user, 'name') ?? '';
+        final email = _safeString(user, 'email') ?? '';
+        if (token.isEmpty || email.isEmpty) {
+          return const AuthState(
+            status: AuthStatus.guest,
+            errorMessage: 'Sunucu geçersiz yanıt döndürdü.',
+          );
+        }
+        await _saveSession(token: token, name: name, email: email);
         return AuthState(
           status: AuthStatus.authenticated,
           token: token,
-          displayName: user['name'] as String,
-          email: user['email'] as String,
+          displayName: name,
+          email: email,
+        );
+      }
+
+      if (res.statusCode == 409) {
+        return AuthState(
+          status: AuthStatus.guest,
+          errorMessage: _safeString(body, 'error') ?? 'Bu e-posta zaten kayıtlı.',
         );
       }
 
       return AuthState(
         status: AuthStatus.guest,
-        errorMessage: body['error'] as String? ?? 'Kayıt başarısız.',
+        errorMessage: _safeString(body, 'error') ?? 'Kayıt başarısız.',
       );
-    } catch (_) {
-      return const AuthState(
+    } catch (e) {
+      return AuthState(
         status: AuthStatus.guest,
-        errorMessage: 'Sunucuya bağlanılamadı.',
+        errorMessage: _errorMessage(e),
       );
     }
   }
@@ -169,9 +214,9 @@ class AuthRepositoryImpl implements AuthRepository {
         }
         return (success: true, error: null, newName: updatedName);
       }
-      return (success: false, error: parsed['error'] as String? ?? 'Güncelleme başarısız.', newName: null);
-    } catch (_) {
-      return (success: false, error: 'Sunucuya bağlanılamadı.', newName: null);
+      return (success: false, error: _safeString(parsed, 'error') ?? 'Güncelleme başarısız.', newName: null);
+    } catch (e) {
+      return (success: false, error: _errorMessage(e), newName: null);
     }
   }
 
@@ -256,9 +301,9 @@ class AuthRepositoryImpl implements AuthRepository {
         return (success: false, error: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.');
       }
       final body = jsonDecode(res.body) as Map<String, dynamic>;
-      return (success: false, error: body['error'] as String? ?? 'Hesap silinemedi.');
-    } catch (_) {
-      return (success: false, error: 'Sunucuya bağlanılamadı.');
+      return (success: false, error: _safeString(body, 'error') ?? 'Hesap silinemedi.');
+    } catch (e) {
+      return (success: false, error: _errorMessage(e));
     }
   }
 

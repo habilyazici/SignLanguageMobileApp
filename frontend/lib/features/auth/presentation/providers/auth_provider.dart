@@ -23,9 +23,21 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> _restoreSession() async {
-    final repo = ref.read(_authRepositoryProvider);
-    final restored = await repo.restoreSession();
-    state = restored;
+    try {
+      final repo = ref.read(_authRepositoryProvider);
+      // 5 saniye içinde tamamlanmazsa guest olarak devam et
+      final restored = await repo.restoreSession().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => const AuthState(),
+      );
+      if (state.status == AuthStatus.loading) {
+        state = restored;
+      }
+    } catch (_) {
+      if (state.status == AuthStatus.loading) {
+        state = const AuthState();
+      }
+    }
   }
 
   Future<bool> signIn({required String email, required String password}) async {
