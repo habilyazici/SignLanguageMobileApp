@@ -31,12 +31,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accentColor = isDark ? Colors.white : AppTheme.primaryBlue;
-    final textColor = isDark ? Colors.white70 : AppTheme.midGrey;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBg : Colors.white,
+      backgroundColor: AppTheme.primaryBlue,
       body: Stack(
         children: [
           // ── Arka plan dekoratif daireler ──────────────────────────────
@@ -48,7 +45,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: accentColor.withValues(alpha: isDark ? 0.04 : 0.03),
+                color: Colors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -60,7 +57,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               height: 240,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: accentColor.withValues(alpha: isDark ? 0.03 : 0.02),
+                color: Colors.white.withValues(alpha: 0.04),
               ),
             ),
           ),
@@ -70,16 +67,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo - Büyütülmüş ve sadeleştirilmiş (daire kaldırıldı)
                 Image.asset(
-                  'assets/images/logo.png',
-                  width: 200,
-                  height: 200,
+                  'assets/images/logo_icon.png',
+                  width: 160,
+                  height: 160,
                   fit: BoxFit.contain,
-                  errorBuilder: (ctx, err, st) => Icon(
+                  errorBuilder: (ctx, err, st) => const Icon(
                     Icons.hearing,
                     size: 100,
-                    color: accentColor,
+                    color: Colors.white,
                   ),
                 )
                     .animate()
@@ -90,15 +86,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     )
                     .fadeIn(duration: 600.ms),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                // Uygulama Adı
                 Text(
                   'Hear Me Out',
                   style: GoogleFonts.poppins(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : AppTheme.textPrimary,
+                    color: Colors.white,
                     letterSpacing: -0.5,
                   ),
                 )
@@ -108,12 +103,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                 const SizedBox(height: 8),
 
-                // Slogan
                 Text(
                   'İşaret dilini herkes için erişilebilir yap',
                   style: TextStyle(
                     fontSize: 14,
-                    color: textColor,
+                    color: Colors.white.withValues(alpha: 0.75),
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
@@ -121,13 +115,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                 const SizedBox(height: 64),
 
-                // Yükleniyor göstergesi
                 SizedBox(
                   width: 32,
                   height: 32,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: accentColor.withValues(alpha: 0.7),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ).animate().fadeIn(delay: 900.ms, duration: 400.ms),
               ],
@@ -144,7 +137,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
-                color: textColor.withValues(alpha: 0.5),
+                color: Colors.white.withValues(alpha: 0.4),
                 letterSpacing: 0.5,
               ),
             ).animate().fadeIn(delay: 1200.ms, duration: 500.ms),
