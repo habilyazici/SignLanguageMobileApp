@@ -37,42 +37,58 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
 
   Future<void> _initStt() async {
     final ready = await _stt.initialize(
-      onError: (_) {
-        if (mounted) setState(() => _listening = false);
+      onError: (error) {
+        if (!mounted) return;
+        setState(() => _listening = false);
+        // Hata sonrası sürekli modda yeniden başlat
+        if (_continuous && ref.read(settingsProvider).sttEnabled) {
+          _restartDelay?.cancel();
+          _restartDelay = Timer(const Duration(milliseconds: 800), _startListening);
+        }
       },
     );
     if (!mounted) return;
     setState(() => _sttReady = ready);
-    // STT hazırsa ve ayarlarda açıksa otomatik başlat
     if (ready && ref.read(settingsProvider).sttEnabled) {
       _startListening();
     }
   }
 
   Future<void> _startListening() async {
-    if (!_sttReady || _listening) return;
+    if (!_sttReady || _listening || !mounted) return;
     setState(() => _listening = true);
-    await _stt.listen(
+
+    final started = await _stt.listen(
       onResult: (result) {
         if (!result.finalResult) return;
-        final text = result.recognizedWords;
-        if (text.trim().isNotEmpty) {
+        final text = result.recognizedWords.trim();
+        if (text.isNotEmpty) {
           _controller.text = text;
+          // Yeni konuşma → eski çeviriyi tamamen değiştir
           ref.read(textToSignProvider.notifier).translate(text);
         }
         if (!mounted) return;
         setState(() => _listening = false);
-        // Sürekli mod açıksa kısa bekleyip tekrar dinle
+        // Sürekli modda: 600ms bekle, yeniden dinle
         if (_continuous && ref.read(settingsProvider).sttEnabled) {
-          _restartDelay = Timer(const Duration(milliseconds: 400), () {
-            if (mounted && _continuous) _startListening();
-          });
+          _restartDelay?.cancel();
+          _restartDelay = Timer(const Duration(milliseconds: 600), _startListening);
         }
       },
       localeId: 'tr_TR',
       listenFor: const Duration(seconds: 60),
-      pauseFor: const Duration(seconds: 2),
+      pauseFor: const Duration(seconds: 3),
+      listenOptions: SpeechListenOptions(cancelOnError: false),
     );
+
+    // listen() false döndüyse (başlatılamadı) durumu düzelt
+    if (!started && mounted) {
+      setState(() => _listening = false);
+      if (_continuous && ref.read(settingsProvider).sttEnabled) {
+        _restartDelay?.cancel();
+        _restartDelay = Timer(const Duration(seconds: 1), _startListening);
+      }
+    }
   }
 
   Future<void> _toggleListening() async {
@@ -249,35 +265,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                             onTap: (sttEnabled && _sttReady)
                                 ? _toggleListening
                                 : null,
-                            child: Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: _listening
-                                    ? AppTheme.primaryBlue.withValues(alpha: 0.2)
-                                    : (sttEnabled && _sttReady)
-                                        ? AppTheme.primaryBlue
-                                              .withValues(alpha: 0.12)
-                                        : Colors.grey.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                                border: _listening
-                                    ? Border.all(
-                                        color: AppTheme.primaryBlue,
-                                        width: 2,
-                                      )
-                                    : null,
-                              ),
-                              child: Icon(
-                                _listening
-                                    ? Icons.mic_rounded
-                                    : (sttEnabled
-                                          ? Icons.mic_none_rounded
-                                          : Icons.mic_off_rounded),
-                                color: (sttEnabled && _sttReady)
-                                    ? AppTheme.primaryBlue
-                                    : Colors.grey.withValues(alpha: 0.5),
-                                size: 24,
-                              ),
+                            child: _MicButton(
+                              listening: _listening,
+                              enabled: sttEnabled && _sttReady,
                             ),
                           ),
                         ],
@@ -805,6 +795,112 @@ class _PlaybackBar extends StatelessWidget {
           iconSize: 28,
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mikrofon butonu — dinlerken pulse animasyonu
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MicButton extends StatefulWidget {
+  const _MicButton({required this.listening, required this.enabled});
+  final bool listening;
+  final bool enabled;
+
+  @override
+  State<_MicButton> createState() => _MicButtonState();
+}
+
+class _MicButtonState extends State<_MicButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+  late final Animation<double> _scale;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 1.6).animate(
+      CurvedAnimation(parent: _pulse, curve: Curves.easeOut),
+    );
+    _opacity = Tween<double>(begin: 0.4, end: 0.0).animate(
+      CurvedAnimation(parent: _pulse, curve: Curves.easeOut),
+    );
+    if (widget.listening) _pulse.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_MicButton old) {
+    super.didUpdateWidget(old);
+    if (widget.listening && !_pulse.isAnimating) {
+      _pulse.repeat();
+    } else if (!widget.listening && _pulse.isAnimating) {
+      _pulse.stop();
+      _pulse.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 52,
+      height: 52,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (widget.listening)
+            AnimatedBuilder(
+              animation: _pulse,
+              builder: (_, _) => Transform.scale(
+                scale: _scale.value,
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppTheme.primaryBlue.withValues(alpha: _opacity.value),
+                  ),
+                ),
+              ),
+            ),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: widget.listening
+                  ? AppTheme.primaryBlue
+                  : widget.enabled
+                      ? AppTheme.primaryBlue.withValues(alpha: 0.12)
+                      : Colors.grey.withValues(alpha: 0.1),
+            ),
+            child: Icon(
+              widget.listening
+                  ? Icons.mic_rounded
+                  : widget.enabled
+                      ? Icons.mic_none_rounded
+                      : Icons.mic_off_rounded,
+              color: widget.listening
+                  ? Colors.white
+                  : widget.enabled
+                      ? AppTheme.primaryBlue
+                      : Colors.grey.withValues(alpha: 0.5),
+              size: 24,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

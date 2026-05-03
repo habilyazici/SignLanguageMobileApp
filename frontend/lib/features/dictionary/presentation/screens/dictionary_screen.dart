@@ -53,7 +53,9 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
     final dict = ref.watch(dictionaryProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppTheme.darkBg
+          : AppTheme.softGrey,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

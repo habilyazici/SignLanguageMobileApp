@@ -39,7 +39,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             .toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppTheme.darkBg
+          : AppTheme.softGrey,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

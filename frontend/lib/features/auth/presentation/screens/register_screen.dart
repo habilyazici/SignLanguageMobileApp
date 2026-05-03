@@ -71,20 +71,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   padding: EdgeInsets.zero,
                 ).animate().fadeIn(duration: 300.ms),
 
-                const SizedBox(height: 24),
-
-                // ── Logo ────────────────────────────────────────────────
-                Hero(
-                  tag: 'app_logo',
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    height: 40,
-                    fit: BoxFit.contain,
-                    alignment: Alignment.centerLeft,
-                  ),
-                ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.9, 0.9)),
-
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
 
                 // ── Başlık ───────────────────────────────────────────────
                 Text(
