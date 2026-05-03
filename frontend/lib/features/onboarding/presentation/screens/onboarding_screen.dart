@@ -33,14 +33,14 @@ const _pages = [
   _OnboardingPage(
     icon: Icons.videocam_rounded,
     iconColor: AppTheme.secondaryBlue,
-    title: 'İşaretten Metne',
-    subtitle: 'Kamera ile anlık tanıma',
+    title: 'İşaretten Çeviri',
+    subtitle: 'Kamera · Gerçek Zamanlı',
     body:
-        'Kamerayı açıp işaret yapmanız yeterli. Gerçek zamanlı olarak tanır ve metne dönüştürür.',
+        'Ellerinizi kameraya gösterin — uygulama işareti anında tanıyıp metne çevirir. İşaret dili bilmeyenlerle iletişim artık çok daha kolay.',
     tips: [
-      'En iyi sonuç için yeterli ışıkta kullanın.',
+      'İyi aydınlatılmış bir ortamda daha doğru sonuç alırsınız.',
       'Ellerinizi kamera çerçevesi içinde tutun.',
-      'Ayarlardan solak modunu açabilirsiniz.',
+      'Solak mısınız? Ayarlardan solak modunu açın.',
     ],
     actionLabel: 'Kamerayı Aç',
     actionRoute: '/translation?tab=0',
@@ -48,14 +48,14 @@ const _pages = [
   _OnboardingPage(
     icon: Icons.sign_language_rounded,
     iconColor: AppTheme.primaryBlue,
-    title: 'İşaret Anlat',
-    subtitle: 'Yaz ya da sesli söyle',
+    title: 'Sesten Çeviri',
+    subtitle: 'Ses veya Metin → İşaret',
     body:
-        'Yazdıklarınıza veya söylediklerinize karşılık gelen işaretleri oynatır.',
+        'Söyleyin ya da yazın; karşılık gelen işaret videoları sırayla oynatılır. İstediğiniz kelimeye atlayabilir, dilediğiniz yerden devam edebilirsiniz.',
     tips: [
-      'Metin kutusuna kelime yazın, otomatik çevrilir.',
-      'Mikrofon butonuyla sesli komut verin.',
-      'Oynatma kontrolüyle istediğiniz kelimeye atlayın.',
+      'Mikrofon butonuyla sesli komut verebilirsiniz.',
+      'Token şeridine dokunarak istediğiniz kelimeye atlayın.',
+      'Öğrendiğiniz çeviriler geçmiş sayfasına kaydedilir.',
     ],
     actionLabel: 'Dene',
     actionRoute: '/translation?tab=1',
@@ -63,13 +63,13 @@ const _pages = [
   _OnboardingPage(
     icon: Icons.menu_book_rounded,
     iconColor: AppTheme.primaryStatusGreen,
-    title: 'Sözlük & Profil',
-    subtitle: '1500+ işaret · Offline',
+    title: 'Sözlük & Favoriler',
+    subtitle: '1500+ işaret · İnternet Gerekmez',
     body:
-        'İnternet gerektirmeden tüm işaretleri keşfedin ve bilgilerinizi kaydedin.',
+        'Tüm işaretleri çevrimiçi bağlantı olmadan keşfedin. Sık kullandığınız kelimeleri favorilerinize ekleyin, istediğinizde anında bulun.',
     tips: [
-      'Kelimeleri favorilere ekleyip hızla ulaşın.',
-      'Geçmişten öğrendiğiniz işaretleri tekrar edin.',
+      'Kelimeyi favorilere ekleyip hızla ulaşın.',
+      'Geçmiş sayfasında öğrendiğiniz işaretleri tekrar edin.',
       'Tüm veriler cihazınızda güvenle saklanır.',
     ],
     actionLabel: 'Sözlüğü Keşfet',
@@ -172,8 +172,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         backgroundColor: pageColor.withValues(alpha: 0.12),
                         foregroundColor: pageColor,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                          horizontal: 24,
+                          vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -183,7 +183,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       child: const Text(
                         'Atla',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -405,6 +405,7 @@ class _PageContent extends StatelessWidget {
             const SizedBox(height: 16),
             OutlinedButton.icon(
               onPressed: () => context.push(page.actionRoute!),
+              iconAlignment: IconAlignment.end,
               icon: const Icon(Icons.arrow_forward_rounded, size: 16),
               label: Text(page.actionLabel!),
               style: OutlinedButton.styleFrom(

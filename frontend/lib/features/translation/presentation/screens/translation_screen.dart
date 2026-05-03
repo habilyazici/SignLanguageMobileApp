@@ -112,7 +112,7 @@ class _ModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
       child: AnimatedBuilder(
         animation: controller,
         builder: (context, child) {
@@ -121,9 +121,8 @@ class _ModeSelector extends StatelessWidget {
             children: [
               Expanded(
                 child: _ModeButton(
-                  icon: Icons.videocam_rounded,
-                  label: 'İşaret Oku',
-                  sublabel: 'Kamera → Metin',
+                  label: 'İşaretten Çeviri',
+                  sublabel: 'Kamera ile tanıma',
                   isSelected: index == 0,
                   onTap: () => controller.animateTo(0),
                 ),
@@ -131,9 +130,8 @@ class _ModeSelector extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _ModeButton(
-                  icon: Icons.sign_language_rounded,
-                  label: 'İşaret Anlat',
-                  sublabel: 'Metin → İşaret',
+                  label: 'Sesten Çeviri',
+                  sublabel: 'Ses veya metin',
                   isSelected: index == 1,
                   onTap: () => controller.animateTo(1),
                 ),
@@ -148,14 +146,12 @@ class _ModeSelector extends StatelessWidget {
 
 class _ModeButton extends StatelessWidget {
   const _ModeButton({
-    required this.icon,
     required this.label,
     required this.sublabel,
     required this.isSelected,
     required this.onTap,
   });
 
-  final IconData icon;
   final String label;
   final String sublabel;
   final bool isSelected;
@@ -191,38 +187,27 @@ class _ModeButton extends StatelessWidget {
                   ),
                 ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? Colors.white : AppTheme.midGrey,
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.white : AppTheme.textPrimary,
+              ),
             ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.white : AppTheme.textPrimary,
-                  ),
-                ),
-                Text(
-                  sublabel,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    color: isSelected
-                        ? Colors.white.withValues(alpha: 0.75)
-                        : AppTheme.textMuted,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 2),
+            Text(
+              sublabel,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.75)
+                    : AppTheme.textMuted,
+              ),
             ),
           ],
         ),

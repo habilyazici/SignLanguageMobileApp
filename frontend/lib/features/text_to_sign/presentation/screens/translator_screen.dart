@@ -383,7 +383,9 @@ class _VideoStageState extends State<_VideoStage> {
 
   @override
   void dispose() {
-    _disposeCtrl();
+    _ctrl?.removeListener(_onProgress);
+    _ctrl?.dispose();
+    _ctrl = null;
     super.dispose();
   }
 

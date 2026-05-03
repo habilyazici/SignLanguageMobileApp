@@ -188,44 +188,6 @@ class ProfileScreen extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isGuest
-                                  ? AppTheme.bgSecondary
-                                  : Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isGuest
-                                        ? AppTheme.textMuted
-                                        : Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  isGuest ? 'Misafir' : 'Aktif Hesap',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        isGuest ? AppTheme.midGrey : Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
                     ),

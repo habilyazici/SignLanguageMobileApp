@@ -5,6 +5,9 @@ import '../../data/datasources/manifest_datasource.dart';
 import '../../data/repositories/text_to_sign_repository_impl.dart';
 import '../../domain/entities/sign_token.dart';
 import '../../domain/repositories/text_to_sign_repository.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../history/domain/entities/history_item.dart' show HistoryItemType;
+import '../../../history/presentation/providers/history_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repository provider
@@ -102,6 +105,9 @@ class TextToSignNotifier extends Notifier<TextToSignState> {
       isPlaying: true,
       inputText: text,
     );
+    if (ref.read(authProvider).isAuthenticated) {
+      ref.read(historyProvider.notifier).add(text.trim(), type: HistoryItemType.translation);
+    }
   }
 
   /// Başa dön ve baştan oynat.
