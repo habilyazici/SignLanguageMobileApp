@@ -57,6 +57,7 @@ class HearMeOutApp extends ConsumerWidget {
       routerConfig: ref.watch(routerProvider),
       builder: (context, child) {
         final double scaleFactor = switch (textSize) {
+          AppTextSize.small => 0.85,
           AppTextSize.standard => 1.0,
           AppTextSize.large => 1.15,
           AppTextSize.extraLarge => 1.3,

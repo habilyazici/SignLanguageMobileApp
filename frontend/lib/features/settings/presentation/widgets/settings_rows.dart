@@ -47,6 +47,17 @@ class ThemeRow extends StatelessWidget {
 }
 
 // ── Metin Boyutu Satırı ───────────────────────────────────────────────────────
+
+// Slider'daki sıra (küçükten büyüğe) — enum index sırasından bağımsız
+const _textSizeOrder = [
+  AppTextSize.small,
+  AppTextSize.standard,
+  AppTextSize.large,
+  AppTextSize.extraLarge,
+];
+
+const _textSizeLabels = ['Küçük', 'Standart', 'Büyük', 'Çok Büyük'];
+
 class TextSizeRow extends StatelessWidget {
   const TextSizeRow({
     super.key,
@@ -58,40 +69,91 @@ class TextSizeRow extends StatelessWidget {
   final ValueChanged<AppTextSize> onChanged;
   final bool isDark;
 
+  String get _currentLabel =>
+      _textSizeLabels[_textSizeOrder.indexOf(current)];
+
   @override
   Widget build(BuildContext context) {
+    final sliderValue = _textSizeOrder.indexOf(current).toDouble();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _iconBox(Icons.text_fields_rounded, Colors.indigoAccent),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            children: [
+              _iconBox(Icons.text_fields_rounded, Colors.indigoAccent),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Metin Boyutu',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Dinamik tipografi',
+                      style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                _currentLabel,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryBlue,
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 50),
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 3,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                activeTrackColor: AppTheme.primaryBlue,
+                inactiveTrackColor: AppTheme.primaryBlue.withValues(alpha: 0.18),
+                thumbColor: AppTheme.primaryBlue,
+              ),
+              child: Slider(
+                value: sliderValue,
+                min: 0,
+                max: (_textSizeOrder.length - 1).toDouble(),
+                divisions: _textSizeOrder.length - 1,
+                onChanged: (v) => onChanged(_textSizeOrder[v.round()]),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(50, 0, 16, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Metin Boyutu',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  'Küçük',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppTheme.midGrey.withValues(alpha: 0.7),
+                  ),
                 ),
-                SizedBox(height: 2),
                 Text(
-                  'Dinamik tipografi',
-                  style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
+                  'Çok Büyük',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppTheme.midGrey.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 8),
-          SettingsSegmentButtons<AppTextSize>(
-            isDark: isDark,
-            items: const [
-              (AppTextSize.standard, 'Küçük'),
-              (AppTextSize.large, 'Standart'),
-              (AppTextSize.extraLarge, 'Büyük'),
-            ],
-            current: current,
-            onChanged: onChanged,
           ),
         ],
       ),

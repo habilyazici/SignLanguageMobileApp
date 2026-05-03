@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 
 enum AppTextSize {
-  standard, // varsayılan
-  large, // Büyük
-  extraLarge, // Ekstra Büyük
+  standard, // index 0 — Standart (varsayılan)
+  large, // index 1 — Büyük
+  extraLarge, // index 2 — Çok Büyük
+  small, // index 3 — Küçük (sona eklendi, mevcut kayıtlı indeksler korundu)
 }
 
 enum ConfidenceLevel {
