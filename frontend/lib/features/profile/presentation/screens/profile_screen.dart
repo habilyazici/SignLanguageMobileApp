@@ -8,8 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../bookmarks/presentation/providers/bookmarks_provider.dart';
-import '../../../history/presentation/providers/history_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -23,12 +21,6 @@ class ProfileScreen extends ConsumerWidget {
         : (auth.displayName ?? auth.email?.split('@').first ?? 'Kullanıcı');
     final email = isGuest ? null : auth.email;
     final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'M';
-    final bookmarkCount = ref.watch(
-      bookmarksProvider.select((s) => s.wordIds.length),
-    );
-    final translationCount = ref.watch(
-      historyProvider.select((s) => s.items.length),
-    );
 
     return Scaffold(
       backgroundColor: AppTheme.softGrey,
@@ -199,55 +191,6 @@ class ProfileScreen extends ConsumerWidget {
                 .fadeIn(delay: 60.ms, duration: 400.ms)
                 .slideY(begin: 0.06, end: 0),
 
-            // ── İstatistikler ─────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.borderColor),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    _StatItem(
-                      value: '$translationCount',
-                      label: 'Çeviri',
-                      icon: Icons.translate_rounded,
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: AppTheme.borderColor,
-                    ),
-                    _StatItem(
-                      value: '$bookmarkCount',
-                      label: 'Kaydedilen',
-                      icon: Icons.bookmark_rounded,
-                      onTap: () => context.push('/bookmarks'),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: AppTheme.borderColor,
-                    ),
-                    _StatItem(
-                      value: '0',
-                      label: 'Gün Serisi',
-                      icon: Icons.local_fire_department_rounded,
-                    ),
-                  ],
-                ),
-              ),
-            ).animate().fadeIn(delay: 120.ms, duration: 350.ms),
 
             // ── Uygulama Bölümü ───────────────────────────────────────────
             _SectionLabel('Uygulama'),
@@ -355,49 +298,6 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.value,
-    required this.label,
-    required this.icon,
-    this.onTap,
-  });
-  final String value;
-  final String label;
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: AppTheme.primaryBlue),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 11, color: AppTheme.midGrey),
-            textAlign: TextAlign.center,
-          ),
-        ],
-        ),
-      ),
-    );
-  }
-}
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.title);
