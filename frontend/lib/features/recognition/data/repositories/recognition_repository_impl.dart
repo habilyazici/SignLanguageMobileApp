@@ -105,6 +105,8 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   Future<void> resumeCamera() async {
     if (_isStreaming) return;
 
+    _resetBuffer();
+
     if (_camera.currentCamera == null) {
       // Kamera tamamen kapatılmışsa (pause sonrası), yeniden başlat
       await initialize();
