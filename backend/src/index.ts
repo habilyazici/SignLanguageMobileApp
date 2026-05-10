@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { config } from './config';
+import { prisma } from './db';
 import { authRouter } from './routes/auth';
 import { wordsRouter } from './routes/words';
 import { historyRouter } from './routes/history';
@@ -71,6 +72,20 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
   res.status(500).json({ error: 'Sunucu hatasi.' });
 });
+
+// Süresi dolmuş şifre sıfırlama token'larını temizle (başlangıçta + saatte bir)
+async function cleanExpiredResetTokens() {
+  try {
+    const { count } = await prisma.passwordResetToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
+    if (count > 0) console.log(`[cleanup] ${count} süresi dolmuş reset token silindi.`);
+  } catch (err) {
+    console.error('[cleanup] Reset token temizleme hatası:', err);
+  }
+}
+cleanExpiredResetTokens();
+setInterval(cleanExpiredResetTokens, 60 * 60 * 1000); // saatte bir
 
 const server = app.listen(config.port, '0.0.0.0', () => {
   console.log(`Server: http://localhost:${config.port}`);
