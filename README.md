@@ -97,8 +97,7 @@ SignLanguage_MobileApp/
 │   │       ├── settings/            # Ayarlar
 │   │       ├── home/                # Anasayfa
 │   │       ├── profile/             # Profil & düzenleme
-│   │       ├── onboarding/          # İlk açılış tanıtım ekranları
-│   │       └── splash/              # Splash ekranı
+│   │       └── onboarding/          # İlk açılış tanıtım ekranları
 │   ├── assets/
 │   │   ├── models/
 │   │   │   ├── sign_language_model_v2.tflite   # TFLite model
@@ -308,7 +307,7 @@ Sınıf sayısı modelin çıkış tensor shape'inden otomatik okunur — `label
 
 - Flutter SDK 3.x+
 - Dart SDK 3.10.8+
-- Android SDK 21+ (Android 5.0) veya iOS 13+
+- Android SDK 24+ (Android 7.0) veya iOS 15.5+
 - Backend sunucusu erişilebilir olmalı
 
 ### Adımlar
@@ -572,13 +571,10 @@ Yanıt 204 No Content — kullanıcının tüm geçmişi silinir
 ]
 ```
 
-#### `POST /api/bookmarks`
-```json
-// İstek
-{ "wordId": 1 }
-
+#### `POST /api/bookmarks/:wordId`
+```
 // Yanıt 201
-{ "wordId": 1 }
+{ "id": "clx...", "userId": "...", "wordId": 1, "createdAt": "..." }
 ```
 
 #### `DELETE /api/bookmarks/:wordId`
@@ -692,7 +688,7 @@ model PasswordResetToken {
 | `minWindowMs` | 600 | İlk inference için minimum bekleme |
 | `inferIntervalMs` | 200 | İki inference arası minimum süre |
 | `motionThreshold` | 0.025 | Hareket kapısı eşiği |
-| `motionWindowMs` | 1000 | Son hareketten sonra inference süresi |
+| `motionWindowMs` | 500 | Son hareketten sonra inference süresi |
 | `stableFrames` | 5 | Varsayılan kararlılık eşiği |
 
 ### Kamera Koordinat Sistemi

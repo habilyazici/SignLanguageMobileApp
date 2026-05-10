@@ -15,7 +15,8 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
 
   const token = header.slice(7);
   try {
-    const payload = jwt.verify(token, config.jwtSecret) as { sub: string };
+    const payload = jwt.verify(token, config.jwtSecret) as { sub?: string };
+    if (!payload.sub) throw new Error('Token sub eksik');
     req.userId = payload.sub;
     next();
   } catch {
