@@ -1,25 +1,3 @@
-# Hear Me Out — iOS Kurulum Rehberi (Mac)
-
-iOS build yalnızca **Mac** üzerinde yapılabilir. Windows veya Linux'ta Flutter iOS build desteklenmez.
-
----
-
-## İçindekiler
-
-1. [Mac Gereksinimleri](#1-mac-gereksinimleri)
-2. [Geliştirme Ortamı Kurulumu](#2-geliştirme-ortamı-kurulumu)
-3. [Projeyi Klonla](#3-projeyi-klonla)
-4. [Backend Kurulumu](#4-backend-kurulumu)
-5. [Flutter .env Ayarı](#5-flutter-env-ayarı)
-6. [Flutter Bağımlılıkları](#6-flutter-bağımlılıkları)
-7. [CocoaPods Kurulumu (Kritik)](#7-cocoapods-kurulumu-kritik)
-8. [Xcode İmzalama Ayarları](#8-xcode-i̇mzalama-ayarları)
-9. [Simülatörde Çalıştırma](#9-simülatörde-çalıştırma)
-10. [Gerçek Cihazda Çalıştırma](#10-gerçek-cihazda-çalıştırma)
-11. [Sık Karşılaşılan Hatalar](#11-sık-karşılaşılan-hatalar)
-
----
-
 ## 1. Mac Gereksinimleri
 
 | Gereksinim | Minimum Versiyon | Kontrol |
@@ -32,11 +10,6 @@ iOS build yalnızca **Mac** üzerinde yapılabilir. Windows veya Linux'ta Flutte
 | Ruby | 3.0+ | `ruby --version` (CocoaPods için) |
 | Dart | 3.10.8+ | Flutter ile gelir |
 | iOS Deployment Target | **15.5** | Proje sabit — değiştirilmez |
-
-> Simülatör için Apple Silicon (M1/M2/M3) veya Intel Mac fark etmez.
-> Gerçek cihaz için USB kablosu ve Apple Developer hesabı gereklidir.
-
----
 
 ## 2. Geliştirme Ortamı Kurulumu
 
@@ -133,77 +106,11 @@ Beklenen çıktı (tüm yeşil olmalı):
 ## 3. Projeyi Klonla
 
 ```bash
-git clone https://github.com/KULLANICI_ADI/SignLanguage_MobileApp.git
+git clone https://github.com/habilyazici/SignLanguage_MobileApp.git
 cd SignLanguage_MobileApp
 ```
 
----
-
-## 4. Backend Kurulumu
-
-Uygulama çevrimiçi özellikler (giriş, sözlük, geçmiş, yer imleri) için bir backend'e bağlanır. Backend çalışmadan da tanıma özelliği çalışır ama giriş yapılamaz.
-
-### Seçenek A — Yerel Backend (Geliştirme)
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-`.env` dosyasını düzenle:
-
-```env
-PORT=3000
-NODE_ENV=development
-JWT_SECRET=guclu-bir-sifre-yaz-buraya
-DATABASE_URL="postgresql://KULLANICI:SIFRE@localhost:5432/sign_language_app?schema=public"
-BASE_URL=http://SENIN_MAC_IP_ADRESIN:3000
-SMTP_USER=gmail-adresin@gmail.com
-SMTP_PASS=gmail-uygulama-sifresi
-```
-
-Mac'inin yerel IP adresini öğrenmek için:
-
-```bash
-ipconfig getifaddr en0
-# veya
-ifconfig | grep "inet " | grep -v 127.0.0.1
-```
-
-PostgreSQL kur ve başlat:
-
-```bash
-brew install postgresql@15
-brew services start postgresql@15
-createdb sign_language_app
-```
-
-Backend'i başlat:
-
-```bash
-npm install
-npx prisma migrate deploy
-npm run dev
-# Server: http://localhost:3000
-```
-
-### Seçenek B — ngrok ile Dış Erişim
-
-Gerçek cihazda test için ngrok kullanılabilir (cihaz ve Mac aynı Wi-Fi'da olsa bile pratiktir):
-
-```bash
-# ngrok kur
-brew install ngrok
-
-# Backend'i çalıştır (Seçenek A gibi)
-npm run dev
-
-# Ayrı terminal'de tüneli aç
-ngrok http 3000
-# Forwarding: https://xxxx-xxxx.ngrok-free.dev → http://localhost:3000
-```
-
-Bu URL'yi frontend `.env` dosyasında kullanacaksın (sonraki adım).
+> **ZIP ile indirme:** GitHub → yeşil **Code** butonu → **Download ZIP** ile de indirilip kurulabilir, geri kalan adımlar aynıdır. Ancak ZIP ile sonradan güncelleme alınamaz. Güncelleme almak istiyorsan `git clone` kullan — yeni değişiklikleri almak için proje klasöründe `git pull` çalıştırmak yeterli olur.
 
 ---
 
