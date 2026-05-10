@@ -57,8 +57,8 @@ const _storage = FlutterSecureStorage(
 
 class AuthRepositoryImpl implements AuthRepository {
   static const _authHeaders = {
+    ...kNgrokHeaders,
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   };
 
   @override

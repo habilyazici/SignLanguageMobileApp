@@ -16,16 +16,19 @@ extension AuthHttpClient on Ref {
         if (isJson) 'Content-Type': 'application/json',
       };
 
-  Future<http.Response> apiGet(String path) async {
-    final res = await http
-        .get(Uri.parse('$kApiBaseUrl$path'), headers: _getHeaders())
-        .timeout(kApiTimeout);
+  http.Response _checked(http.Response res) {
     if (res.statusCode == 401) {
-      // Token geçersiz — oturumu temizle ve hatayı fırlat.
       read(authProvider.notifier).signOut();
       throw UnauthorizedException();
     }
     return res;
+  }
+
+  Future<http.Response> apiGet(String path) async {
+    final res = await http
+        .get(Uri.parse('$kApiBaseUrl$path'), headers: _getHeaders())
+        .timeout(kApiTimeout);
+    return _checked(res);
   }
 
   Future<http.Response> apiPost(String path, {Object? body}) async {
@@ -36,21 +39,13 @@ extension AuthHttpClient on Ref {
           body: body != null ? jsonEncode(body) : null,
         )
         .timeout(kApiTimeout);
-    if (res.statusCode == 401) {
-      read(authProvider.notifier).signOut();
-      throw UnauthorizedException();
-    }
-    return res;
+    return _checked(res);
   }
 
   Future<http.Response> apiDelete(String path) async {
     final res = await http
         .delete(Uri.parse('$kApiBaseUrl$path'), headers: _getHeaders())
         .timeout(kApiTimeout);
-    if (res.statusCode == 401) {
-      read(authProvider.notifier).signOut();
-      throw UnauthorizedException();
-    }
-    return res;
+    return _checked(res);
   }
 }

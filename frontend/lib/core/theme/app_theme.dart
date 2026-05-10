@@ -3,8 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ── Marka Ana Renkleri ─────────────────────────────────────────────────────
-  static const Color primaryBlue     = Color(0xFF0046AF);
-  static const Color secondaryBlue   = Color(0xFF2563EB);
+  static const Color primaryBlue      = Color(0xFF0046AF);
+  static const Color primaryBlueEnd   = Color(0xFF005CE1);
+  static const Color secondaryBlue    = Color(0xFF2563EB);
   static const Color primaryBlueDark = Color(0xFF1D4ED8);
   static const Color primaryBlueTint = Color(0xFFDBEAFE);
 
@@ -28,14 +29,13 @@ class AppTheme {
   // ── Koyu Tema ─────────────────────────────────────────────────────────────
   static const Color darkBg      = Color(0xFF181C1E);
   static const Color darkSurface = Color(0xFF424654);
-  // Eski kodlarda kullanılan alias — güncellendi
   static const Color gradientDeep = Color(0xFF0046AF);
 
   // ── Gradyanlar ─────────────────────────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF0046AF), Color(0xFF005CE1)],
+    colors: [primaryBlue, primaryBlueEnd],
   );
 
   static const LinearGradient cameraOverlay = LinearGradient(
