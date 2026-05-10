@@ -112,7 +112,7 @@ class ProfileScreen extends ConsumerWidget {
                       : const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFF0046AF), Color(0xFF005CE1)],
+                          colors: [AppTheme.primaryBlue, AppTheme.primaryBlueEnd],
                         ),
                   color: isGuest ? Colors.white : null,
                   borderRadius: BorderRadius.circular(20),

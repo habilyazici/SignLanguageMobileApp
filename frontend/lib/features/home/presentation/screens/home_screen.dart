@@ -18,7 +18,7 @@ String _greeting() {
 
 String _capitalize(String s) {
   if (s.isEmpty) return s;
-  return s[0].toUpperCase() + s.substring(1).toLowerCase();
+  return s.trim().split(' ').map((w) => w.isEmpty ? w : w[0].toUpperCase() + w.substring(1)).join(' ');
 }
 
 class HomeScreen extends ConsumerWidget {
@@ -169,11 +169,7 @@ class _DailyWordCard extends StatelessWidget {
       onTap: () => context.push('/dictionary/$wordId'),
       child: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0046AF), Color(0xFF005CE1)],
-          ),
+          gradient: AppTheme.primaryGradient,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(

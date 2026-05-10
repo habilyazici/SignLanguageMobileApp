@@ -143,7 +143,7 @@ class ScaffoldWithNav extends ConsumerWidget {
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF0046AF), Color(0xFF005CE1)],
+                        colors: [AppTheme.primaryBlue, AppTheme.primaryBlueEnd],
                       ),
                       border: Border.all(color: Colors.white, width: 3.5),
                       boxShadow: [
