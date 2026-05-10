@@ -44,3 +44,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment — BASE_IP ve PORT içerir, git'e commit edilmemeli.
+# Build öncesi .env dosyasını oluşturun veya CI/CD secrets'tan inject edin.
+.env
