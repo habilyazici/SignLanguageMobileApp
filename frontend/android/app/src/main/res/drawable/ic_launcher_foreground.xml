@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:insetLeft="18%"
-    android:insetTop="25%"
-    android:insetRight="18%"
-    android:insetBottom="25%">
+    android:insetLeft="10%"
+    android:insetTop="28%"
+    android:insetRight="10%"
+    android:insetBottom="28%">
     <bitmap
         android:src="@drawable/logo_foreground"
         android:gravity="center" />
