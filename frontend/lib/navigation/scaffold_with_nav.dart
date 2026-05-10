@@ -56,7 +56,7 @@ class ScaffoldWithNav extends ConsumerWidget {
         if (!didPop) context.go('/home');
       },
       child: Scaffold(
-        backgroundColor: AppTheme.softGrey,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         extendBody: true,
         body: _SwipeNavWrapper(
           currentIndex: currentIndex,
@@ -70,14 +70,17 @@ class ScaffoldWithNav extends ConsumerWidget {
   Widget _buildBottomNav(BuildContext context, WidgetRef ref) {
     final currentIndex = _calculateSelectedIndex(context);
     final bottomPadding = MediaQuery.viewPaddingOf(context).bottom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBg = isDark ? const Color(0xFF1F2937) : Colors.white;
+    final borderTop = isDark ? const Color(0xFF2D3748) : AppTheme.borderColor;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: navBg,
         border: Border(
-          top: BorderSide(color: AppTheme.borderColor, width: 1),
+          top: BorderSide(color: borderTop, width: 1),
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Color(0x0F000000),
             blurRadius: 20,

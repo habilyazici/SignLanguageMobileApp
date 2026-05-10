@@ -204,7 +204,7 @@ class ProfileScreen extends ConsumerWidget {
                     'Hear Me Out - İşaret Dili Uygulamasını keşfet!',
                   ),
                 ),
-                _Divider(),
+                const _Divider(),
                 _Tile(
                   icon: Icons.mail_rounded,
                   iconColor: AppTheme.primaryStatusYellow,
@@ -224,14 +224,14 @@ class ProfileScreen extends ConsumerWidget {
                     }
                   },
                 ),
-                _Divider(),
+                const _Divider(),
                 _Tile(
                   icon: Icons.help_outline_rounded,
                   iconColor: AppTheme.primaryStatusGreen,
                   title: 'Nasıl Kullanılır?',
                   onTap: () => context.push('/onboarding'),
                 ),
-                _Divider(),
+                const _Divider(),
                 _Tile(
                   icon: Icons.settings_rounded,
                   iconColor: AppTheme.midGrey,
@@ -252,7 +252,7 @@ class ProfileScreen extends ConsumerWidget {
                     title: 'Profili Düzenle',
                     onTap: () => context.push('/profile/edit'),
                   ),
-                  _Divider(),
+                  const _Divider(),
                   _Tile(
                     icon: Icons.logout_rounded,
                     iconColor: AppTheme.primaryStatusRed,
@@ -346,6 +346,8 @@ class _Card extends StatelessWidget {
 }
 
 class _Divider extends StatelessWidget {
+  const _Divider();
+
   @override
   Widget build(BuildContext context) {
     return Divider(

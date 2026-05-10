@@ -140,9 +140,9 @@ class HomeScreen extends ConsumerWidget {
 
               // ── Üyelik Bannerı (en altta — içerik önce, çağrı sonra) ──
               if (isGuest)
-                _AuthBanner().animate().fadeIn(delay: 340.ms, duration: 350.ms)
+                const _AuthBanner().animate().fadeIn(delay: 340.ms, duration: 350.ms)
               else
-                _ProgressBanner().animate().fadeIn(
+                const _ProgressBanner().animate().fadeIn(
                   delay: 340.ms,
                   duration: 350.ms,
                 ),
@@ -282,6 +282,8 @@ class _DailyWordCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _AuthBanner extends StatelessWidget {
+  const _AuthBanner();
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -343,6 +345,8 @@ class _AuthBanner extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _ProgressBanner extends StatelessWidget {
+  const _ProgressBanner();
+
   @override
   Widget build(BuildContext context) {
     return Container(
