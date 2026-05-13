@@ -21,7 +21,8 @@ void main() async {
   if (kDebugMode) {
     final ip = dotenv.get('BASE_IP', fallback: 'localhost');
     final port = dotenv.get('PORT', fallback: '3000');
-    debugPrint('API URL → $ip:$port');
+    final protocol = port == '443' ? 'https' : 'http';
+    debugPrint('API URL → $protocol://$ip${port == '443' ? '' : ':$port'}');
   }
   await initializeDateFormatting('tr_TR', null);
 

@@ -84,7 +84,7 @@ class BookmarksScreen extends ConsumerWidget {
                               ref.read(bookmarksProvider.notifier).retry(),
                         )
                       : saved.isEmpty
-                          ? _EmptyState()
+                          ? const _EmptyState()
                           : _SavedList(signs: saved),
             ),
           ],
@@ -210,6 +210,8 @@ class _ErrorState extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
   @override
   Widget build(BuildContext context) {
     return Center(

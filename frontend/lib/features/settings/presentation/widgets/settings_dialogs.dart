@@ -90,7 +90,7 @@ class SettingsDialogs {
                         }
                         if (context.mounted) {
                           Navigator.pop(dialogCtx);
-                          context.go('/login');
+                          context.go('/welcome');
                         }
                       },
                 child: loading

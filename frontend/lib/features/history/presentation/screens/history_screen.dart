@@ -185,7 +185,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             // ── İçerik ──────────────────────────────────────────────────
             Expanded(
               child: !auth.isAuthenticated
-                  ? _GuestState()
+                  ? const _GuestState()
                   : history.isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : history.error != null
@@ -413,6 +413,8 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _GuestState extends StatelessWidget {
+  const _GuestState();
+
   @override
   Widget build(BuildContext context) {
     return Center(

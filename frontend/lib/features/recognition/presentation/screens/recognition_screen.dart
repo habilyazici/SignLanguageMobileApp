@@ -662,6 +662,8 @@ class _SentenceRow extends StatelessWidget {
     );
 
     return SingleChildScrollView(
+      clipBehavior: Clip.none,
+      padding: const EdgeInsets.only(bottom: 6),
       child: Wrap(
         alignment: WrapAlignment.center,
         spacing: 8,
