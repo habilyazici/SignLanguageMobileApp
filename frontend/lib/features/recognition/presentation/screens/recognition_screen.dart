@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -263,13 +264,26 @@ class _ErrorOverlay extends StatelessWidget {
         color: Colors.black87,
         borderRadius: BorderRadius.circular(28),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.videocam_off, color: Colors.white54, size: 48),
-            SizedBox(height: 12),
-            Text('Kamera açılamadı', style: TextStyle(color: Colors.white70)),
+            const Icon(Icons.videocam_off, color: Colors.white54, size: 48),
+            const SizedBox(height: 12),
+            const Text('Kamera açılamadı', style: TextStyle(color: Colors.white70)),
+            const SizedBox(height: 4),
+            const Text(
+              'Kamera izni gerekli',
+              style: TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: openAppSettings,
+              child: const Text(
+                'Ayarları Aç',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
           ],
         ),
       ),

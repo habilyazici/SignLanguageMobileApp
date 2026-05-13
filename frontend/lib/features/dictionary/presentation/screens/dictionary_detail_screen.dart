@@ -61,12 +61,12 @@ class DictionaryDetailScreen extends ConsumerWidget {
 
     return async.when(
       loading: () => Scaffold(
-        backgroundColor: AppTheme.softGrey,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (_, _) => Scaffold(
-        backgroundColor: AppTheme.softGrey,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(backgroundColor: AppTheme.primaryBlue, foregroundColor: Colors.white),
         body: Center(
           child: Column(
