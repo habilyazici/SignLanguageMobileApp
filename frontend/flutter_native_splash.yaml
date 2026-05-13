@@ -1,14 +1,16 @@
 flutter_native_splash:
   color: "#1E3A5F"
   color_dark: "#0F172A"
-  # image: assets/images/logo.png
-  # image_dark: assets/images/logo.png
+  image: assets/images/logo.png
+  image_dark: assets/images/logo.png
   android: true
   ios: true
 
-  # Android 12 için özel splash (zorunlu API kuralları)
+  # Android 12+ için özel splash (sistem adaptive icon yerine bu kullanılır)
   android_12:
     color: "#1E3A5F"
     color_dark: "#0F172A"
-    # image: assets/images/logo.png
-    # image_dark: assets/images/logo.png
+    image: assets/images/logo.png
+    image_dark: assets/images/logo.png
+    icon_background_color: "#1E3A5F"
+    icon_background_color_dark: "#0F172A"

@@ -84,7 +84,6 @@ async function cleanExpiredResetTokens() {
     console.error('[cleanup] Reset token temizleme hatası:', err);
   }
 }
-cleanExpiredResetTokens();
 setInterval(cleanExpiredResetTokens, 60 * 60 * 1000); // saatte bir
 
 const server = app.listen(config.port, '0.0.0.0', () => {
@@ -98,6 +97,7 @@ const server = app.listen(config.port, '0.0.0.0', () => {
   if (process.env['NODE_ENV'] !== 'production') {
     console.log(`Tunnel:  ngrok http --domain=reaffirm-visor-gazing.ngrok-free.dev ${config.port}`);
   }
+  cleanExpiredResetTokens(); // Prisma hazır olduktan sonra çalıştır
 });
 
 server.on('error', (err) => {

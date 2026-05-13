@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_keys.dart';
 import '../features/settings/presentation/providers/settings_provider.dart';
+import '../features/auth/presentation/providers/auth_provider.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/dictionary/presentation/screens/dictionary_screen.dart';
@@ -22,13 +23,40 @@ import 'scaffold_with_nav.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+const _protectedRoutes = {'/bookmarks', '/history', '/profile', '/profile/edit'};
+
+class _RouterNotifier extends ChangeNotifier {
+  _RouterNotifier(Ref ref) {
+    ref.listen<AuthState>(authProvider, (_, _) => notifyListeners());
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   final prefs = ref.read(sharedPreferencesProvider);
   final onboardingDone = prefs.getBool(AppKeys.onboardingCompleted) ?? false;
+  final notifier = _RouterNotifier(ref);
+  ref.onDispose(notifier.dispose);
 
   return GoRouter(
     initialLocation: onboardingDone ? '/home' : '/onboarding',
     navigatorKey: _rootNavigatorKey,
+    refreshListenable: notifier,
+    redirect: (context, state) {
+      final currentOnboardingDone =
+          prefs.getBool(AppKeys.onboardingCompleted) ?? false;
+      final path = state.matchedLocation;
+
+      if (!currentOnboardingDone && path != '/onboarding') return '/onboarding';
+
+      final auth = ref.read(authProvider);
+      if (auth.status == AuthStatus.loading) return null;
+
+      final isLoggedIn = auth.isAuthenticated;
+      if (isLoggedIn && (path == '/login' || path == '/register')) return '/home';
+      if (!isLoggedIn && _protectedRoutes.contains(path)) return '/login';
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/onboarding',

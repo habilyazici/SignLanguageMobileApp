@@ -122,7 +122,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final prefs = ref.read(sharedPreferencesProvider);
     await prefs.setBool(AppKeys.onboardingCompleted, true);
     if (!mounted) return;
-    context.go('/home');
+    context.go('/login');
   }
 
   @override
