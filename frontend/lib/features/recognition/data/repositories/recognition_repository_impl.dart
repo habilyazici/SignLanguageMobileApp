@@ -52,6 +52,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   /// Yalnızca kDebugMode log bloklarında okunur; production'da anlamsız.
   int _resultCounter = 0;
   bool _isInferring = false;
+  bool _isInitializing = false;
   List<double>? _prevFrame;
   int _lastMotionMs = 0;
   bool _leftHandMode = false;
@@ -68,22 +69,28 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
 
   @override
   Future<void> initialize() async {
-    // ML ve Inference servislerini sadece bir kez başlat
-    if (!_ml.isReady) await _ml.initialize();
-    if (!_inference.isReady) await _inference.initialize();
+    if (_isInitializing || _isStreaming) return;
+    _isInitializing = true;
+    try {
+      // ML ve Inference servislerini sadece bir kez başlat
+      if (!_ml.isReady) await _ml.initialize();
+      if (!_inference.isReady) await _inference.initialize();
 
-    // ML sonuçlarını dinle
-    _mlSub ??= _ml.resultStream.listen(_onMlResult);
+      // ML sonuçlarını dinle
+      _mlSub ??= _ml.resultStream.listen(_onMlResult);
 
-    // Kamera controller stream'ini dinle
-    _cameraSub ??= _camera.controllerStream.listen((ctrl) {
-      _cameraCtrl.add(ctrl);
-      if (ctrl != null) _resetBuffer();
-    });
+      // Kamera controller stream'ini dinle
+      _cameraSub ??= _camera.controllerStream.listen((ctrl) {
+        _cameraCtrl.add(ctrl);
+        if (ctrl != null) _resetBuffer();
+      });
 
-    await _camera.initialize();
-    _isStreaming = true;
-    _camera.startStream(_onFrame);
+      await _camera.initialize();
+      _isStreaming = true;
+      _camera.startStream(_onFrame);
+    } finally {
+      _isInitializing = false;
+    }
   }
 
   // ── Kamera kontrolü ───────────────────────────────────────────────────────
@@ -103,7 +110,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
 
   @override
   Future<void> resumeCamera() async {
-    if (_isStreaming) return;
+    if (_isStreaming || _isInitializing) return;
 
     _resetBuffer();
 

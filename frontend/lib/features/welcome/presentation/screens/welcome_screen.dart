@@ -81,8 +81,8 @@ class WelcomeScreen extends StatelessWidget {
                   child: FilledButton(
                     onPressed: () => context.go('/login'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.primaryBlue,
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -107,7 +107,7 @@ class WelcomeScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: OutlinedButton.icon(
+                  child: FilledButton.icon(
                     onPressed: () => context.go('/guest-camera'),
                     icon: const Icon(Icons.camera_alt_rounded, size: 20),
                     label: Text(
@@ -117,15 +117,13 @@ class WelcomeScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    style: OutlinedButton.styleFrom(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF6348),
                       foregroundColor: Colors.white,
-                      side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        width: 1.5,
-                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
+                      elevation: 0,
                     ),
                   ),
                 )
@@ -139,7 +137,7 @@ class WelcomeScreen extends StatelessWidget {
                 TextButton(
                   onPressed: () => context.push('/onboarding'),
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.white.withValues(alpha: 0.45),
+                    foregroundColor: Colors.white.withValues(alpha: 0.70),
                   ),
                   child: const Text(
                     'Nasıl Çalışır?',

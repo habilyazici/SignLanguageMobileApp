@@ -266,7 +266,7 @@ class MlPipelineDatasource {
         size: Size(d.width.toDouble(), d.height.toDouble()),
         rotation: rotation,
         format: Platform.isAndroid ? mlkit.InputImageFormat.nv21 : mlkit.InputImageFormat.bgra8888,
-        bytesPerRow: Platform.isAndroid ? d.width : d.width * 4,
+        bytesPerRow: Platform.isAndroid ? d.width : d.planes[0].bytesPerRow,
       ),
     );
   }
@@ -326,7 +326,10 @@ class MlPipelineDatasource {
       // Sadece tespit edilen landmark'lar güncellenir — null olanlar önceki değeri korur.
       _lastPoseFeatures[i * 2] = mx;
       _lastPoseFeatures[i * 2 + 1] = my;
-      pts.add(Offset(lm.x / displayWidth, lm.y / displayHeight));
+      pts.add(Offset(
+        isFlipped ? 1.0 - lm.x / displayWidth : lm.x / displayWidth,
+        lm.y / displayHeight,
+      ));
     }
     return pts;
   }
@@ -364,9 +367,26 @@ class MlPipelineDatasource {
         if (isFlipped) mx = 1.0 - mx;
         frame[offset + i * 2] = mx;
         frame[offset + i * 2 + 1] = my;
-        // Dev overlay: gerçek çözünürlük kullanılır (Android 320×240, iOS 480×360).
-        // 90° sensör dönüşü: kamera-Y → ekran-X, kamera-X → ekran-Y.
-        target.add(Offset((imageHeight - sy) / imageHeight, sx / imageWidth));
+        // Dev overlay: sensör dönüş açısına göre landscape → portreye dönüştür.
+        // sensorOrientation değeri, görüntünün düzgün görünmesi için gereken CW açısını verir.
+        final double odx;
+        final double ody;
+        switch (sensorOrientation) {
+          case 270:
+            // Ön kamera tipik durumu (90° CCW): kamera-Y → ekran-X, kamera-X ters → ekran-Y
+            odx = sy / imageHeight;
+            ody = (imageWidth - sx) / imageWidth;
+          case 180:
+            odx = (imageWidth - sx) / imageWidth;
+            ody = (imageHeight - sy) / imageHeight;
+          case 0:
+            odx = sx / imageWidth;
+            ody = sy / imageHeight;
+          default: // 90° — arka kamera tipik durumu
+            odx = (imageHeight - sy) / imageHeight;
+            ody = sx / imageWidth;
+        }
+        target.add(Offset(isFlipped ? 1.0 - odx : odx, ody));
       }
     }
     return (right: rPts, left: lPts);

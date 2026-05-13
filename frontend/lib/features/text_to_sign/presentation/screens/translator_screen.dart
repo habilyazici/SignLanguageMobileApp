@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../../core/providers/translation_tab_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../features/settings/presentation/providers/settings_provider.dart';
 import '../../domain/entities/sign_token.dart';
@@ -23,6 +24,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   final _controller = TextEditingController();
   final _stt = SpeechToText();
   bool _sttReady = false;
+  bool _sttInitializing = false;
   bool _listening = false;
   bool _continuous = true; // sürekli dinleme modu
   Timer? _debounce;
@@ -37,27 +39,40 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   }
 
   Future<void> _initStt() async {
-    // iOS'ta kamera donanımı serbest bırakılmadan mikrofon init edilirse abort crash oluyor.
-    // Kameranın release() tamamlanması için kısa bekleme.
-    if (Platform.isIOS) {
-      await Future.delayed(const Duration(milliseconds: 400));
-      if (!mounted) return;
-    }
-    final ready = await _stt.initialize(
-      onError: (error) {
+    if (_sttInitializing || _sttReady) return;
+
+    // TabBarView her iki çocuğu önceden inşa eder; bu screen tab 0 aktifken
+    // de initState'e girer. Kamera aktifken mikrofon init edilirse iOS'ta
+    // abort crash olur. Kullanıcı gerçekten tab 1'e geçene kadar bekle.
+    if (ref.read(translationTabProvider) != 1) return;
+
+    _sttInitializing = true;
+    try {
+      // iOS: kamera release() tamamlanana kadar mikrofon init edilmemeli.
+      // _syncCamera(setActive:false) async olduğundan, donanımın serbest
+      // kalması için ek bekleme gerekir.
+      if (Platform.isIOS) {
+        await Future.delayed(const Duration(milliseconds: 500));
         if (!mounted) return;
-        setState(() => _listening = false);
-        // Hata sonrası sürekli modda yeniden başlat
-        if (_continuous && ref.read(settingsProvider).sttEnabled) {
-          _restartDelay?.cancel();
-          _restartDelay = Timer(const Duration(milliseconds: 800), _startListening);
-        }
-      },
-    );
-    if (!mounted) return;
-    setState(() => _sttReady = ready);
-    if (ready && ref.read(settingsProvider).sttEnabled) {
-      _startListening();
+      }
+      final ready = await _stt.initialize(
+        onError: (error) {
+          if (!mounted) return;
+          setState(() => _listening = false);
+          // Hata sonrası sürekli modda yeniden başlat
+          if (_continuous && ref.read(settingsProvider).sttEnabled) {
+            _restartDelay?.cancel();
+            _restartDelay = Timer(const Duration(milliseconds: 800), _startListening);
+          }
+        },
+      );
+      if (!mounted) return;
+      setState(() => _sttReady = ready);
+      if (ready && ref.read(settingsProvider).sttEnabled) {
+        _startListening();
+      }
+    } finally {
+      _sttInitializing = false;
     }
   }
 
@@ -150,6 +165,12 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
     final sttEnabled = ref.watch(settingsProvider).sttEnabled;
     final ts = ref.watch(textToSignProvider);
     final notifier = ref.read(textToSignProvider.notifier);
+
+    // Tab 0'dayken pre-build nedeniyle atlanan init'i, kullanıcı tab 1'e
+    // geçtiğinde tetikle.
+    ref.listen(translationTabProvider, (_, next) {
+      if (next == 1 && !_sttReady) _initStt();
+    });
 
     return Scaffold(
       backgroundColor: Colors.transparent,
