@@ -37,7 +37,7 @@ class ScaffoldWithNav extends ConsumerWidget {
       context.go('/translation?tab=0');
     } else {
       ref.read(cameraActiveProvider.notifier).setActive(active: false);
-      if (index == 4 && ref.read(authProvider).isGuest) {
+      if ((index == 1 || index == 4) && ref.read(authProvider).isGuest) {
         context.push('/login');
       } else {
         context.go(_tabRoutes[index]);
@@ -230,7 +230,11 @@ class _SwipeNavWrapperState extends ConsumerState<_SwipeNavWrapper> {
         context.go('/home');
       case 1:
         ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        context.go('/dictionary');
+        if (ref.read(authProvider).isGuest) {
+          context.push('/login');
+        } else {
+          context.go('/dictionary');
+        }
       case 2:
         ref.read(translationTabProvider.notifier).setTab(0);
         if (widget.currentIndex != 2) context.go('/translation?tab=0');

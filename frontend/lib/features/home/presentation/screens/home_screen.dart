@@ -29,14 +29,14 @@ class HomeScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final isGuest = auth.isGuest;
     final dailyWord = ref.watch(dailyWordProvider);
-    final displayName =
+    final fullName =
         auth.displayName ?? auth.email?.split('@').firstOrNull ?? 'Kullanıcı';
     final dictCount = ref.watch(
       dictionaryProvider.select((s) => s.allSigns.length),
     );
 
     final greeting = _greeting();
-    final name = _capitalize(displayName);
+    final name = _capitalize(fullName.trim().split(' ').first);
 
     return Scaffold(
       backgroundColor: AppTheme.softGrey,

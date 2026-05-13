@@ -23,7 +23,7 @@ import 'scaffold_with_nav.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
-const _protectedRoutes = {'/bookmarks', '/history', '/profile', '/profile/edit'};
+const _protectedRoutes = {'/dictionary', '/bookmarks', '/history', '/profile', '/profile/edit'};
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(Ref ref) {

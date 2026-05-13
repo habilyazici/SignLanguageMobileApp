@@ -58,13 +58,10 @@ class ProfileScreen extends ConsumerWidget {
                   GestureDetector(
                     onTap: () => context.push('/settings'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppTheme.borderColor),
                         boxShadow: [
                           BoxShadow(
@@ -74,24 +71,10 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.settings_rounded,
-                            size: 15,
-                            color: AppTheme.midGrey,
-                          ),
-                          SizedBox(width: 5),
-                          Text(
-                            'Ayarlar',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.midGrey,
-                            ),
-                          ),
-                        ],
+                      child: const Icon(
+                        Icons.settings_rounded,
+                        size: 22,
+                        color: AppTheme.midGrey,
                       ),
                     ),
                   ),

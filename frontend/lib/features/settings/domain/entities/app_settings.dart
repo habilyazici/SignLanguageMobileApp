@@ -64,7 +64,7 @@ class AppSettings {
   final double motionThreshold;
 
   const AppSettings({
-    this.themeMode = ThemeMode.system,
+    this.themeMode = ThemeMode.light,
     this.textSize = AppTextSize.standard,
     this.leftHandMode = false,
     this.confidenceLevel = ConfidenceLevel.medium,

@@ -18,6 +18,11 @@ void main() async {
   } catch (e) {
     if (kDebugMode) debugPrint('ERROR: Could not load .env file: $e');
   }
+  if (kDebugMode) {
+    final ip = dotenv.get('BASE_IP', fallback: 'localhost');
+    final port = dotenv.get('PORT', fallback: '3000');
+    debugPrint('API URL → $ip:$port');
+  }
   await initializeDateFormatting('tr_TR', null);
 
   // TFLite etiketlerini ve SharedPreferences'ı paralel yükle — startup süresini azaltır.
