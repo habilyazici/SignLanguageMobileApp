@@ -68,7 +68,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.only(bottom: 100),
@@ -191,13 +191,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onChanged: n.setThemeMode,
                     isDark: isDark,
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   TextSizeRow(
                     current: settings.textSize,
                     onChanged: n.setTextSize,
                     isDark: isDark,
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   SettingsSwitchRow(
                     isDark: isDark,
                     icon: Icons.back_hand_rounded,
@@ -230,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Text-to-Speech teknolojisi ile AI\'nın çevirdiği metni cihaz hoparlöründen sesli olarak duymanızı sağlar.',
                     onChanged: (_) => n.toggleTts(),
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   SettingsSwitchRow(
                     isDark: isDark,
                     icon: Icons.mic_rounded,
@@ -263,13 +263,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'İnternet paketinizi korumak için sözlükteki öğretici videoların mobil veri üzerinden indirilmesini engeller.',
                     onChanged: (_) => n.toggleCellularVideo(),
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   VideoQualityRow(
                     current: settings.videoQuality,
                     onChanged: n.setVideoQuality,
                     isDark: isDark,
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   SettingsActionRow(
                     isDark: isDark,
                     icon: Icons.cleaning_services_rounded,
@@ -303,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Maksimum gizlilik için tasarlanmıştır. Hiçbir çeviri geçmişi tutulmaz.',
                     onChanged: (_) => n.toggleZeroDataMode(),
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   SettingsSwitchRow(
                     isDark: isDark,
                     icon: Icons.cloud_off_rounded,
@@ -315,7 +315,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         'Verilerinizin farklı cihazlarda senkronize edilmesini sağlar.',
                     onChanged: (_) => n.toggleCloudSync(),
                   ),
-                  SettingsDivider(isDark: false),
+                  SettingsDivider(isDark: isDark),
                   SettingsActionRow(
                     isDark: isDark,
                     icon: Icons.delete_forever_rounded,
@@ -349,31 +349,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onChanged: (_) => n.toggleDevMode(),
                   ),
                   if (settings.devMode) ...[
-                    SettingsDivider(isDark: false),
+                    SettingsDivider(isDark: isDark),
                     ConfidenceRow(
                       current: settings.confidenceLevel,
                       onChanged: n.setConfidenceLevel,
                       isDark: isDark,
                     ),
-                    SettingsDivider(isDark: false),
+                    SettingsDivider(isDark: isDark),
                     StabilityRow(
                       isDark: isDark,
                       current: settings.stableFramesThreshold,
                       onChanged: n.setStableFramesThreshold,
                     ),
-                    SettingsDivider(isDark: false),
+                    SettingsDivider(isDark: isDark),
                     FpsRow(
                       isDark: isDark,
                       current: settings.fpsPreference,
                       onChanged: n.setFpsPreference,
                     ),
-                    SettingsDivider(isDark: false),
+                    SettingsDivider(isDark: isDark),
                     MotionThresholdRow(
                       isDark: isDark,
                       current: settings.motionThreshold,
                       onChanged: n.setMotionThreshold,
                     ),
-                    SettingsDivider(isDark: false),
+                    SettingsDivider(isDark: isDark),
                     SettingsSwitchRow(
                       isDark: isDark,
                       icon: Icons.ads_click_rounded,
@@ -385,8 +385,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           'Ana ekranda hızlı testler yapabileceğiniz "DEV" ikonunu etkinleştirir.',
                       onChanged: (_) => n.toggleShowDevButton(),
                     ),
-                    SettingsDivider(isDark: false),
-                    LandmarkLegend(isDark: false),
+                    SettingsDivider(isDark: isDark),
+                    LandmarkLegend(isDark: isDark),
                   ],
                 ],
               ).animate().fadeIn(delay: 260.ms, duration: 350.ms).slideY(begin: 0.06, end: 0),

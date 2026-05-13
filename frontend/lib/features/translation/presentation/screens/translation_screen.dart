@@ -72,7 +72,7 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
     });
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Column(

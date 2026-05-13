@@ -100,7 +100,7 @@ class SettingsSwitchRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            _iconBox(icon, iconColor),
+            settingsIconBox(icon, iconColor),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -170,7 +170,7 @@ class SettingsActionRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            _iconBox(icon, iconColor),
+            settingsIconBox(icon, iconColor),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -428,9 +428,9 @@ class LandmarkLegend extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _dotLegend('Mavi', 'Bilek & El', Colors.blue),
-                _dotLegend('Sarı', 'Parmak Eklemleri', Colors.yellow),
-                _dotLegend('Yeşil', 'Parmak Uçları', Colors.green),
+                _dotLegend('Kırmızı', 'Sağ el', Colors.redAccent),
+                _dotLegend('Mavi', 'Sol el', Colors.blueAccent),
+                _dotLegend('Sarı', 'Pose noktaları', Colors.yellowAccent),
               ],
             ),
           ),
@@ -458,7 +458,7 @@ class LandmarkLegend extends StatelessWidget {
 }
 
 // ── Yardımcı İkon Kutusu ─────────────────────────────────────────────────────
-Widget _iconBox(IconData icon, Color color) {
+Widget settingsIconBox(IconData icon, Color color) {
   return Container(
     width: 36,
     height: 36,

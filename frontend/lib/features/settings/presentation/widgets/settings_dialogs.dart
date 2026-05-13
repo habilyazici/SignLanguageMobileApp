@@ -45,28 +45,8 @@ class SettingsDialogs {
   static void showDeleteAccountDialog(
     BuildContext context,
     bool isDark, {
-    WidgetRef? ref,
+    required WidgetRef ref,
   }) {
-    if (ref == null) {
-      showDialog(
-        context: context,
-        builder: (dialogCtx) => AlertDialog(
-          backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-          title: const Text('Hesabı Sil'),
-          content: const Text(
-            'Bu işlemi gerçekleştirmek için habilyazici00@gmail.com adresine yazabilirsiniz.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogCtx),
-              child: const Text('Kapat'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
     showDialog(
       context: context,
       barrierDismissible: false,

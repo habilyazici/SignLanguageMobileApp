@@ -216,8 +216,6 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
 
   // Public API — ekran ve navigasyon katmanına açık
 
-  void pauseCamera() => _repo.pauseCamera();
-  void resumeCamera() => _repo.resumeCamera();
   Future<void> switchCamera() => _repo.switchCamera();
 
   void clearSentence() {

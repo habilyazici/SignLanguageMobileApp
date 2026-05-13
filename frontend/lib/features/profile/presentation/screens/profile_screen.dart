@@ -20,7 +20,7 @@ class ProfileScreen extends ConsumerWidget {
     final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'K';
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.only(bottom: 100),

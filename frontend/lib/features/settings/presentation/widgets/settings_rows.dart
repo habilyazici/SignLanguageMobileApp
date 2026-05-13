@@ -22,7 +22,7 @@ class ThemeRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          _iconBox(Icons.palette_rounded, AppTheme.secondaryBlue),
+          settingsIconBox(Icons.palette_rounded, AppTheme.secondaryBlue),
           const SizedBox(width: 14),
           const Expanded(
             child: Text(
@@ -82,7 +82,7 @@ class TextSizeRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              _iconBox(Icons.text_fields_rounded, Colors.indigoAccent),
+              settingsIconBox(Icons.text_fields_rounded, Colors.indigoAccent),
               const SizedBox(width: 14),
               const Expanded(
                 child: Column(
@@ -185,7 +185,7 @@ class ConfidenceRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          _iconBox(Icons.tune_rounded, Colors.greenAccent.shade700),
+          settingsIconBox(Icons.tune_rounded, Colors.greenAccent.shade700),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -237,7 +237,7 @@ class VideoQualityRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          _iconBox(Icons.hd_rounded, Colors.lightBlueAccent),
+          settingsIconBox(Icons.hd_rounded, Colors.lightBlueAccent),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
@@ -289,7 +289,7 @@ class FpsRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          _iconBox(Icons.speed_rounded, Colors.orangeAccent),
+          settingsIconBox(Icons.speed_rounded, Colors.orangeAccent),
           const SizedBox(width: 14),
           const Expanded(
             child: Column(
@@ -398,17 +398,4 @@ class MotionThresholdRow extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Yardımcı İkon Kutusu ─────────────────────────────────────────────────────
-Widget _iconBox(IconData icon, Color color) {
-  return Container(
-    width: 36,
-    height: 36,
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Icon(icon, color: color, size: 20),
-  );
 }

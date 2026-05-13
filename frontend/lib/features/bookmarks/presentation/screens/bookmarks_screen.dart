@@ -23,7 +23,7 @@ class BookmarksScreen extends ConsumerWidget {
       ..sort((a, b) => a.label.compareTo(b.label));
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

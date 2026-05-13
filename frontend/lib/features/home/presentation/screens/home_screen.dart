@@ -38,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
     final name = _capitalize(fullName.trim().split(' ').first);
 
     return Scaffold(
-      backgroundColor: AppTheme.softGrey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
