@@ -70,7 +70,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   Future<void> initialize() async {
     // ML ve Inference servislerini sadece bir kez başlat
     if (!_ml.isReady) await _ml.initialize();
-    await _inference.initialize();
+    if (!_inference.isReady) await _inference.initialize();
 
     // ML sonuçlarını dinle
     _mlSub ??= _ml.resultStream.listen(_onMlResult);

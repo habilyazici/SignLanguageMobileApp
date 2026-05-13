@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -36,6 +37,12 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   }
 
   Future<void> _initStt() async {
+    // iOS'ta kamera donanımı serbest bırakılmadan mikrofon init edilirse abort crash oluyor.
+    // Kameranın release() tamamlanması için kısa bekleme.
+    if (Platform.isIOS) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (!mounted) return;
+    }
     final ready = await _stt.initialize(
       onError: (error) {
         if (!mounted) return;

@@ -20,6 +20,9 @@ class InferenceDatasource {
   /// Yüklü modelin tanıdığı sınıf sayısı (labels.csv ile eşleşmeli).
   int get numClasses => _numClasses;
 
+  /// Model yüklenip hazır mı?
+  bool get isReady => _interpreter != null && _isolateInterpreter != null;
+
   Future<void> initialize() async {
     final opts = tflite.InterpreterOptions()..threads = 4;
 
