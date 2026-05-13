@@ -159,6 +159,12 @@ class _ModeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveBg = isDark ? AppTheme.darkSurface : Colors.white;
+    final inactiveBorder = isDark ? Colors.white12 : AppTheme.borderColor;
+    final inactiveText = isDark ? Colors.white70 : AppTheme.textPrimary;
+    final inactiveSub = isDark ? Colors.white38 : AppTheme.textMuted;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -166,10 +172,10 @@ class _ModeButton extends StatelessWidget {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryBlue : Colors.white,
+          color: isSelected ? AppTheme.primaryBlue : inactiveBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryBlue : AppTheme.borderColor,
+            color: isSelected ? AppTheme.primaryBlue : inactiveBorder,
           ),
           boxShadow: isSelected
               ? [
@@ -195,7 +201,7 @@ class _ModeButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: isSelected ? Colors.white : AppTheme.textPrimary,
+                color: isSelected ? Colors.white : inactiveText,
               ),
             ),
             const SizedBox(height: 2),
@@ -206,7 +212,7 @@ class _ModeButton extends StatelessWidget {
                 fontWeight: FontWeight.w400,
                 color: isSelected
                     ? Colors.white.withValues(alpha: 0.75)
-                    : AppTheme.textMuted,
+                    : inactiveSub,
               ),
             ),
           ],
