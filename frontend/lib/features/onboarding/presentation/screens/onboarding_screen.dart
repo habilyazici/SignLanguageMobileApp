@@ -11,8 +11,6 @@ class _OnboardingPage {
   final String subtitle;
   final String body;
   final List<String> tips;
-  final String? actionLabel;
-  final String? actionRoute;
 
   const _OnboardingPage({
     required this.icon,
@@ -21,8 +19,6 @@ class _OnboardingPage {
     required this.subtitle,
     required this.body,
     required this.tips,
-    this.actionLabel,
-    this.actionRoute,
   });
 }
 
@@ -39,8 +35,6 @@ const _pages = [
       'Ellerinizi kamera çerçevesi içinde tutun.',
       'Solak mısınız? Ayarlardan solak modunu açın.',
     ],
-    actionLabel: 'Kamerayı Aç',
-    actionRoute: '/translation?tab=0',
   ),
   _OnboardingPage(
     icon: Icons.sign_language_rounded,
@@ -54,12 +48,10 @@ const _pages = [
       'Token şeridine dokunarak istediğiniz kelimeye atlayın.',
       'Öğrendiğiniz çeviriler geçmiş sayfasına kaydedilir.',
     ],
-    actionLabel: 'Dene',
-    actionRoute: '/translation?tab=1',
   ),
   _OnboardingPage(
     icon: Icons.menu_book_rounded,
-    iconColor: AppTheme.primaryStatusGreen,
+    iconColor: AppTheme.statusPurple,
     title: 'Sözlük & Favoriler',
     subtitle: '1500+ işaret · İnternet Gerekmez',
     body:
@@ -69,8 +61,6 @@ const _pages = [
       'Geçmiş sayfasında öğrendiğiniz işaretleri tekrar edin.',
       'Tüm veriler cihazınızda güvenle saklanır.',
     ],
-    actionLabel: 'Sözlüğü Keşfet',
-    actionRoute: '/dictionary',
   ),
 ];
 
@@ -200,64 +190,80 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-              // ── Alt butonlar ──────────────────────────────────────────────
+              // ── Alt navigasyon ─────────────────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                padding: const EdgeInsets.fromLTRB(32, 8, 32, 36),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Geri — ilk sayfada görünmez
+                    // Geri ok — ilk sayfada soluk
                     AnimatedOpacity(
                       opacity: _currentPage > 0 ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 200),
                       child: IgnorePointer(
                         ignoring: _currentPage == 0,
-                        child: SizedBox(
-                          width: 88,
-                          height: 56,
-                          child: OutlinedButton(
-                            onPressed: _back,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: pageColor,
-                              side: BorderSide(color: pageColor),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
+                        child: GestureDetector(
+                          onTap: _back,
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: pageColor.withValues(alpha: 0.4),
+                                width: 1.5,
                               ),
+                              color: pageColor.withValues(alpha: 0.08),
                             ),
-                            child: const Text(
-                              'Geri',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Icon(
+                              Icons.arrow_back_rounded,
+                              color: pageColor,
+                              size: 20,
                             ),
                           ),
                         ),
                       ),
                     ),
-                    if (_currentPage > 0) const SizedBox(width: 12),
-                    // İleri / Başla
-                    Expanded(
-                      child: SizedBox(
-                        height: 56,
-                        child: FilledButton(
-                          onPressed: _next,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: pageColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
+                    // İleri ok / Başla
+                    if (isLast)
+                      FilledButton(
+                        onPressed: _next,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: pageColor,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 36,
+                            vertical: 14,
                           ),
-                          child: Text(
-                            isLast ? 'Başla' : 'İleri',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Başla',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: _next,
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: pageColor,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -396,26 +402,6 @@ class _PageContent extends StatelessWidget {
               }).toList(),
             ),
           ).animate().fadeIn(delay: 420.ms, duration: 400.ms),
-
-          // Sayfaya özgü eylem butonu
-          if (page.actionLabel != null && page.actionRoute != null) ...[
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => context.push(page.actionRoute!),
-              iconAlignment: IconAlignment.end,
-              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-              label: Text(page.actionLabel!),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: page.iconColor,
-                side: BorderSide(color: page.iconColor.withValues(alpha: 0.5)),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-            ).animate().fadeIn(delay: 500.ms, duration: 350.ms),
-          ],
 
           const SizedBox(height: 16),
         ],
