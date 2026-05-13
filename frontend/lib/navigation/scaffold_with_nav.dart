@@ -30,12 +30,17 @@ class ScaffoldWithNav extends ConsumerWidget {
     return 0;
   }
 
-  void _onTap(BuildContext context, WidgetRef ref, int index) {
+  Future<void> _onTap(BuildContext context, WidgetRef ref, int index) async {
     if (index == 2) {
       ref.read(translationTabProvider.notifier).setTab(0);
       context.go('/translation?tab=0');
     } else {
+      final wasActive = ref.read(cameraActiveProvider);
       ref.read(cameraActiveProvider.notifier).setActive(active: false);
+      if (wasActive) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (!context.mounted) return;
+      }
       context.go(_tabRoutes[index]);
     }
   }
@@ -218,26 +223,27 @@ class _SwipeNavWrapperState extends ConsumerState<_SwipeNavWrapper> {
     _ => 'Profil',
   };
 
-  void _navigate(int to) {
+  Future<void> _navigate(int to) async {
+    // Kamera olmayan hedeflere geçişte pipeline'ın durmasını bekle (iOS freeze fix)
+    if (to != 2 && to != 3) {
+      final wasActive = ref.read(cameraActiveProvider);
+      if (wasActive) {
+        ref.read(cameraActiveProvider.notifier).setActive(active: false);
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (!mounted) return;
+      }
+    }
     switch (to) {
-      case 0:
-        ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        context.go('/home');
-      case 1:
-        ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        context.go('/dictionary');
+      case 0: context.go('/home');
+      case 1: context.go('/dictionary');
       case 2:
         ref.read(translationTabProvider.notifier).setTab(0);
         if (widget.currentIndex != 2) context.go('/translation?tab=0');
       case 3:
         ref.read(translationTabProvider.notifier).setTab(1);
         if (widget.currentIndex != 2) context.go('/translation?tab=1');
-      case 4:
-        ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        context.go('/history');
-      case 5:
-        ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        context.go('/profile');
+      case 4: context.go('/history');
+      case 5: context.go('/profile');
     }
   }
 
