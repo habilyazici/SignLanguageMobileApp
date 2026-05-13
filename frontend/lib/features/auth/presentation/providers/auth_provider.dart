@@ -71,6 +71,11 @@ class AuthNotifier extends Notifier<AuthState> {
     final result = await ref.read(_authRepositoryProvider).deleteAccount();
     if (result.success) {
       state = const AuthState();
+    } else {
+      // Repository 401 alınca clearSession() çağırır (storage temizlenir) ama
+      // Riverpod state'i güncellemez. restoreSession ile senkronize et.
+      final restored = await ref.read(_authRepositoryProvider).restoreSession();
+      if (!restored.isAuthenticated) state = const AuthState();
     }
     return result.error;
   }
@@ -87,6 +92,11 @@ class AuthNotifier extends Notifier<AuthState> {
     );
     if (result.success && result.newName != null) {
       state = state.copyWith(displayName: result.newName);
+    } else if (!result.success) {
+      // Repository 401 alınca clearSession() çağırır (storage temizlenir) ama
+      // Riverpod state'i güncellemez. restoreSession ile senkronize et.
+      final restored = await ref.read(_authRepositoryProvider).restoreSession();
+      if (!restored.isAuthenticated) state = const AuthState();
     }
     return result.error;
   }
