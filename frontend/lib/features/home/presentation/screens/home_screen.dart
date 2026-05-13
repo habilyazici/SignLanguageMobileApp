@@ -274,69 +274,6 @@ class _DailyWordCard extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _AuthBanner extends StatelessWidget {
-  const _AuthBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push('/login'),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppTheme.primaryBlueTint,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppTheme.primaryBlue.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.account_circle_rounded,
-                color: AppTheme.primaryBlue,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'İlerlemeni Kaydet',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryBlue,
-                    ),
-                  ),
-                  Text(
-                    'Hemen kayıt ol veya giriş yap.',
-                    style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppTheme.primaryBlue,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _ProgressBanner extends StatelessWidget {
   const _ProgressBanner();
 

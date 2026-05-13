@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_dialogs.dart';
 import '../widgets/settings_rows.dart';
@@ -66,8 +65,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // ref.read ile notifier almak build() içinde geçerlidir:
     // Notifier referansı sabit kalır, her frame'de yeniden oluşturulmaz.
     final n = ref.read(settingsProvider.notifier);
-    final auth = ref.watch(authProvider);
-    final isGuest = auth.isGuest;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -316,9 +313,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     value: settings.cloudSyncEnabled,
                     helpText:
                         'Verilerinizin farklı cihazlarda senkronize edilmesini sağlar.',
-                    onChanged: isGuest
-                        ? (_) => context.push('/login')
-                        : (_) => n.toggleCloudSync(),
+                    onChanged: (_) => n.toggleCloudSync(),
                   ),
                   SettingsDivider(isDark: false),
                   SettingsActionRow(
@@ -331,16 +326,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     labelColor: AppTheme.primaryStatusRed,
                     helpText:
                         'Uygulama üzerindeki tüm varlığınızı, ayarlarınızı ve verilerinizi siler.',
-                    onTap: isGuest
-                        ? () => SettingsDialogs.showDeleteAccountDialog(context, isDark)
-                        : () => SettingsDialogs.showDeleteAccountDialog(context, isDark, ref: ref),
+                    onTap: () => SettingsDialogs.showDeleteAccountDialog(context, isDark, ref: ref),
                   ),
                 ],
               ).animate().fadeIn(delay: 220.ms, duration: 350.ms).slideY(begin: 0.06, end: 0),
             ],
 
             // ── Geliştirici ────────────────────────────────────────────────
-            if (_visible('İleri Seviye (Geliştirici)') && !isGuest) ...[
+            if (_visible('İleri Seviye (Geliştirici)')) ...[
               const SettingsSection('İleri Seviye (Geliştirici)'),
               SettingsCard(
                 isDark: isDark,
