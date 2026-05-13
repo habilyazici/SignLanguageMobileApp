@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_theme.dart';
 import '../core/providers/camera_lifecycle_provider.dart';
 import '../core/providers/translation_tab_provider.dart';
-import '../features/auth/presentation/providers/auth_provider.dart';
 
 class ScaffoldWithNav extends ConsumerWidget {
   final Widget child;
@@ -37,11 +36,7 @@ class ScaffoldWithNav extends ConsumerWidget {
       context.go('/translation?tab=0');
     } else {
       ref.read(cameraActiveProvider.notifier).setActive(active: false);
-      if ((index == 1 || index == 4) && ref.read(authProvider).isGuest) {
-        context.push('/login');
-      } else {
-        context.go(_tabRoutes[index]);
-      }
+      context.go(_tabRoutes[index]);
     }
   }
 
@@ -230,11 +225,7 @@ class _SwipeNavWrapperState extends ConsumerState<_SwipeNavWrapper> {
         context.go('/home');
       case 1:
         ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        if (ref.read(authProvider).isGuest) {
-          context.push('/login');
-        } else {
-          context.go('/dictionary');
-        }
+        context.go('/dictionary');
       case 2:
         ref.read(translationTabProvider.notifier).setTab(0);
         if (widget.currentIndex != 2) context.go('/translation?tab=0');
@@ -246,11 +237,7 @@ class _SwipeNavWrapperState extends ConsumerState<_SwipeNavWrapper> {
         context.go('/history');
       case 5:
         ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        if (ref.read(authProvider).isGuest) {
-          context.push('/login');
-        } else {
-          context.go('/profile');
-        }
+        context.go('/profile');
     }
   }
 

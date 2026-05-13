@@ -2,9 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-import '../core/constants/app_keys.dart';
-import '../features/settings/presentation/providers/settings_provider.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
+import '../features/welcome/presentation/screens/welcome_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/dictionary/presentation/screens/dictionary_screen.dart';
@@ -23,7 +22,15 @@ import 'scaffold_with_nav.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
-const _protectedRoutes = {'/dictionary', '/bookmarks', '/history', '/profile', '/profile/edit'};
+// Giriş yapılmadan erişilebilen route'lar
+const _guestAllowed = {
+  '/welcome',
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/onboarding',
+  '/guest-camera',
+};
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(Ref ref) {
@@ -31,44 +38,93 @@ class _RouterNotifier extends ChangeNotifier {
   }
 }
 
+// Misafir için tam ekran kamera — alt menü yok, geri → welcome
+class _GuestCameraScreen extends StatelessWidget {
+  const _GuestCameraScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (_, __) => context.go('/welcome'),
+      child: const TranslationScreen(initialTab: 0),
+    );
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final prefs = ref.read(sharedPreferencesProvider);
-  final onboardingDone = prefs.getBool(AppKeys.onboardingCompleted) ?? false;
   final notifier = _RouterNotifier(ref);
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
-    initialLocation: onboardingDone ? '/home' : '/onboarding',
+    initialLocation: '/welcome',
     navigatorKey: _rootNavigatorKey,
     refreshListenable: notifier,
     redirect: (context, state) {
-      final currentOnboardingDone =
-          prefs.getBool(AppKeys.onboardingCompleted) ?? false;
+      final auth = ref.read(authProvider);
       final path = state.matchedLocation;
 
-      if (!currentOnboardingDone && path != '/onboarding') return '/onboarding';
-
-      final auth = ref.read(authProvider);
+      // Auth yüklenirken bekle
       if (auth.status == AuthStatus.loading) return null;
 
       final isLoggedIn = auth.isAuthenticated;
-      if (isLoggedIn && (path == '/login' || path == '/register')) return '/home';
-      if (!isLoggedIn && _protectedRoutes.contains(path)) return '/login';
+
+      // Giriş yapılmışsa auth ekranlarından çık
+      if (isLoggedIn &&
+          (path == '/welcome' ||
+              path == '/login' ||
+              path == '/register' ||
+              path == '/guest-camera')) {
+        return '/home';
+      }
+
+      // Giriş yapılmamışsa izin verilmeyen route'larda welcome'a yönlendir
+      if (!isLoggedIn && !_guestAllowed.contains(path)) {
+        return '/welcome';
+      }
 
       return null;
     },
     routes: [
+      // ── Auth gerektirmeyen route'lar ───────────────────────────────────
+      GoRoute(
+        path: '/welcome',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: '/guest-camera',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const _GuestCameraScreen(),
+      ),
       GoRoute(
         path: '/onboarding',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const OnboardingScreen(),
       ),
+      GoRoute(
+        path: '/login',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+
+      // ── Giriş gerektiren route'lar — ShellRoute (alt menülü) ──────────
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => ScaffoldWithNav(child: child),
         routes: [
-          GoRoute(path: '/home',        builder: (context, _) => const HomeScreen()),
-          GoRoute(path: '/dictionary',  builder: (context, _) => const DictionaryScreen()),
+          GoRoute(path: '/home',       builder: (context, _) => const HomeScreen()),
+          GoRoute(path: '/dictionary', builder: (context, _) => const DictionaryScreen()),
           GoRoute(
             path: '/translation',
             builder: (context, state) {
@@ -79,10 +135,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               return TranslationScreen(initialTab: tab);
             },
           ),
-          GoRoute(path: '/history',     builder: (context, _) => const HistoryScreen()),
-          GoRoute(path: '/profile',     builder: (context, _) => const ProfileScreen()),
+          GoRoute(path: '/history', builder: (context, _) => const HistoryScreen()),
+          GoRoute(path: '/profile', builder: (context, _) => const ProfileScreen()),
         ],
       ),
+
+      // ── Giriş gerektiren route'lar — tam ekran (alt menüsüz) ──────────
       GoRoute(
         path: '/dictionary/:id',
         parentNavigatorKey: _rootNavigatorKey,
@@ -105,21 +163,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/register',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const RegisterScreen(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const ForgotPasswordScreen(),
       ),
     ],
   );

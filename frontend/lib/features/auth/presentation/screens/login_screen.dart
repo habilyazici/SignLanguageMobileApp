@@ -213,22 +213,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ).animate().fadeIn(delay: 280.ms),
 
-                const SizedBox(height: 16),
-
-                // ── Misafir devam ────────────────────────────────────────
-                Center(
-                  child: TextButton(
-                    onPressed: () => context.go('/home'),
-                    child: Text(
-                      'Giriş yapmadan devam et',
-                      style: TextStyle(
-                        color: isDark ? Colors.white38 : AppTheme.midGrey,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 300.ms),
-
                 const SizedBox(height: 32),
               ],
             ),

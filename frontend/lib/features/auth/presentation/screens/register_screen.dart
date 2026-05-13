@@ -252,21 +252,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ],
                 ).animate().fadeIn(delay: 270.ms),
 
-                const SizedBox(height: 16),
-
-                Center(
-                  child: TextButton(
-                    onPressed: () => context.go('/home'),
-                    child: Text(
-                      'Giriş yapmadan devam et',
-                      style: TextStyle(
-                        color: isDark ? Colors.white38 : AppTheme.midGrey,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 290.ms),
-
                 const SizedBox(height: 32),
               ],
             ),

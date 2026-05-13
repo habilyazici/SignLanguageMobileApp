@@ -27,7 +27,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
-    final isGuest = auth.isGuest;
     final dailyWord = ref.watch(dailyWordProvider);
     final fullName =
         auth.displayName ?? auth.email?.split('@').firstOrNull ?? 'Kullanıcı';
@@ -56,7 +55,7 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isGuest ? '$greeting!' : '$greeting, $name!',
+                          '$greeting, $name!',
                           style: GoogleFonts.poppins(
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
@@ -74,7 +73,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: () => isGuest ? context.push('/login') : context.go('/profile'),
+                    onTap: () => context.go('/profile'),
                     child: Container(
                       width: 36,
                       height: 36,
@@ -138,14 +137,8 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: 20),
 
-              // ── Üyelik Bannerı (en altta — içerik önce, çağrı sonra) ──
-              if (isGuest)
-                const _AuthBanner().animate().fadeIn(delay: 340.ms, duration: 350.ms)
-              else
-                const _ProgressBanner().animate().fadeIn(
-                  delay: 340.ms,
-                  duration: 350.ms,
-                ),
+              // ── İlerleme Bannerı ──────────────────────────────────────
+              const _ProgressBanner().animate().fadeIn(delay: 340.ms, duration: 350.ms),
 
               const SizedBox(height: 120),
             ],

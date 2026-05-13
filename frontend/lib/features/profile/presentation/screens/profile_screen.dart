@@ -15,12 +15,9 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
-    final isGuest = auth.isGuest;
-    final displayName = isGuest
-        ? 'Misafir Kullanıcı'
-        : (auth.displayName ?? auth.email?.split('@').first ?? 'Kullanıcı');
-    final email = isGuest ? null : auth.email;
-    final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'M';
+    final displayName = auth.displayName ?? auth.email?.split('@').first ?? 'Kullanıcı';
+    final email = auth.email;
+    final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'K';
 
     return Scaffold(
       backgroundColor: AppTheme.softGrey,
@@ -90,23 +87,15 @@ class ProfileScreen extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: isGuest
-                      ? null
-                      : const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [AppTheme.primaryBlue, AppTheme.primaryBlueEnd],
-                        ),
-                  color: isGuest ? Colors.white : null,
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppTheme.primaryBlue, AppTheme.primaryBlueEnd],
+                  ),
                   borderRadius: BorderRadius.circular(20),
-                  border: isGuest
-                      ? Border.all(color: AppTheme.borderColor)
-                      : null,
                   boxShadow: [
                     BoxShadow(
-                      color: isGuest
-                          ? Colors.black.withValues(alpha: 0.04)
-                          : AppTheme.primaryBlue.withValues(alpha: 0.25),
+                      color: AppTheme.primaryBlue.withValues(alpha: 0.25),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -119,17 +108,15 @@ class ProfileScreen extends ConsumerWidget {
                       height: 64,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isGuest
-                            ? AppTheme.primaryBlueTint
-                            : Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                       child: Center(
                         child: Text(
                           initials,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
-                            color: isGuest ? AppTheme.primaryBlue : Colors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -141,10 +128,10 @@ class ProfileScreen extends ConsumerWidget {
                         children: [
                           Text(
                             displayName,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: isGuest ? AppTheme.textPrimary : Colors.white,
+                              color: Colors.white,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -155,9 +142,7 @@ class ProfileScreen extends ConsumerWidget {
                               email,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isGuest
-                                    ? AppTheme.midGrey
-                                    : Colors.white.withValues(alpha: 0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -224,29 +209,27 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ).animate().fadeIn(delay: 180.ms, duration: 350.ms).slideY(begin: 0.06, end: 0),
 
-            // ── Hesap Bölümü — sadece üye ─────────────────────────────────
-            if (!isGuest) ...[
-              _SectionLabel('Hesap'),
-              _Card(
-                children: [
-                  _Tile(
-                    icon: Icons.edit_outlined,
-                    iconColor: AppTheme.secondaryBlue,
-                    title: 'Profili Düzenle',
-                    onTap: () => context.push('/profile/edit'),
-                  ),
-                  const _Divider(),
-                  _Tile(
-                    icon: Icons.logout_rounded,
-                    iconColor: AppTheme.primaryStatusRed,
-                    title: 'Çıkış Yap',
-                    titleColor: AppTheme.primaryStatusRed,
-                    showArrow: false,
-                    onTap: () => _confirmSignOut(context, ref),
-                  ),
-                ],
-              ).animate().fadeIn(delay: 220.ms, duration: 350.ms).slideY(begin: 0.06, end: 0),
-            ],
+            // ── Hesap Bölümü ──────────────────────────────────────────────
+            _SectionLabel('Hesap'),
+            _Card(
+              children: [
+                _Tile(
+                  icon: Icons.edit_outlined,
+                  iconColor: AppTheme.secondaryBlue,
+                  title: 'Profili Düzenle',
+                  onTap: () => context.push('/profile/edit'),
+                ),
+                const _Divider(),
+                _Tile(
+                  icon: Icons.logout_rounded,
+                  iconColor: AppTheme.primaryStatusRed,
+                  title: 'Çıkış Yap',
+                  titleColor: AppTheme.primaryStatusRed,
+                  showArrow: false,
+                  onTap: () => _confirmSignOut(context, ref),
+                ),
+              ],
+            ).animate().fadeIn(delay: 220.ms, duration: 350.ms).slideY(begin: 0.06, end: 0),
           ],
         ),
       ),

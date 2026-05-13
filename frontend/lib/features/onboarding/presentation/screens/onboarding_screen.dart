@@ -3,9 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/constants/app_keys.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../settings/presentation/providers/settings_provider.dart';
 
 class _OnboardingPage {
   final IconData icon;
@@ -117,12 +115,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _completeAndNavigate() async {
-    // main.dart'ta override edilmiş provider üzerinden yazılır;
-    // SharedPreferences.getInstance() bunu bypass ederdi.
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool(AppKeys.onboardingCompleted, true);
     if (!mounted) return;
-    context.go('/login');
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/welcome');
+    }
   }
 
   @override
