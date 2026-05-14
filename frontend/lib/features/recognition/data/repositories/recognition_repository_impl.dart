@@ -128,7 +128,20 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     final wasStreaming = _isStreaming;
     _camera.stopStream();
     _resetBuffer();
-    await _camera.switchCamera();
+    try {
+      await _camera.switchCamera();
+    } catch (e) {
+      if (kDebugMode) debugPrint('❌ Kamera geçişi başarısız: $e');
+      // Eski kamerayı geri aç
+      try {
+        await _camera.initialize();
+      } catch (_) {}
+      if (wasStreaming && _camera.currentCamera != null) {
+        _isStreaming = true;
+        _camera.startStream(_onFrame);
+      }
+      return;
+    }
     if (wasStreaming) {
       _isStreaming = true;
       _camera.startStream(_onFrame);
