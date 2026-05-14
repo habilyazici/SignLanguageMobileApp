@@ -86,37 +86,22 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ).animate().fadeIn(delay: 350.ms, duration: 500.ms),
 
-                const SizedBox(height: 20),
-
-                // ── Özellik etiketleri ────────────────────────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _FeaturePill(
-                      icon: Icons.bolt_rounded,
-                      label: 'Gerçek Zamanlı',
-                    ),
-                    const SizedBox(width: 8),
-                    _FeaturePill(
-                      icon: Icons.sign_language_rounded,
-                      label: '226 İşaret',
-                    ),
-                    const SizedBox(width: 8),
-                    _FeaturePill(
-                      icon: Icons.translate_rounded,
-                      label: 'Türkçe',
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
-
                 const Spacer(flex: 3),
 
-                // ── Giriş Yap / Kayıt Ol — birincil ──────────────────────
+                // ── Hemen Çevir — birincil ────────────────────────────────
                 SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: FilledButton(
-                    onPressed: () => context.go('/login'),
+                  child: FilledButton.icon(
+                    onPressed: () => context.go('/guest-camera'),
+                    icon: const Icon(Icons.camera_alt_rounded, size: 20),
+                    label: Text(
+                      'Çeviri Yap',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppTheme.primaryBlue,
@@ -124,13 +109,6 @@ class WelcomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       elevation: 0,
-                    ),
-                    child: Text(
-                      'Giriş Yap / Kayıt Ol',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
                     ),
                   ),
                 )
@@ -140,20 +118,12 @@ class WelcomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // ── Çeviriyi Hemen Kullan — ikincil (ghost) ───────────────
+                // ── Giriş Yap / Kayıt Ol — ikincil (ghost) ───────────────
                 SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.go('/guest-camera'),
-                    icon: const Icon(Icons.camera_alt_rounded, size: 20),
-                    label: Text(
-                      'Hesapsız Dene',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  child: OutlinedButton(
+                    onPressed: () => context.go('/login'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
                       side: BorderSide(
@@ -162,6 +132,13 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      'Giriş Yap / Kayıt Ol',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -189,40 +166,6 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ── Küçük özellik etiketi ─────────────────────────────────────────────────────
-class _FeaturePill extends StatelessWidget {
-  const _FeaturePill({required this.icon, required this.label});
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: Colors.white.withValues(alpha: 0.80)),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.80),
-            ),
-          ),
-        ],
       ),
     );
   }

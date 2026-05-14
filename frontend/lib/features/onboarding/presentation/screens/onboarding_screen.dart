@@ -123,8 +123,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         duration: const Duration(milliseconds: 450),
         curve: Curves.easeInOut,
         color: isDark
-            ? Color.lerp(AppTheme.darkBg, pageColor, 0.07)!
-            : Color.lerp(AppTheme.softGrey, pageColor, 0.07)!,
+            ? Color.lerp(AppTheme.darkBg, AppTheme.primaryBlue, 0.07)!
+            : Color.lerp(AppTheme.softGrey, AppTheme.primaryBlue, 0.07)!,
         child: SafeArea(
           child: Column(
             children: [

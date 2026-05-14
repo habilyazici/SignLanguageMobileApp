@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../dictionary/presentation/providers/dictionary_provider.dart';
 import '../providers/home_provider.dart';
 
 String _greeting() {
@@ -30,10 +29,6 @@ class HomeScreen extends ConsumerWidget {
     final dailyWord = ref.watch(dailyWordProvider);
     final fullName =
         auth.displayName ?? auth.email?.split('@').firstOrNull ?? 'Kullanıcı';
-    final dictCount = ref.watch(
-      dictionaryProvider.select((s) => s.allSigns.length),
-    );
-
     final greeting = _greeting();
     final name = _capitalize(fullName.trim().split(' ').first);
 
@@ -124,9 +119,7 @@ class HomeScreen extends ConsumerWidget {
 
               _SecondaryQuickCard(
                     title: 'İşaret Sözlüğü',
-                    subtitle: dictCount > 0
-                        ? '$dictCount farklı işareti ve yapılışını keşfet'
-                        : 'Tüm işaretlerin listesine göz at ve öğren',
+                    subtitle: '1500+ farklı işareti ve yapılışını keşfet',
                     icon: Icons.menu_book_rounded,
                     color: const Color(0xFF7C4DFF),
                     onTap: () => context.go('/dictionary'),
@@ -137,8 +130,28 @@ class HomeScreen extends ConsumerWidget {
 
               const SizedBox(height: 20),
 
-              // ── İlerleme Bannerı ──────────────────────────────────────
-              const _ProgressBanner().animate().fadeIn(delay: 340.ms, duration: 350.ms),
+              // ── Hızlı Erişim ──────────────────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: _SmallTile(
+                      icon: Icons.history_rounded,
+                      label: 'Geçmiş',
+                      color: AppTheme.primaryStatusGreen,
+                      onTap: () => context.go('/history'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _SmallTile(
+                      icon: Icons.bookmark_rounded,
+                      label: 'Favoriler',
+                      color: AppTheme.statusPurple,
+                      onTap: () => context.push('/bookmarks'),
+                    ),
+                  ),
+                ],
+              ).animate().fadeIn(delay: 340.ms, duration: 350.ms).slideY(begin: 0.08, end: 0),
 
               const SizedBox(height: 120),
             ],
@@ -176,30 +189,6 @@ class _DailyWordCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              Positioned(
-                right: -24,
-                top: -24,
-                child: Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.07),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 20,
-                bottom: -30,
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.05),
-                  ),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -274,55 +263,64 @@ class _DailyWordCard extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ProgressBanner extends StatelessWidget {
-  const _ProgressBanner();
+class _SmallTile extends StatelessWidget {
+  const _SmallTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryStatusGreen.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.primaryStatusGreen.withValues(alpha: 0.25),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppTheme.borderColor),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryStatusGreen.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 18),
             ),
-            child: const Icon(
-              Icons.emoji_events_rounded,
-              color: AppTheme.primaryStatusGreen,
-              size: 22,
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Harika Gidiyorsun!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                Text(
-                  'Bugünkü hedeflerini tamamla.',
-                  style: TextStyle(fontSize: 12, color: AppTheme.midGrey),
-                ),
-              ],
+            const Spacer(),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: color.withValues(alpha: 0.5),
+              size: 18,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -367,35 +365,7 @@ class _PrimaryQuickCard extends StatelessWidget {
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.06),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 50,
-                bottom: -35,
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.04),
-                  ),
-                ),
-              ),
-              Row(
+        child: Row(
                 children: [
                   Expanded(
                     child: Column(
@@ -483,9 +453,6 @@ class _PrimaryQuickCard extends StatelessWidget {
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
       ),
     );
   }

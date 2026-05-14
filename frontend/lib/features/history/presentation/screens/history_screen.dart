@@ -216,20 +216,20 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   void _confirmClearAll(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         title: const Text('Geçmişi Temizle'),
         content:
             const Text('Tüm geçmiş silinecek. Bu işlem geri alınamaz.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(dialogCtx).pop(),
             child: const Text('İptal'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.primaryStatusRed),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.of(dialogCtx).pop();
               ref.read(historyProvider.notifier).clearAll();
             },
             child: const Text('Temizle'),

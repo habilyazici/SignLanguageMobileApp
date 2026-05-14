@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../../core/constants/api_constants.dart';
 import '../../../../../core/providers/translation_tab_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../features/settings/presentation/providers/settings_provider.dart';
@@ -27,6 +28,8 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   bool _sttInitializing = false;
   bool _listening = false;
   bool _continuous = true; // sürekli dinleme modu
+  int _sttFailCount = 0; // sonsuz retry döngüsünü önler
+  static const _maxSttFails = 5;
   Timer? _debounce;
   Timer? _restartDelay;
 
@@ -59,8 +62,10 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
         onError: (error) {
           if (!mounted) return;
           setState(() => _listening = false);
-          // Hata sonrası sürekli modda yeniden başlat
-          if (_continuous && ref.read(settingsProvider).sttEnabled) {
+          // Hata sonrası sürekli modda yeniden başlat (max 5 ardışık hata)
+          _sttFailCount++;
+          if (_continuous && ref.read(settingsProvider).sttEnabled &&
+              _sttFailCount < _maxSttFails) {
             _restartDelay?.cancel();
             _restartDelay = Timer(const Duration(milliseconds: 800), _startListening);
           }
@@ -91,6 +96,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
         }
         if (!mounted) return;
         setState(() => _listening = false);
+        _sttFailCount = 0; // başarılı tanıma — hata sayacını sıfırla
         // Sürekli modda: 600ms bekle, yeniden dinle
         if (_continuous && ref.read(settingsProvider).sttEnabled) {
           _restartDelay?.cancel();
@@ -106,7 +112,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
     // listen() false döndüyse (başlatılamadı) durumu düzelt
     if (!started && mounted) {
       setState(() => _listening = false);
-      if (_continuous && ref.read(settingsProvider).sttEnabled) {
+      _sttFailCount++;
+      if (_continuous && ref.read(settingsProvider).sttEnabled &&
+          _sttFailCount < _maxSttFails) {
         _restartDelay?.cancel();
         _restartDelay = Timer(const Duration(seconds: 1), _startListening);
       }
@@ -121,6 +129,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
       if (mounted) setState(() => _listening = false);
     } else {
       _continuous = true;
+      _sttFailCount = 0;
       _startListening();
     }
   }
@@ -377,7 +386,10 @@ class _VideoStageState extends State<_VideoStage> {
 
   Future<void> _initCtrl(String url) async {
     _ended = false;
-    final ctrl = VideoPlayerController.networkUrl(Uri.parse(url));
+    final ctrl = VideoPlayerController.networkUrl(
+      Uri.parse(url),
+      httpHeaders: kNgrokHeaders,
+    );
     _ctrl = ctrl;
     await ctrl.initialize();
     if (!mounted || _ctrl != ctrl) {
