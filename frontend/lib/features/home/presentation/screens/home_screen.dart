@@ -356,12 +356,12 @@ class _PrimaryQuickCard extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF1E1B4B), Color(0xFF4338CA)],
+            colors: [AppTheme.cardIndigoDark, AppTheme.cardIndigoBlue],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF4338CA).withValues(alpha: 0.35),
+              color: AppTheme.cardIndigoBlue.withValues(alpha: 0.35),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -456,14 +456,14 @@ class _PrimaryQuickCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF4338CA),
+                                  color: AppTheme.cardIndigoBlue,
                                 ),
                               ),
                               SizedBox(width: 4),
                               Icon(
                                 Icons.arrow_forward_rounded,
                                 size: 14,
-                                color: Color(0xFF4338CA),
+                                color: AppTheme.cardIndigoBlue,
                               ),
                             ],
                           ),

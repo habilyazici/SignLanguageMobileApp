@@ -20,3 +20,6 @@ const kApiTimeout = Duration(seconds: 15);
 
 /// Büyük veri yüklemeleri (manifest, sayfalı sözlük listesi) için timeout.
 const kDataTimeout = Duration(seconds: 20);
+
+/// Uygulama içi geri bildirim / destek e-postası.
+const kSupportEmail = 'habilyazici00@gmail.com';

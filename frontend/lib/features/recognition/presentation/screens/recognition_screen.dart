@@ -305,18 +305,18 @@ class _CameraLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!isReady || cameraController == null) {
       return Shimmer.fromColors(
-        baseColor: const Color(0xFF1A1A1A),
-        highlightColor: const Color(0xFF2E2E2E),
-        child: Container(color: const Color(0xFF1A1A1A)),
+        baseColor: AppTheme.cameraShimmerBase,
+        highlightColor: AppTheme.cameraShimmerHighlight,
+        child: Container(color: AppTheme.cameraShimmerBase),
       );
     }
     final controller = cameraController!;
     final previewSize = controller.value.previewSize;
     if (previewSize == null) {
       return Shimmer.fromColors(
-        baseColor: const Color(0xFF1A1A1A),
-        highlightColor: const Color(0xFF2E2E2E),
-        child: Container(color: const Color(0xFF1A1A1A)),
+        baseColor: AppTheme.cameraShimmerBase,
+        highlightColor: AppTheme.cameraShimmerHighlight,
+        child: Container(color: AppTheme.cameraShimmerBase),
       );
     }
     return GestureDetector(

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -179,7 +180,7 @@ class ProfileScreen extends ConsumerWidget {
                   title: 'Bize Ulaşın',
                   onTap: () async {
                     final uri = Uri.parse(
-                      'mailto:habilyazici00@gmail.com?subject=Hear%20Me%20Out%20-%20Geri%20Bildirim',
+                      'mailto:$kSupportEmail?subject=Hear%20Me%20Out%20-%20Geri%20Bildirim',
                     );
                     final launched = await launchUrl(uri);
                     if (!launched && context.mounted) {

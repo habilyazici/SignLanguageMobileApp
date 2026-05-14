@@ -31,6 +31,16 @@ class AppTheme {
   static const Color darkSurface = Color(0xFF424654);
   static const Color gradientDeep = Color(0xFF0046AF);
 
+  // ── Kart Renkleri ──────────────────────────────────────────────────────────
+  // Ana ekrandaki "Başla" kartı için indigo gradient.
+  static const Color cardIndigoDark  = Color(0xFF1E1B4B);
+  static const Color cardIndigoBlue  = Color(0xFF4338CA);
+
+  // ── Kamera Shimmer ────────────────────────────────────────────────────────
+  // Kamera yüklenirken gösterilen placeholder renkleri.
+  static const Color cameraShimmerBase      = Color(0xFF1A1A1A);
+  static const Color cameraShimmerHighlight = Color(0xFF2E2E2E);
+
   // ── Gradyanlar ─────────────────────────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,

@@ -307,6 +307,7 @@ class _VideoHeaderState extends ConsumerState<_VideoHeader> {
       ctrl.play();
     }
     setState(() => _showPlayIcon = true);
+    // ignore: unawaited_futures
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) setState(() => _showPlayIcon = false);
     });
