@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -12,8 +13,39 @@ final cameraActiveProvider =
     NotifierProvider<CameraActiveNotifier, bool>(CameraActiveNotifier.new);
 
 class CameraActiveNotifier extends Notifier<bool> {
+  /// Kamera donanımı tamamen serbest bırakıldığında tamamlanan Completer.
+  /// STT gibi ses donanımı kullanan modüller bunu await edebilir.
+  Completer<void>? _releaseCompleter;
+
   @override
   bool build() => false;
 
-  void setActive({required bool active}) => state = active;
+  void setActive({required bool active}) {
+    if (!active && state) {
+      // Kamera kapatılıyor — release sinyali hazırla
+      _releaseCompleter = Completer<void>();
+    }
+    state = active;
+  }
+
+  /// Kamera donanımı tamamen serbest kaldığında çağrılır.
+  /// (RecognitionNotifier → pauseCamera() tamamlandıktan sonra)
+  void markReleased() {
+    if (_releaseCompleter != null && !_releaseCompleter!.isCompleted) {
+      _releaseCompleter!.complete();
+    }
+  }
+
+  /// Kamera donanımının serbest kalmasını bekler.
+  /// Kamera zaten kapalıysa anında döner.
+  Future<void> waitForRelease() async {
+    if (!state && (_releaseCompleter == null || _releaseCompleter!.isCompleted)) {
+      return; // Zaten kapalı
+    }
+    // Max 3 saniye bekle — timeout ile sonsuz askıda kalmayı önle
+    await _releaseCompleter?.future.timeout(
+      const Duration(seconds: 3),
+      onTimeout: () {},
+    );
+  }
 }

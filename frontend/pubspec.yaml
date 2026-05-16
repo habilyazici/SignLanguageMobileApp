@@ -62,6 +62,7 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_padding: 16
   remove_alpha_ios: true
 
 # following page: https://dart.dev/tools/pub/pubspec

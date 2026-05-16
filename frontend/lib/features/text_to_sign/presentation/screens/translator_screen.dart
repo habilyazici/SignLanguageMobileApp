@@ -8,6 +8,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../../core/constants/api_constants.dart';
+import '../../../../../core/providers/camera_lifecycle_provider.dart';
 import '../../../../../core/providers/translation_tab_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../features/settings/presentation/providers/settings_provider.dart';
@@ -36,33 +37,30 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
   @override
   void initState() {
     super.initState();
-    // İlk frame render olduktan sonra başlat — Android permission dialog'u
-    // widget tree hazır olmadan açılırsa initialize() false döner.
     WidgetsBinding.instance.addPostFrameCallback((_) => _initStt());
   }
 
   Future<void> _initStt() async {
     if (_sttInitializing || _sttReady) return;
 
-    // TabBarView her iki çocuğu önceden inşa eder; bu screen tab 0 aktifken
-    // de initState'e girer. Kamera aktifken mikrofon init edilirse iOS'ta
-    // abort crash olur. Kullanıcı gerçekten tab 1'e geçene kadar bekle.
+    // TabBarView her iki çocuğu önceden inşa eder; tab 0 aktifken
+    // STT init edilmemeli.
     if (ref.read(translationTabProvider) != 1) return;
 
     _sttInitializing = true;
     try {
-      // iOS: kamera release() tamamlanana kadar mikrofon init edilmemeli.
-      // _syncCamera(setActive:false) async olduğundan, donanımın serbest
-      // kalması için ek bekleme gerekir.
+      // iOS: kamera ve mikrofon aynı AVAudioSession'ı kullanır.
+      // Kamera donanımı tamamen serbest kalana kadar STT init edilmemeli.
+      // waitForRelease(), pauseCamera() + _camera.release() tamamlandığında
+      // döner — sabit delay yerine kesin sinyal.
       if (Platform.isIOS) {
-        await Future.delayed(const Duration(milliseconds: 500));
+        await ref.read(cameraActiveProvider.notifier).waitForRelease();
         if (!mounted) return;
       }
       final ready = await _stt.initialize(
         onError: (error) {
           if (!mounted) return;
           setState(() => _listening = false);
-          // Hata sonrası sürekli modda yeniden başlat (max 5 ardışık hata)
           _sttFailCount++;
           if (_continuous && ref.read(settingsProvider).sttEnabled &&
               _sttFailCount < _maxSttFails) {
@@ -128,6 +126,11 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
       await _stt.stop();
       if (mounted) setState(() => _listening = false);
     } else {
+      // İlk basışta lazy init — STT henüz başlatılmadıysa başlat
+      if (!_sttReady) {
+        await _initStt();
+        if (!_sttReady || !mounted) return;
+      }
       _continuous = true;
       _sttFailCount = 0;
       _startListening();
@@ -175,8 +178,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
     final ts = ref.watch(textToSignProvider);
     final notifier = ref.read(textToSignProvider.notifier);
 
-    // Tab 0'dayken pre-build nedeniyle atlanan init'i, kullanıcı tab 1'e
-    // geçtiğinde tetikle.
+    // Tab 1'e geçildiğinde STT'yi otomatik başlat.
     ref.listen(translationTabProvider, (_, next) {
       if (next == 1 && !_sttReady) _initStt();
     });

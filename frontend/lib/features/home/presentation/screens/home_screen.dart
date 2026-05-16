@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/turkish_normalizer.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../dictionary/presentation/providers/dictionary_provider.dart';
 import '../../../profile/presentation/providers/avatar_provider.dart';
@@ -32,9 +33,11 @@ class HomeScreen extends ConsumerWidget {
     final dailyWord = ref.watch(dailyWordProvider);
     // Look up the real DB id by label — DailyWord.id is a TFLite ClassId (0-225),
     // not the PostgreSQL primary key that DictionaryDetailScreen expects.
+    // labels.csv uses lowercase ("abla"), backend may use "Abla" or "Anne, Mama (Açıklama)".
     final dictSigns = ref.watch(dictionaryProvider.select((s) => s.allSigns));
+    final dwLower = TurkishNormalizer.trLower(dailyWord.word);
     final dictEntry = dictSigns
-        .where((e) => e.label.toLowerCase() == dailyWord.word.toLowerCase())
+        .where((e) => TurkishNormalizer.trLower(e.label).contains(dwLower))
         .firstOrNull;
     final fullName =
         auth.displayName ?? auth.email?.split('@').firstOrNull ?? 'Kullanıcı';

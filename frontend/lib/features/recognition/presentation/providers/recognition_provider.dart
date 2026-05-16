@@ -96,11 +96,13 @@ class RecognitionNotifier extends Notifier<RecognitionState> {
     });
 
     // Kamera aktif sinyali (navigasyon katmanından)
-    ref.listen<bool>(cameraActiveProvider, (_, isActive) {
+    ref.listen<bool>(cameraActiveProvider, (_, isActive) async {
       if (isActive) {
         _repo.resumeCamera();
       } else {
-        _repo.pauseCamera();
+        await _repo.pauseCamera();
+        // Donanım tamamen serbest — STT güvenle başlatılabilir
+        ref.read(cameraActiveProvider.notifier).markReleased();
       }
     });
 

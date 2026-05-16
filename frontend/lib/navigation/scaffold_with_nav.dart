@@ -38,7 +38,7 @@ class ScaffoldWithNav extends ConsumerWidget {
       final wasActive = ref.read(cameraActiveProvider);
       ref.read(cameraActiveProvider.notifier).setActive(active: false);
       if (wasActive) {
-        await Future.delayed(const Duration(milliseconds: 300));
+        await ref.read(cameraActiveProvider.notifier).waitForRelease();
         if (!context.mounted) return;
       }
       context.go(_tabRoutes[index]);
@@ -229,7 +229,7 @@ class _SwipeNavWrapperState extends ConsumerState<_SwipeNavWrapper> {
       final wasActive = ref.read(cameraActiveProvider);
       if (wasActive) {
         ref.read(cameraActiveProvider.notifier).setActive(active: false);
-        await Future.delayed(const Duration(milliseconds: 300));
+        await ref.read(cameraActiveProvider.notifier).waitForRelease();
         if (!mounted) return;
       }
     }
