@@ -260,7 +260,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   // El landmark koordinatları (0..83) üzerinden hesaplanır.
   // Pose (84..105) kasıtlı hariç tutulur — vücut az hareket eder.
   double _computeMotion(List<double> current) {
-    if (_prevFrame == null) return double.infinity;
+    if (_prevFrame == null) return 0.0; // İlk kare — hareket yok
     double sum = 0.0;
     for (int i = 0; i < 84; i++) {
       sum += (current[i] - _prevFrame![i]).abs();

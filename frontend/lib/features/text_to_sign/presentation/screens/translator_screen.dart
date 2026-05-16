@@ -198,7 +198,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // ── Video Sahnesi — kamera kartıyla birebir aynı şablon ───────
               Expanded(
@@ -219,7 +219,7 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // ── Alt Panel — ResultPanel ile birebir aynı şablon ──────────
               Expanded(
@@ -622,29 +622,18 @@ class _StageNotFound extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.help_outline_rounded,
-            size: 48,
-            color: Colors.white38,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Text(
+          word,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
           ),
-          const SizedBox(height: 12),
-          Text(
-            '"$word"',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'için video bulunamadı',
-            style: TextStyle(color: Colors.white38, fontSize: 13),
-          ),
-        ],
+        ),
       ),
     );
   }
