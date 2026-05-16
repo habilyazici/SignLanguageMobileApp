@@ -3,10 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/screens/auth_widgets.dart';
+import '../providers/avatar_provider.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({super.key});
@@ -44,6 +46,73 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   bool get _changingPassword => _newPassCtrl.text.isNotEmpty;
+
+  Future<void> _pickAvatar() async {
+    final result = await showModalBottomSheet<String?>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        final hasAvatar = ref.read(avatarProvider) != null;
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: const Text('Galeriden Seç'),
+                onTap: () => Navigator.pop(context, 'gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded),
+                title: const Text('Fotoğraf Çek'),
+                onTap: () => Navigator.pop(context, 'camera'),
+              ),
+              if (hasAvatar)
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_rounded,
+                    color: AppTheme.primaryStatusRed,
+                  ),
+                  title: const Text(
+                    'Fotoğrafı Kaldır',
+                    style: TextStyle(color: AppTheme.primaryStatusRed),
+                  ),
+                  onTap: () => Navigator.pop(context, 'remove'),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (result == null || !mounted) return;
+
+    if (result == 'remove') {
+      ref.read(authProvider.notifier).clearAvatarLocally();
+      return;
+    }
+
+    final source =
+        result == 'gallery' ? ImageSource.gallery : ImageSource.camera;
+    final img = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+    if (img == null || !mounted) return;
+    final bytes = await img.readAsBytes();
+    final error = await ref.read(authProvider.notifier).uploadAvatar(bytes);
+    if (error != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppTheme.primaryStatusRed,
+        ),
+      );
+    }
+  }
 
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -91,6 +160,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final avatarUrl = ref.watch(avatarProvider);
 
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkBg : AppTheme.softGrey,
@@ -125,7 +195,83 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   ),
                 ).animate().fadeIn(delay: 60.ms).slideY(begin: -0.1),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
+
+                // ── Profil Fotoğrafı ───────────────────────────────────────
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickAvatar,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isDark
+                                ? Colors.white12
+                                : AppTheme.primaryBlue.withValues(alpha: 0.08),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white12
+                                  : AppTheme.borderColor,
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: avatarUrl != null
+                                ? Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    width: 96,
+                                    height: 96,
+                                    headers: const {'ngrok-skip-browser-warning': 'true'},
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.person_rounded,
+                                      size: 44,
+                                      color: isDark ? Colors.white38 : AppTheme.midGrey,
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.person_rounded,
+                                    size: 44,
+                                    color: isDark
+                                        ? Colors.white38
+                                        : AppTheme.midGrey,
+                                  ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 2,
+                          right: 2,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color:
+                                    isDark ? AppTheme.darkBg : Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt_rounded,
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 80.ms).scale(
+                      begin: const Offset(0.9, 0.9),
+                      curve: Curves.easeOut,
+                    ),
+
+                const SizedBox(height: 28),
 
                 // ── İsim ──────────────────────────────────────────────────
                 AuthFieldLabel('İsim', isDark),

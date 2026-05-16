@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/auth_repository_impl.dart';
@@ -99,6 +101,18 @@ class AuthNotifier extends Notifier<AuthState> {
       if (!restored.isAuthenticated) state = const AuthState();
     }
     return result.error;
+  }
+
+  Future<String?> uploadAvatar(Uint8List bytes) async {
+    final result = await ref.read(_authRepositoryProvider).uploadAvatar(bytes);
+    if (result.success && result.avatarUrl != null) {
+      state = state.copyWith(avatarUrl: result.avatarUrl);
+    }
+    return result.error;
+  }
+
+  void clearAvatarLocally() {
+    state = state.copyWith(avatarUrl: null);
   }
 
   Future<void> forgotPassword({required String email}) =>

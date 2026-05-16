@@ -31,8 +31,8 @@ class WelcomeScreen extends StatelessWidget {
 
                 // ── Logo ──────────────────────────────────────────────────
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 160,
+                  height: 160,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withValues(alpha: 0.10),
@@ -44,7 +44,7 @@ class WelcomeScreen extends StatelessWidget {
                   child: Center(
                     child: Image.asset(
                       'assets/images/logo.png',
-                      height: 44,
+                      height: 88,
                       color: Colors.white,
                       colorBlendMode: BlendMode.srcIn,
                     ),

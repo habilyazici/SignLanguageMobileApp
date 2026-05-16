@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../dictionary/presentation/providers/dictionary_provider.dart';
+import '../../../profile/presentation/providers/avatar_provider.dart';
 import '../providers/home_provider.dart';
 
 String _greeting() {
@@ -26,7 +28,14 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
+    final avatarUrl = ref.watch(avatarProvider);
     final dailyWord = ref.watch(dailyWordProvider);
+    // Look up the real DB id by label — DailyWord.id is a TFLite ClassId (0-225),
+    // not the PostgreSQL primary key that DictionaryDetailScreen expects.
+    final dictSigns = ref.watch(dictionaryProvider.select((s) => s.allSigns));
+    final dictEntry = dictSigns
+        .where((e) => e.label.toLowerCase() == dailyWord.word.toLowerCase())
+        .firstOrNull;
     final fullName =
         auth.displayName ?? auth.email?.split('@').firstOrNull ?? 'Kullanıcı';
     final greeting = _greeting();
@@ -73,7 +82,6 @@ class HomeScreen extends ConsumerWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Colors.white,
                         shape: BoxShape.circle,
                         border: Border.all(color: AppTheme.borderColor),
                         boxShadow: [
@@ -84,10 +92,31 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.person_outline_rounded,
-                        size: 18,
-                        color: AppTheme.midGrey,
+                      child: ClipOval(
+                        child: avatarUrl != null
+                            ? Image.network(
+                                avatarUrl,
+                                fit: BoxFit.cover,
+                                width: 36,
+                                height: 36,
+                                headers: const {'ngrok-skip-browser-warning': 'true'},
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: Colors.white,
+                                  child: const Icon(
+                                    Icons.person_outline_rounded,
+                                    size: 18,
+                                    color: AppTheme.midGrey,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                color: Colors.white,
+                                child: const Icon(
+                                  Icons.person_outline_rounded,
+                                  size: 18,
+                                  color: AppTheme.midGrey,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -97,7 +126,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // ── Günün İşareti ──────────────────────────────────────────
-              _DailyWordCard(wordId: dailyWord.id, word: dailyWord.word)
+              _DailyWordCard(navId: dictEntry?.id, word: dailyWord.word)
                   .animate()
                   .fadeIn(delay: 160.ms, duration: 400.ms)
                   .slideY(begin: 0.08, end: 0),
@@ -131,26 +160,11 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 20),
 
               // ── Hızlı Erişim ──────────────────────────────────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: _SmallTile(
-                      icon: Icons.history_rounded,
-                      label: 'Geçmiş',
-                      color: AppTheme.primaryStatusGreen,
-                      onTap: () => context.go('/history'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _SmallTile(
-                      icon: Icons.bookmark_rounded,
-                      label: 'Favoriler',
-                      color: AppTheme.statusPurple,
-                      onTap: () => context.push('/bookmarks'),
-                    ),
-                  ),
-                ],
+              _SmallTile(
+                icon: Icons.history_rounded,
+                label: 'Geçmiş',
+                color: AppTheme.primaryStatusGreen,
+                onTap: () => context.go('/history'),
               ).animate().fadeIn(delay: 340.ms, duration: 350.ms).slideY(begin: 0.08, end: 0),
 
               const SizedBox(height: 120),
@@ -165,14 +179,14 @@ class HomeScreen extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DailyWordCard extends StatelessWidget {
-  const _DailyWordCard({required this.wordId, required this.word});
-  final int wordId;
+  const _DailyWordCard({required this.navId, required this.word});
+  final int? navId; // null while dictionary is still loading
   final String word;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/dictionary/$wordId'),
+      onTap: navId != null ? () => context.push('/dictionary/$navId') : null,
       child: Container(
         decoration: BoxDecoration(
           gradient: AppTheme.primaryGradient,

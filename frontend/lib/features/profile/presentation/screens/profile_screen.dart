@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../providers/avatar_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -16,6 +17,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
+    final avatarUrl = ref.watch(avatarProvider);
     final displayName = auth.displayName ?? auth.email?.split('@').first ?? 'Kullanıcı';
     final email = auth.email;
     final initials = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'K';
@@ -82,77 +84,134 @@ class ProfileScreen extends ConsumerWidget {
 
             const SizedBox(height: 12),
 
-            // ── Profil Kartı ──────────────────────────────────────────────
+            // ── Profil Kartı (tıklanabilir → /profile/edit) ───────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppTheme.primaryBlue, AppTheme.primaryBlueEnd],
+              child: GestureDetector(
+                onTap: () => context.push('/profile/edit'),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppTheme.primaryBlue, AppTheme.primaryBlueEnd],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.25),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryBlue.withValues(alpha: 0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          initials,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    children: [
+                      // Avatar — fotoğraf varsa göster, yoksa baş harf
+                      Stack(
                         children: [
-                          Text(
-                            displayName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: const BoxDecoration(shape: BoxShape.circle),
+                            child: ClipOval(
+                              child: avatarUrl != null
+                                  ? Image.network(
+                                      avatarUrl,
+                                      fit: BoxFit.cover,
+                                      width: 64,
+                                      height: 64,
+                                      headers: const {'ngrok-skip-browser-warning': 'true'},
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        child: Center(
+                                          child: Text(
+                                            initials,
+                                            style: const TextStyle(
+                                              fontSize: 26,
+                                              fontWeight: FontWeight.w800,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      child: Center(
+                                        child: Text(
+                                          initials,
+                                          style: const TextStyle(
+                                            fontSize: 26,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          if (email != null) ...[
-                            const SizedBox(height: 2),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppTheme.primaryBlue,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.edit_rounded,
+                                size: 12,
+                                color: AppTheme.primaryBlue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              email,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.8),
+                              displayName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            if (email != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                email,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.white54,
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
@@ -215,9 +274,9 @@ class ProfileScreen extends ConsumerWidget {
             _Card(
               children: [
                 _Tile(
-                  icon: Icons.edit_outlined,
+                  icon: Icons.lock_outline_rounded,
                   iconColor: AppTheme.secondaryBlue,
-                  title: 'Profili Düzenle',
+                  title: 'Şifremi Değiştir',
                   onTap: () => context.push('/profile/edit'),
                 ),
                 const _Divider(),

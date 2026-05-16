@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
+import '../core/providers/camera_lifecycle_provider.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
 import '../features/welcome/presentation/screens/welcome_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
@@ -39,14 +40,19 @@ class _RouterNotifier extends ChangeNotifier {
 }
 
 // Misafir için tam ekran kamera — alt menü yok, geri → welcome
-class _GuestCameraScreen extends StatelessWidget {
+class _GuestCameraScreen extends ConsumerWidget {
   const _GuestCameraScreen();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (_, __) => context.go('/welcome'),
+      onPopInvokedWithResult: (_, __) {
+        // Geri tuşunda kamerayı durdur; yoksa keepAlive provider arka planda
+        // kamerayı açık tutar (iOS'ta yeşil nokta, Android'de gereksiz kaynak kullanımı).
+        ref.read(cameraActiveProvider.notifier).setActive(active: false);
+        context.go('/welcome');
+      },
       child: const TranslationScreen(initialTab: 0),
     );
   }

@@ -51,7 +51,7 @@ const _pages = [
   ),
   _OnboardingPage(
     icon: Icons.menu_book_rounded,
-    iconColor: AppTheme.statusPurple,
+    iconColor: AppTheme.primaryBlue,
     title: 'Sözlük & Favoriler',
     subtitle: '1500+ işaret · İnternet Gerekmez',
     body:

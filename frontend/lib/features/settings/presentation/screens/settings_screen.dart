@@ -304,18 +304,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onChanged: (_) => n.toggleZeroDataMode(),
                   ),
                   SettingsDivider(isDark: isDark),
-                  SettingsSwitchRow(
-                    isDark: isDark,
-                    icon: Icons.cloud_off_rounded,
-                    iconColor: Colors.blueGrey,
-                    title: 'Bulut Senkronizasyonu',
-                    subtitle: 'Şu an devre dışı (Yerel çalışır)',
-                    value: settings.cloudSyncEnabled,
-                    helpText:
-                        'Verilerinizin farklı cihazlarda senkronize edilmesini sağlar.',
-                    onChanged: (_) => n.toggleCloudSync(),
-                  ),
-                  SettingsDivider(isDark: isDark),
                   SettingsActionRow(
                     isDark: isDark,
                     icon: Icons.delete_forever_rounded,
