@@ -110,37 +110,46 @@ class _ModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final containerBg = isDark ? AppTheme.darkSurface : Colors.black.withValues(alpha: 0.05);
+    final borderColor = isDark ? Colors.white10 : Colors.transparent;
+
     return Padding(
-      // Yatay padding'i artırarak (32) alt kutudan daha dar ve ortalı yaptık
-      padding: const EdgeInsets.fromLTRB(32, 12, 32, 6),
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (context, child) {
-          final index = controller.index;
-          return Row(
-            children: [
-              Expanded(
-                child: _ModeButton(
-                  label: 'İşaretten Çeviri',
-                  sublabel: 'Kamera ile tanıma',
-                  isSelected: index == 0,
-                  alignment: CrossAxisAlignment.end, // Yazılar sağa yaslı
-                  onTap: () => controller.animateTo(0),
+      // Genişliği biraz daha azaltmak için dış padding'i 64'e çıkardık
+      padding: const EdgeInsets.fromLTRB(64, 12, 64, 6),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: containerBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor),
+        ),
+        child: AnimatedBuilder(
+          animation: controller,
+          builder: (context, child) {
+            final index = controller.index;
+            return Row(
+              children: [
+                Expanded(
+                  child: _ModeButton(
+                    label: 'İşaretten Çeviri',
+                    isSelected: index == 0,
+                    isLeft: true,
+                    onTap: () => controller.animateTo(0),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ModeButton(
-                  label: 'Sesten Çeviri',
-                  sublabel: 'Ses veya metin',
-                  isSelected: index == 1,
-                  alignment: CrossAxisAlignment.start, // Yazılar sola yaslı
-                  onTap: () => controller.animateTo(1),
+                Expanded(
+                  child: _ModeButton(
+                    label: 'Sesten Çeviri',
+                    isSelected: index == 1,
+                    isLeft: false,
+                    onTap: () => controller.animateTo(1),
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -149,90 +158,58 @@ class _ModeSelector extends StatelessWidget {
 class _ModeButton extends StatelessWidget {
   const _ModeButton({
     required this.label,
-    required this.sublabel,
     required this.isSelected,
+    required this.isLeft,
     required this.onTap,
-    required this.alignment,
   });
 
   final String label;
-  final String sublabel;
   final bool isSelected;
+  final bool isLeft;
   final VoidCallback onTap;
-  final CrossAxisAlignment alignment;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inactiveBg = isDark ? AppTheme.darkSurface : Colors.white;
-    final inactiveBorder = isDark ? Colors.white12 : AppTheme.borderColor;
-    final inactiveText = isDark ? Colors.white70 : AppTheme.textPrimary;
-    final inactiveSub = isDark ? Colors.white38 : AppTheme.textMuted;
+    final inactiveText = isDark ? Colors.white60 : Colors.black54;
 
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryBlue : inactiveBg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryBlue : inactiveBorder,
+          color: isSelected ? AppTheme.primaryBlue : Colors.transparent,
+          // İki butonun ortada kesiştiği yeri (iç kenarı) dikdörtgen/düz, dış kenarı yuvarlak yaptık
+          borderRadius: BorderRadius.horizontal(
+            left: Radius.circular(isLeft ? 12 : 0),
+            right: Radius.circular(isLeft ? 0 : 12),
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
-                ],
+                ]
+              : [],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: alignment,
-          children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                textAlign: alignment == CrossAxisAlignment.end
-                    ? TextAlign.right
-                    : TextAlign.left,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isSelected ? Colors.white : inactiveText,
-                ),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? Colors.white : inactiveText,
               ),
             ),
-            const SizedBox(height: 2),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                sublabel,
-                textAlign: alignment == CrossAxisAlignment.end
-                    ? TextAlign.right
-                    : TextAlign.left,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.75)
-                      : inactiveSub,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
