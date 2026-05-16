@@ -85,7 +85,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   Text(
                     'Ayarlar',
-                    style: Theme.of(context).textTheme.displayMedium,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ],
               ),

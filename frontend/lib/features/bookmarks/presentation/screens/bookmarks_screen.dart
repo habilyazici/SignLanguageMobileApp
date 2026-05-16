@@ -70,7 +70,7 @@ class BookmarksScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
               child: Text(
                 'Kaydedilenler',
-                style: Theme.of(context).textTheme.displayMedium,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
             ).animate().fadeIn(delay: 60.ms, duration: 300.ms),
 
@@ -134,7 +134,7 @@ class _SavedCard extends ConsumerWidget {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         title: Text(
           sign.label,
           style: const TextStyle(

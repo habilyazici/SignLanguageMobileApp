@@ -73,7 +73,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
                         Text(
                           'İşaret Sözlüğü',
                           style: GoogleFonts.poppins(
-                            fontSize: 26,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
                             height: 1.1,
@@ -292,7 +292,7 @@ class _SignCard extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         title: Text(
           sign.label,
           style: const TextStyle(

@@ -41,7 +41,7 @@ class ProfileScreen extends ConsumerWidget {
                         Text(
                           'Profilim',
                           style: GoogleFonts.poppins(
-                            fontSize: 26,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
                             height: 1.1,

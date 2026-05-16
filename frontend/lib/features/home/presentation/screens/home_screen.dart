@@ -61,7 +61,7 @@ class HomeScreen extends ConsumerWidget {
                         Text(
                           '$greeting, $name!',
                           style: GoogleFonts.poppins(
-                            fontSize: 26,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
                             height: 1.1,
@@ -234,7 +234,7 @@ class _DailyWordCard extends StatelessWidget {
                           Text(
                             '"$word"',
                             style: GoogleFonts.poppins(
-                              fontSize: 28,
+                              fontSize: 22,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                               height: 1.1,
@@ -252,8 +252,8 @@ class _DailyWordCard extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
@@ -261,7 +261,7 @@ class _DailyWordCard extends StatelessWidget {
                       child: const Icon(
                         Icons.lightbulb_rounded,
                         color: Colors.white,
-                        size: 26,
+                        size: 22,
                       ),
                     ),
                   ],
@@ -363,7 +363,7 @@ class _PrimaryQuickCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
@@ -408,7 +408,7 @@ class _PrimaryQuickCard extends StatelessWidget {
                         Text(
                           title,
                           style: GoogleFonts.poppins(
-                            fontSize: 22,
+                            fontSize: 18,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
                             height: 1.1,
@@ -457,13 +457,13 @@ class _PrimaryQuickCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.13),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon, color: Colors.white, size: 34),
+                    child: Icon(icon, color: Colors.white, size: 28),
                   ),
                 ],
               ),

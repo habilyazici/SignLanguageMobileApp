@@ -73,7 +73,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         Text(
                           'Geçmiş',
                           style: GoogleFonts.poppins(
-                            fontSize: 26,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
                             height: 1.1,
@@ -334,7 +334,7 @@ class _HistoryCard extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         title: Text(
           item.text,
           style: const TextStyle(
