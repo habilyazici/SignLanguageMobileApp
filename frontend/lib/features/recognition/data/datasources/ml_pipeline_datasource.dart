@@ -62,9 +62,19 @@ class MlPipelineDatasource {
   final _resultCtrl = StreamController<MlFrameResult>.broadcast();
   Stream<MlFrameResult> get resultStream => _resultCtrl.stream;
 
-  // ── Başlatma ────────────────────────────────────────────────────────────────
+  /// Pipeline bir kareyi işlemekle meşgulse true döner.
+  bool get isBusy => _handBusy;
+
+  static Future<void>? _initFuture;
 
   Future<void> initialize() async {
+    if (_initFuture != null) return _initFuture;
+    
+    _initFuture = _doInitialize();
+    return _initFuture;
+  }
+
+  Future<void> _doInitialize() async {
     _poseDetector = mlkit.PoseDetector(
       options: mlkit.PoseDetectorOptions(
         mode: mlkit.PoseDetectionMode.stream,

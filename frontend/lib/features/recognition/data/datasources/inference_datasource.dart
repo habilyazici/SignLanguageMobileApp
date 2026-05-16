@@ -23,8 +23,15 @@ class InferenceDatasource {
   /// Model yüklenip hazır mı?
   bool get isReady => _interpreter != null && _isolateInterpreter != null;
 
+  static Future<void>? _initFuture;
+
   Future<void> initialize() async {
-    if (isReady) return; // Guard: prevent double-initialization
+    if (_initFuture != null) return _initFuture;
+    _initFuture = _doInitialize();
+    return _initFuture;
+  }
+
+  Future<void> _doInitialize() async {
     final opts = tflite.InterpreterOptions()..threads = 4;
 
     _interpreter = await tflite.Interpreter.fromAsset(

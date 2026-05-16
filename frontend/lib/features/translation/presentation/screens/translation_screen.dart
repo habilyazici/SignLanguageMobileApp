@@ -85,9 +85,8 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
             // tarafından yakalanır; bu sayede tab geçişi ve ekran geçişi
             // aynı gesture sistemiyle tutarlı biçimde çalışır.
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(),
+              child: IndexedStack(
+                index: _tabController.index,
                 children: const [
                   RecognitionScreen(),
                   TranslatorScreen(),
@@ -112,7 +111,8 @@ class _ModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 6),
+      // Yatay padding'i artırarak (32) alt kutudan daha dar ve ortalı yaptık
+      padding: const EdgeInsets.fromLTRB(32, 12, 32, 6),
       child: AnimatedBuilder(
         animation: controller,
         builder: (context, child) {
@@ -124,6 +124,7 @@ class _ModeSelector extends StatelessWidget {
                   label: 'İşaretten Çeviri',
                   sublabel: 'Kamera ile tanıma',
                   isSelected: index == 0,
+                  alignment: CrossAxisAlignment.end, // Yazılar sağa yaslı
                   onTap: () => controller.animateTo(0),
                 ),
               ),
@@ -133,6 +134,7 @@ class _ModeSelector extends StatelessWidget {
                   label: 'Sesten Çeviri',
                   sublabel: 'Ses veya metin',
                   isSelected: index == 1,
+                  alignment: CrossAxisAlignment.start, // Yazılar sola yaslı
                   onTap: () => controller.animateTo(1),
                 ),
               ),
@@ -150,12 +152,14 @@ class _ModeButton extends StatelessWidget {
     required this.sublabel,
     required this.isSelected,
     required this.onTap,
+    required this.alignment,
   });
 
   final String label;
   final String sublabel;
   final bool isSelected;
   final VoidCallback onTap;
+  final CrossAxisAlignment alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -195,11 +199,15 @@ class _ModeButton extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: alignment,
           children: [
             Text(
               label,
+              textAlign: alignment == CrossAxisAlignment.end
+                  ? TextAlign.right
+                  : TextAlign.left,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14, // Biraz küçülterek daha zarif yaptık
                 fontWeight: FontWeight.w700,
                 color: isSelected ? Colors.white : inactiveText,
               ),
@@ -207,8 +215,11 @@ class _ModeButton extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               sublabel,
+              textAlign: alignment == CrossAxisAlignment.end
+                  ? TextAlign.right
+                  : TextAlign.left,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w400,
                 color: isSelected
                     ? Colors.white.withValues(alpha: 0.75)

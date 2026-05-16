@@ -169,7 +169,10 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     }
 
     _frameCounter++;
-    if ((Platform.isIOS && _isInferring) || !_ml.isReady) return;
+    
+    // ML pipeline meşgulse veya henüz hazır değilse kareyi düşür.
+    // iOS'ta kaynak yönetimi için _isInferring (TFLite) durumunda da düşür.
+    if (_ml.isBusy || (Platform.isIOS && _isInferring) || !_ml.isReady) return;
 
     _lastFrameTimeMs = now;
 
