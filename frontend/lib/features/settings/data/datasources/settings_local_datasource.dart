@@ -30,7 +30,6 @@ class SettingsLocalDatasource {
       VideoQuality.high,
     ),
     zeroDataMode: _prefs.getBool('zeroDataMode') ?? false,
-    cloudSyncEnabled: _prefs.getBool('cloudSyncEnabled') ?? false,
     ttsEnabled: _prefs.getBool('ttsEnabled') ?? true,
     sttEnabled: _prefs.getBool('sttEnabled') ?? true,
     devMode: _prefs.getBool('devMode') ?? false,
@@ -48,7 +47,6 @@ class SettingsLocalDatasource {
     await _prefs.setBool('cellularVideoDisabled', s.cellularVideoDisabled);
     await _prefs.setInt('videoQuality', s.videoQuality.index);
     await _prefs.setBool('zeroDataMode', s.zeroDataMode);
-    await _prefs.setBool('cloudSyncEnabled', s.cloudSyncEnabled);
     await _prefs.setBool('ttsEnabled', s.ttsEnabled);
     await _prefs.setBool('sttEnabled', s.sttEnabled);
     await _prefs.setBool('devMode', s.devMode);

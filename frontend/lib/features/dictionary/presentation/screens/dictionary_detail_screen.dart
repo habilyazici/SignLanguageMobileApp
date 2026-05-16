@@ -50,7 +50,8 @@ class DictionaryDetailScreen extends ConsumerWidget {
 
     ref.listen(_wordDetailProvider(wordId), (prev, next) {
       if (prev is! AsyncData<WordDetail> && next is AsyncData<WordDetail>) {
-        if (ref.read(authProvider).isAuthenticated) {
+        if (ref.read(authProvider).isAuthenticated &&
+            !ref.read(settingsProvider).zeroDataMode) {
           ref.read(historyProvider.notifier).add(
             next.value.word,
             type: HistoryItemType.dictionary,

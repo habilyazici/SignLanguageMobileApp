@@ -90,7 +90,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 padding: EdgeInsets.zero,
               ).animate().fadeIn(),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               Text(
                 'Şifreni Sıfırla',

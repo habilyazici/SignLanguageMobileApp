@@ -30,7 +30,7 @@ class BookmarksScreen extends ConsumerWidget {
           children: [
             // ── Üst Bar ─────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(4, 8, 20, 0),
+              padding: const EdgeInsets.fromLTRB(4, 16, 20, 0),
               child: Row(
                 children: [
                   IconButton(

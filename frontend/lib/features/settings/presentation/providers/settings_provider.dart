@@ -83,9 +83,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void toggleZeroDataMode() =>
       _persist(state.copyWith(zeroDataMode: !state.zeroDataMode));
 
-  void toggleCloudSync() =>
-      _persist(state.copyWith(cloudSyncEnabled: !state.cloudSyncEnabled));
-
   // ── Ses ───────────────────────────────────────────────────────────────────
   void toggleTts() => _persist(state.copyWith(ttsEnabled: !state.ttsEnabled));
 

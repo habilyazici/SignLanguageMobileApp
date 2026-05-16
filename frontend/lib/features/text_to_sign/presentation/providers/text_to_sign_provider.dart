@@ -8,6 +8,7 @@ import '../../domain/repositories/text_to_sign_repository.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../history/domain/entities/history_item.dart' show HistoryItemType;
 import '../../../history/presentation/providers/history_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Repository provider
@@ -105,7 +106,8 @@ class TextToSignNotifier extends Notifier<TextToSignState> {
       isPlaying: true,
       inputText: text,
     );
-    if (ref.read(authProvider).isAuthenticated) {
+    if (ref.read(authProvider).isAuthenticated &&
+        !ref.read(settingsProvider).zeroDataMode) {
       ref.read(historyProvider.notifier).add(text.trim(), type: HistoryItemType.translation);
     }
   }

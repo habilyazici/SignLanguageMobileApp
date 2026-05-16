@@ -30,7 +30,7 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             // ── Başlık + Ayarlar ──────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [

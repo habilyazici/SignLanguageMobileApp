@@ -184,7 +184,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   padding: EdgeInsets.zero,
                 ).animate().fadeIn(),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 28),
 
                 Text(
                   'Profili Düzenle',

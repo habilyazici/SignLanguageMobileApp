@@ -49,7 +49,6 @@ class AppSettings {
 
   // ── Gizlilik & Veri ───────────────────────────────────────────────────────
   final bool zeroDataMode;
-  final bool cloudSyncEnabled;
 
   // ── Ses ───────────────────────────────────────────────────────────────────
   final bool ttsEnabled;
@@ -72,7 +71,6 @@ class AppSettings {
     this.cellularVideoDisabled = false,
     this.videoQuality = VideoQuality.high,
     this.zeroDataMode = false,
-    this.cloudSyncEnabled = false,
     this.ttsEnabled = true,
     this.sttEnabled = true,
     this.devMode = false,
@@ -106,7 +104,6 @@ class AppSettings {
     bool? cellularVideoDisabled,
     VideoQuality? videoQuality,
     bool? zeroDataMode,
-    bool? cloudSyncEnabled,
     bool? ttsEnabled,
     bool? sttEnabled,
     bool? devMode,
@@ -122,7 +119,6 @@ class AppSettings {
     cellularVideoDisabled: cellularVideoDisabled ?? this.cellularVideoDisabled,
     videoQuality: videoQuality ?? this.videoQuality,
     zeroDataMode: zeroDataMode ?? this.zeroDataMode,
-    cloudSyncEnabled: cloudSyncEnabled ?? this.cloudSyncEnabled,
     ttsEnabled: ttsEnabled ?? this.ttsEnabled,
     sttEnabled: sttEnabled ?? this.sttEnabled,
     devMode: devMode ?? this.devMode,

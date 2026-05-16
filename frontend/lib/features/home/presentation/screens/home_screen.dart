@@ -50,7 +50,7 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Üst Bar — Karşılama + Profil ─────────────────────────
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
