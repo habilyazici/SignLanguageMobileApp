@@ -26,28 +26,34 @@ class InferenceDatasource {
   static Future<void>? _initFuture;
 
   Future<void> initialize() async {
+    if (isReady) return;
     if (_initFuture != null) return _initFuture;
     _initFuture = _doInitialize();
     return _initFuture;
   }
 
   Future<void> _doInitialize() async {
-    final opts = tflite.InterpreterOptions()..threads = 4;
+    try {
+      final opts = tflite.InterpreterOptions()..threads = 4;
 
-    _interpreter = await tflite.Interpreter.fromAsset(
-      'assets/models/sign_language_model_v2.tflite',
-      options: opts,
-    );
+      _interpreter = await tflite.Interpreter.fromAsset(
+        'assets/models/sign_language_model_v2.tflite',
+        options: opts,
+      );
 
-    // Sınıf sayısını modelden oku — [1, N] → N
-    final outputShape = _interpreter!.getOutputTensor(0).shape;
-    _numClasses = outputShape.length >= 2 ? outputShape[1] : outputShape[0];
+      // Sınıf sayısını modelden oku — [1, N] → N
+      final outputShape = _interpreter!.getOutputTensor(0).shape;
+      _numClasses = outputShape.length >= 2 ? outputShape[1] : outputShape[0];
 
-    _isolateInterpreter = await tflite.IsolateInterpreter.create(
-      address: _interpreter!.address,
-    );
-    if (kDebugMode) {
-      debugPrint('✅ TFLite modeli yüklendi — $_numClasses sınıf');
+      _isolateInterpreter = await tflite.IsolateInterpreter.create(
+        address: _interpreter!.address,
+      );
+      if (kDebugMode) {
+        debugPrint('✅ TFLite modeli yüklendi — $_numClasses sınıf');
+      }
+    } catch (e) {
+      _initFuture = null;
+      rethrow;
     }
   }
 

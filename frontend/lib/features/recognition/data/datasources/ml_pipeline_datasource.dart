@@ -68,6 +68,8 @@ class MlPipelineDatasource {
   static Future<void>? _initFuture;
 
   Future<void> initialize() async {
+    // Eğer zaten hazırsa veya şu an yükleniyorsa bekle/dön
+    if (isReady) return;
     if (_initFuture != null) return _initFuture;
     
     _initFuture = _doInitialize();
@@ -75,14 +77,19 @@ class MlPipelineDatasource {
   }
 
   Future<void> _doInitialize() async {
-    _poseDetector = mlkit.PoseDetector(
-      options: mlkit.PoseDetectorOptions(
-        mode: mlkit.PoseDetectionMode.stream,
-        model: mlkit.PoseDetectionModel.base,
-      ),
-    );
-    _handDetectorIsolate = await HandDetectorIsolate.spawn();
-    if (kDebugMode) debugPrint('✅ HandDetectorIsolate başlatıldı');
+    try {
+      _poseDetector = mlkit.PoseDetector(
+        options: mlkit.PoseDetectorOptions(
+          mode: mlkit.PoseDetectionMode.stream,
+          model: mlkit.PoseDetectionModel.base,
+        ),
+      );
+      _handDetectorIsolate = await HandDetectorIsolate.spawn();
+      if (kDebugMode) debugPrint('✅ HandDetectorIsolate başlatıldı');
+    } catch (e) {
+      _initFuture = null; // Hata durumunda korumayı sıfırla ki tekrar denenebilsin
+      rethrow;
+    }
   }
 
   bool get isReady => _poseDetector != null && _handDetectorIsolate != null;
