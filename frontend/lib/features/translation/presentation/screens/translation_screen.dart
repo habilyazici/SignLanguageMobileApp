@@ -201,29 +201,35 @@ class _ModeButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: alignment,
           children: [
-            Text(
-              label,
-              textAlign: alignment == CrossAxisAlignment.end
-                  ? TextAlign.right
-                  : TextAlign.left,
-              style: TextStyle(
-                fontSize: 14, // Biraz küçülterek daha zarif yaptık
-                fontWeight: FontWeight.w700,
-                color: isSelected ? Colors.white : inactiveText,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                textAlign: alignment == CrossAxisAlignment.end
+                    ? TextAlign.right
+                    : TextAlign.left,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isSelected ? Colors.white : inactiveText,
+                ),
               ),
             ),
             const SizedBox(height: 2),
-            Text(
-              sublabel,
-              textAlign: alignment == CrossAxisAlignment.end
-                  ? TextAlign.right
-                  : TextAlign.left,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w400,
-                color: isSelected
-                    ? Colors.white.withValues(alpha: 0.75)
-                    : inactiveSub,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                sublabel,
+                textAlign: alignment == CrossAxisAlignment.end
+                    ? TextAlign.right
+                    : TextAlign.left,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.75)
+                      : inactiveSub,
+                ),
               ),
             ),
           ],

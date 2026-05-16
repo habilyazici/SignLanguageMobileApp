@@ -99,13 +99,15 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   Future<void> pauseCamera() async {
     if (!_isStreaming) return;
     _isStreaming = false;
-    await _camera.stopStream();
 
     // UI'a hemen haber ver ki buildPreview() yaparken hata almasın
     _cameraCtrl.add(null);
 
-    // Donanımı serbest bırak (yeşil nokta söner) — stream açık kalır
+    // Önce stream'i durdur, sonra donanımı serbest bırak
+    await _camera.stopStream();
     await _camera.release();
+    
+    _resetBuffer();
   }
 
   @override

@@ -71,14 +71,6 @@ class CameraDataSource {
     }
   }
 
-  void stopStream() {
-    try {
-      _camera?.stopImageStream();
-    } catch (e) {
-      if (kDebugMode) debugPrint('❌ stopImageStream hatası: $e');
-    }
-  }
-
   Future<void> switchCamera() async {
     final next = _currentLens == CameraLensDirection.back
         ? CameraLensDirection.front
@@ -86,12 +78,16 @@ class CameraDataSource {
     await _startCamera(lens: next);
   }
 
-  /// Kamera donanımını serbest bırakır (yeşil nokta söner) ama stream açık
-  /// kalır — resumeCamera() sonrasında yeniden initialize edilebilir.
-  Future<void> release() async {
+  /// Sadece image stream'i durdurur.
+  Future<void> stopStream() async {
     try {
       await _camera?.stopImageStream();
     } catch (_) {}
+  }
+
+  /// Kamera donanımını serbest bırakır (yeşil nokta söner)
+  Future<void> release() async {
+    await stopStream();
     try {
       await _camera?.dispose();
     } catch (_) {}
