@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { prisma } from '../db';
 import type { Prisma } from '../../generated/prisma/client';
-import { config } from '../config';
+import { videoUrl } from '../utils/videoUrl';
 
 export const wordsRouter = Router();
 
@@ -12,13 +12,6 @@ interface ManifestCache {
 }
 let manifestCache: ManifestCache | null = null;
 const MANIFEST_TTL_MS = 5 * 60 * 1000; // 5 dakika
-
-const videoUrl = (word: { videoFilename: string | null; cdnVideoUrl: string }): string => {
-  if (word.videoFilename) {
-    return `${config.baseUrl}/videos/${encodeURIComponent(word.videoFilename)}`;
-  }
-  return word.cdnVideoUrl;
-};
 
 function asString(val: unknown): string | undefined {
   if (typeof val === 'string') return val;

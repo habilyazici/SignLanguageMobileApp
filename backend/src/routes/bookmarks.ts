@@ -1,18 +1,13 @@
 import { Router } from 'express';
 import type { Response } from 'express';
 import { prisma } from '../db';
-import { config } from '../config';
+import { videoUrl } from '../utils/videoUrl';
 import { requireAuth } from '../middleware/requireAuth';
 import type { AuthRequest } from '../middleware/requireAuth';
 
 export const bookmarksRouter = Router();
 
 bookmarksRouter.use(requireAuth);
-
-function bookmarkVideoUrl(word: { videoFilename: string | null; cdnVideoUrl: string }): string {
-  if (word.videoFilename) return `${config.baseUrl}/videos/${encodeURIComponent(word.videoFilename)}`;
-  return word.cdnVideoUrl;
-}
 
 // GET /api/bookmarks
 bookmarksRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> => {
@@ -33,7 +28,7 @@ bookmarksRouter.get('/', async (req: AuthRequest, res: Response): Promise<void> 
       word: b.word.word,
       letter: b.word.letter,
       meaningEn: b.word.meaningEn,
-      videoUrl: bookmarkVideoUrl(b.word),
+      videoUrl: videoUrl(b.word),
       createdAt: b.createdAt,
     })));
   } catch (err) {
