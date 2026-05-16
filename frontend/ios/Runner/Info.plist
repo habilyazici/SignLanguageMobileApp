@@ -4,6 +4,8 @@
 	<dict>
 		<key>NSCameraUsageDescription</key>
 		<string>İşaret dili çevirisi için kameranızı kullanmamız gerekiyor.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Profil fotoğrafı seçmek için fotoğraf kütüphanenize erişmemiz gerekiyor.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Sesli komut ile işaret dili çevirisi için mikrofon gerekiyor.</string>
 		<key>CFBundleDevelopmentRegion</key>

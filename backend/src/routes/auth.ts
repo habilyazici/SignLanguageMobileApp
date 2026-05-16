@@ -3,12 +3,15 @@ import type { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { randomInt } from 'crypto';
+import path from 'path';
+import fs from 'fs';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { config } from '../config';
 import { requireAuth } from '../middleware/requireAuth';
 import type { AuthRequest } from '../middleware/requireAuth';
 import { sendPasswordResetEmail } from '../services/email';
+import { avatarUpload } from '../middleware/upload';
 
 export const authRouter = Router();
 
@@ -48,7 +51,7 @@ authRouter.post('/register', async (req: Request, res: Response): Promise<void> 
 
     res.status(201).json({
       token: signToken(user.id),
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl },
     });
   } catch (err) {
     console.error('[POST /auth/register]:', err);
@@ -80,7 +83,7 @@ authRouter.post('/login', async (req: Request, res: Response): Promise<void> => 
 
     res.json({
       token: signToken(user.id),
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl },
     });
   } catch (err) {
     console.error('[POST /auth/login]:', err);
@@ -210,11 +213,47 @@ authRouter.put('/profile', requireAuth, async (req: AuthRequest, res: Response):
       },
     });
 
-    res.json({ id: updated.id, name: updated.name, email: updated.email });
+    res.json({ id: updated.id, name: updated.name, email: updated.email, avatarUrl: updated.avatarUrl });
   } catch (err) {
     console.error('[PUT /auth/profile]:', err);
     res.status(500).json({ error: 'Sunucu hatasi.' });
   }
+});
+
+authRouter.post('/avatar', requireAuth, (req: AuthRequest, res: Response): void => {
+  avatarUpload(req as any, res, async (err: any) => {
+    if (err) {
+      res.status(400).json({ error: err.message ?? 'Yükleme hatası.' });
+      return;
+    }
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) {
+      res.status(400).json({ error: 'Dosya bulunamadı.' });
+      return;
+    }
+
+    const avatarUrl = `${config.baseUrl}/uploads/avatars/${file.filename}`;
+
+    try {
+      // Eski avatar dosyasını sil
+      const existing = await prisma.user.findUnique({ where: { id: req.userId! } });
+      if (existing?.avatarUrl) {
+        const oldFile = path.basename(existing.avatarUrl);
+        const oldPath = path.join(process.cwd(), 'uploads', 'avatars', oldFile);
+        try { fs.unlinkSync(oldPath); } catch (_) {}
+      }
+
+      const updated = await prisma.user.update({
+        where: { id: req.userId! },
+        data: { avatarUrl },
+      });
+
+      res.json({ avatarUrl: updated.avatarUrl });
+    } catch (dbErr) {
+      console.error('[POST /auth/avatar]:', dbErr);
+      res.status(500).json({ error: 'Sunucu hatası.' });
+    }
+  });
 });
 
 authRouter.delete('/profile', requireAuth, async (req: AuthRequest, res: Response): Promise<void> => {

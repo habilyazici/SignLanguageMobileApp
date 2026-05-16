@@ -28,6 +28,7 @@ model User {
   email        String     @unique
   name         String
   passwordHash String
+  avatarUrl    String?
   createdAt    DateTime   @default(now())
   history      History[]
   bookmarks    Bookmark[]

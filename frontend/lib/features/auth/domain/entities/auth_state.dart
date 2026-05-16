@@ -7,6 +7,7 @@ class AuthState {
   final String? displayName;
   final String? email;
   final String? token;
+  final String? avatarUrl;
   final String? errorMessage;
 
   const AuthState({
@@ -14,6 +15,7 @@ class AuthState {
     this.displayName,
     this.email,
     this.token,
+    this.avatarUrl,
     this.errorMessage,
   });
 
@@ -28,18 +30,20 @@ class AuthState {
     return displayName![0].toUpperCase();
   }
 
-  /// [errorMessage] açıkça `null` geçilirse hata temizlenir; geçilmezse korunur.
+  /// [errorMessage] ve [avatarUrl] açıkça `null` geçilirse temizlenir; geçilmezse korunur.
   AuthState copyWith({
     AuthStatus? status,
     String? displayName,
     String? email,
     String? token,
+    Object? avatarUrl = sentinel,
     Object? errorMessage = sentinel,
   }) => AuthState(
     status: status ?? this.status,
     displayName: displayName ?? this.displayName,
     email: email ?? this.email,
     token: token ?? this.token,
+    avatarUrl: avatarUrl == sentinel ? this.avatarUrl : avatarUrl as String?,
     errorMessage: errorMessage == sentinel ? this.errorMessage : errorMessage as String?,
   );
 }

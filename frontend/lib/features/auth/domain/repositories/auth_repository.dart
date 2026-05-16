@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../entities/auth_state.dart';
 
 abstract interface class AuthRepository {
@@ -39,4 +41,7 @@ abstract interface class AuthRepository {
 
   /// Hesabı sunucudan siler ve yerel oturumu temizler.
   Future<({bool success, String? error})> deleteAccount();
+
+  /// Profil fotoğrafını sunucuya yükler ve avatarUrl'i döner.
+  Future<({bool success, String? error, String? avatarUrl})> uploadAvatar(Uint8List bytes);
 }

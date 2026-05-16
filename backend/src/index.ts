@@ -54,6 +54,7 @@ app.use('/api', generalLimiter);
 app.use('/api/auth', authLimiter);
 
 app.use('/videos', express.static(path.join(process.cwd(), 'public', 'videos')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/words', wordsRouter);

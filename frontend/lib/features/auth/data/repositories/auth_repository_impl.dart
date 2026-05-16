@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -50,6 +51,7 @@ String _errorMessage(Object e) {
 const _kTokenKey = 'auth_token';
 const _kNameKey = 'auth_name';
 const _kEmailKey = 'auth_email';
+const _kAvatarKey = 'auth_avatar';
 
 const _storage = FlutterSecureStorage(
   aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -90,12 +92,14 @@ class AuthRepositoryImpl implements AuthRepository {
             errorMessage: 'Sunucu geçersiz yanıt döndürdü.',
           );
         }
-        await _saveSession(token: token, name: name, email: email);
+        final avatarUrl = _safeString(user, 'avatarUrl');
+        await _saveSession(token: token, name: name, email: email, avatarUrl: avatarUrl);
         return AuthState(
           status: AuthStatus.authenticated,
           token: token,
           displayName: name,
           email: email,
+          avatarUrl: avatarUrl,
         );
       }
 
@@ -148,12 +152,14 @@ class AuthRepositoryImpl implements AuthRepository {
             errorMessage: 'Sunucu geçersiz yanıt döndürdü.',
           );
         }
-        await _saveSession(token: token, name: name, email: email);
+        final avatarUrl = _safeString(user, 'avatarUrl');
+        await _saveSession(token: token, name: name, email: email, avatarUrl: avatarUrl);
         return AuthState(
           status: AuthStatus.authenticated,
           token: token,
           displayName: name,
           email: email,
+          avatarUrl: avatarUrl,
         );
       }
 
@@ -225,6 +231,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final token = await _storage.read(key: _kTokenKey);
     final name = await _storage.read(key: _kNameKey);
     final email = await _storage.read(key: _kEmailKey);
+    final avatarUrl = await _storage.read(key: _kAvatarKey);
     if (token == null || email == null) return const AuthState();
     if (_isJwtExpired(token)) {
       await clearSession();
@@ -235,6 +242,7 @@ class AuthRepositoryImpl implements AuthRepository {
       token: token,
       displayName: name,
       email: email,
+      avatarUrl: avatarUrl,
     );
   }
 
@@ -312,15 +320,70 @@ class AuthRepositoryImpl implements AuthRepository {
     await _storage.delete(key: _kTokenKey);
     await _storage.delete(key: _kNameKey);
     await _storage.delete(key: _kEmailKey);
+    await _storage.delete(key: _kAvatarKey);
+  }
+
+  @override
+  Future<({bool success, String? error, String? avatarUrl})> uploadAvatar(
+    Uint8List bytes,
+  ) async {
+    final token = await _storage.read(key: _kTokenKey);
+    if (token == null) {
+      return (success: false, error: 'Oturum bulunamadı.', avatarUrl: null);
+    }
+
+    try {
+      final uri = Uri.parse('$kApiBaseUrl/api/auth/avatar');
+      final request = http.MultipartRequest('POST', uri)
+        ..headers.addAll({
+          ...kNgrokHeaders,
+          'Authorization': 'Bearer $token',
+        })
+        ..files.add(
+          http.MultipartFile.fromBytes('avatar', bytes, filename: 'avatar.jpg'),
+        );
+
+      final streamed = await request.send().timeout(kAuthTimeout);
+      final res = await http.Response.fromStream(streamed);
+
+      if (res.statusCode == 401) {
+        await clearSession();
+        return (
+          success: false,
+          error: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.',
+          avatarUrl: null,
+        );
+      }
+
+      if (res.statusCode == 200) {
+        final parsed = jsonDecode(res.body) as Map<String, dynamic>;
+        final url = _safeString(parsed, 'avatarUrl');
+        if (url != null) await _storage.write(key: _kAvatarKey, value: url);
+        return (success: true, error: null, avatarUrl: url);
+      }
+
+      final parsed = jsonDecode(res.body) as Map<String, dynamic>;
+      return (
+        success: false,
+        error: _safeString(parsed, 'error') ?? 'Yükleme başarısız.',
+        avatarUrl: null,
+      );
+    } catch (e) {
+      return (success: false, error: _errorMessage(e), avatarUrl: null);
+    }
   }
 
   Future<void> _saveSession({
     required String token,
     required String name,
     required String email,
+    String? avatarUrl,
   }) async {
     await _storage.write(key: _kTokenKey, value: token);
     await _storage.write(key: _kNameKey, value: name);
     await _storage.write(key: _kEmailKey, value: email);
+    if (avatarUrl != null) {
+      await _storage.write(key: _kAvatarKey, value: avatarUrl);
+    }
   }
 }
