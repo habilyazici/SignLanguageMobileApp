@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- flutter_tts: arka planda ses çalma -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- image_picker: Android 13+ galeri erişimi -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- image_picker: Android 12 ve altı galeri erişimi -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
     <application
         android:label="Hear Me Out"
         android:name="${applicationName}"
