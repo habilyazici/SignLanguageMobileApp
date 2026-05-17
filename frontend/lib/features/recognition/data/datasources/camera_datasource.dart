@@ -44,9 +44,11 @@ class CameraDataSource {
       await _camera?.dispose();
     } catch (_) {}
 
-    // iOS: medium → daha net önizleme (AVCaptureSessionPresetMedium ≈ 480×360).
+    // iOS: low → AVCaptureSessionPreset352x288 ≈ 352×288.
+    //   medium (480×360) BGRA frameler 691K olur — heap baskısı ve donma.
+    //   low (352×288) BGRA frameler 405K — %41 daha küçük, ML pipeline rahatlar.
     // Android: low → ML pipeline 320×240 için optimize; daha az bellek.
-    final preset = Platform.isIOS ? ResolutionPreset.medium : ResolutionPreset.low;
+    final preset = ResolutionPreset.low;
 
     _camera = CameraController(
       selected,

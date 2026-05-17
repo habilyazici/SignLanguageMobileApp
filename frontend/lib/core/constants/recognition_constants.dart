@@ -21,19 +21,20 @@ abstract final class RecognitionConstants {
   static const int windowMs = 2000;
 
   /// İlk inference için gereken minimum pencere süresi (ms).
-  /// 600ms: yavaş cihazlarda (A32 ~130ms/frame) 4-5 gerçek frame → erken tepki.
-  /// Hızlı cihazlarda (30fps) 600ms ≈ 18 frame → yeterli temporal bilgi.
-  static const int minWindowMs = 600;
+  /// 450ms: yavaş cihazlarda (A32 ~130ms/frame) 3-4 gerçek frame → erken tepki.
+  /// Hızlı cihazlarda (30fps) 450ms ≈ 13 frame → yeterli temporal bilgi.
+  static const int minWindowMs = 450;
 
   // ── Inference hız kontrolü ────────────────────────────────────────────────
   /// İki ardışık inference arasındaki minimum süre (ms).
   /// Frame sayısına değil zamana göre throttle — cihaz hızından bağımsız.
-  /// 200ms = saniyede max 5 inference; stableFrames=5 ile onay ~1sn.
-  static const int inferIntervalMs = 200;
+  /// 150ms = saniyede max ~6.7 inference; stableFrames=4 ile onay ~600ms.
+  static const int inferIntervalMs = 150;
 
   // ── Temporal smoothing ────────────────────────────────────────────────────
-  /// Aynı sınıfın kaç ardışık inference'ta görülmesi gerektiği
-  static const int stableFrames = 5;
+  /// Aynı sınıfın kaç ardışık inference'ta görülmesi gerektiği (dok. değeri).
+  /// Gerçek eşik AppSettings.stableFramesThreshold'dan okunur.
+  static const int stableFrames = 4;
 
   // ── Pose örnekleme ───────────────────────────────────────────────────────
   /// Pose detection her kaçıncı işlenen karede çalışır.
@@ -52,12 +53,12 @@ abstract final class RecognitionConstants {
   /// Normalize uzayında ortalama mutlak fark eşiği (0..1 arası).
   /// 0.008 = nefes/kamera titremesi yeterli (çok hassas).
   /// 0.025 = gerçek el hareketi gerektirir.
-  static const double motionThreshold = 0.030;
+  static const double motionThreshold = 0.020;
 
   /// Son hareketten bu kadar ms sonra inference durur.
-  /// Düşük tutmak önemli: hareket durduktan sonra el sabit poza girince
-  /// model o pozu yüksek güvenle yanlış bir kelimeye atayabiliyor.
-  static const int motionWindowMs = 500;
+  /// 800ms: hareket bittikten sonra elde yeterli inference fırsatı (~5 inference)
+  /// sağlanır. Çok düşük tutmak statik/yavaş işaretlerin kaçırılmasına yol açar.
+  static const int motionWindowMs = 800;
 
   // ── Koordinat ayrımı ─────────────────────────────────────────────────────
   /// hand_detection kütüphanesinden gelen koordinatın normalize [0,1] mi

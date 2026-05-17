@@ -65,7 +65,7 @@ class MlPipelineDatasource {
   /// Pipeline bir kareyi işlemekle meşgulse true döner.
   bool get isBusy => _handBusy;
 
-  static Future<void>? _initFuture;
+  Future<void>? _initFuture;
 
   Future<void> initialize() async {
     // Eğer zaten hazırsa veya şu an yükleniyorsa bekle/dön
@@ -247,20 +247,25 @@ class MlPipelineDatasource {
     } catch (e) {
       if (kDebugMode) debugPrint('❌ Paralel ML Hatası: $e');
     } finally {
-      mat.dispose();
+      try { mat.dispose(); } catch (_) {}
       sw.stop();
       _finishCycle();
     }
   }
 
   void _finishCycle() {
-    final next = _pendingData;
-    _pendingData = null;
+    try {
+      final next = _pendingData;
+      _pendingData = null;
 
-    if (next != null) {
-      final sw = Stopwatch()..start();
-      _execute(next, sw);
-    } else {
+      if (next != null) {
+        final sw = Stopwatch()..start();
+        _execute(next, sw);
+      } else {
+        _handBusy = false;
+      }
+    } catch (_) {
+      // Beklenmedik hata — _handBusy sıkışmasın
       _handBusy = false;
     }
   }
@@ -334,7 +339,12 @@ class MlPipelineDatasource {
     final pts = <Offset>[];
     for (int i = 0; i < _poseIndices.length; i++) {
       final lm = pose.landmarks[mlkit.PoseLandmarkType.values[_poseIndices[i]]];
-      if (lm == null) continue;
+      if (lm == null) {
+        // Bu landmark tespit edilemedi — son bilinen değeri koru.
+        frame[84 + i * 2] = _lastPoseFeatures[i * 2];
+        frame[84 + i * 2 + 1] = _lastPoseFeatures[i * 2 + 1];
+        continue;
+      }
       double mx = ((lm.x - cropXOff) / cropSide).clamp(0.0, 1.0);
       double my = ((lm.y - cropYOff) / cropSide).clamp(0.0, 1.0);
       if (isFlipped) mx = 1.0 - mx;

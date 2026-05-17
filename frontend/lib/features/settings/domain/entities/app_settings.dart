@@ -75,8 +75,8 @@ class AppSettings {
     this.sttEnabled = true,
     this.devMode = false,
     this.showDevButton = false,
-    this.stableFramesThreshold = 5,
-    this.motionThreshold = 0.030,
+    this.stableFramesThreshold = 4,
+    this.motionThreshold = 0.020,
   });
 
   /// Confidence level'ı TFLite threshold değerine dönüştürür.

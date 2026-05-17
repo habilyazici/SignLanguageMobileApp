@@ -23,7 +23,7 @@ class InferenceDatasource {
   /// Model yüklenip hazır mı?
   bool get isReady => _interpreter != null && _isolateInterpreter != null;
 
-  static Future<void>? _initFuture;
+  Future<void>? _initFuture;
 
   Future<void> initialize() async {
     if (isReady) return;

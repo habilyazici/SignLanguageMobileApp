@@ -189,7 +189,9 @@ class _DailyWordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: navId != null ? () => context.push('/dictionary/$navId') : null,
+      onTap: navId != null
+          ? () => context.push('/dictionary/$navId')
+          : () => context.go('/dictionary'),
       child: Container(
         decoration: BoxDecoration(
           gradient: AppTheme.primaryGradient,

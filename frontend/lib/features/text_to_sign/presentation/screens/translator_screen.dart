@@ -301,9 +301,9 @@ class _TranslatorScreenState extends ConsumerState<TranslatorScreen> {
                           ),
                           const SizedBox(width: 10),
                           GestureDetector(
-                            onTap: (sttEnabled && _sttReady)
-                                ? _toggleListening
-                                : null,
+                            // !_sttReady olsa da tıklanabilir: _toggleListening
+                            // içinde _initStt() yeniden denenir (lazy retry).
+                            onTap: sttEnabled ? _toggleListening : null,
                             child: _MicButton(
                               listening: _listening,
                               enabled: sttEnabled && _sttReady,
