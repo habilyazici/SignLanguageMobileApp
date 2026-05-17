@@ -49,6 +49,9 @@ final dictionaryProvider =
 class DictionaryNotifier extends Notifier<DictionaryState> {
   @override
   DictionaryState build() {
+    // keepAlive: 1500+ kelimeyi 8+ sayfalı API çağrısıyla yükler.
+    // Ekran geçişlerinde dispose edilip yeniden yüklenmemeli.
+    ref.keepAlive();
     Future.microtask(_load);
     return const DictionaryState(isLoading: true);
   }

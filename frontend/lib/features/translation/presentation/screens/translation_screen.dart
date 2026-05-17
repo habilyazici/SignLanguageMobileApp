@@ -49,6 +49,10 @@ class _TranslationScreenState extends ConsumerState<TranslationScreen>
     // Animasyon süresinde birden fazla tetiklenmeyi önle.
     if (_tabController.indexIsChanging) return;
     final newTab = _tabController.index;
+    // setState gerekli: IndexedStack(index: _tabController.index) değerini
+    // güncellemek için build() yeniden çağrılmalı. setState olmadan tab
+    // butonları değişir ama içerik hiç değişmez.
+    setState(() {});
     _syncCamera(newTab);
     // Provider'ı güncelle ki _SwipeNavWrapper sanal indeksi doğru hesaplasın.
     if (ref.read(translationTabProvider) != newTab) {
