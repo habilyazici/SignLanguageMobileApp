@@ -53,6 +53,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   int _resultCounter = 0;
   bool _isInferring = false;
   bool _isInitializing = false;
+  bool _isPausing = false;
   List<double>? _prevFrame;
   int _lastMotionMs = 0;
   bool _leftHandMode = false;
@@ -99,6 +100,7 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
   Future<void> pauseCamera() async {
     if (!_isStreaming) return;
     _isStreaming = false;
+    _isPausing = true;
 
     // UI'a hemen haber ver ki buildPreview() yaparken hata almasın
     _cameraCtrl.add(null);
@@ -106,13 +108,16 @@ class RecognitionRepositoryImpl implements RecognitionRepository {
     // Önce stream'i durdur, sonra donanımı serbest bırak
     await _camera.stopStream();
     await _camera.release();
-    
+
     _resetBuffer();
+    _isPausing = false;
   }
 
   @override
   Future<void> resumeCamera() async {
-    if (_isStreaming || _isInitializing) return;
+    // _isPausing: pause hâlâ devam ediyorsa resume'u blokla.
+    // Çağıran (recognition_provider) pause tamamlanınca tekrar dener.
+    if (_isStreaming || _isInitializing || _isPausing) return;
 
     _resetBuffer();
 
